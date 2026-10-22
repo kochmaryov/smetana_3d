@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SmetaNA.Core/SmetaNA.Core.csproj" />
+    <Project Path="src/SmetaNA.EditorUI/SmetaNA.EditorUI.csproj" />
+    <Project Path="src/SmetaNA.Formats/SmetaNA.Formats.csproj" />
+    <Project Path="src/SmetaNA.Licensing/SmetaNA.Licensing.csproj" />
+    <Project Path="src/SmetaNA.Rendering/SmetaNA.Rendering.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SmetaNA.Core.Tests/SmetaNA.Core.Tests.csproj" />
+  </Folder>
+</Solution>
