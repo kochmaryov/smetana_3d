@@ -22,8 +22,38 @@ jobs:
       - name: Restore
         run: dotnet restore
 
+      # Нативные зависимости (Manifold 3.5.4, lib3mf 2.5.0) в git не коммитятся
+      # (docs/release.md §4) — каждый раннер воспроизводит их скриптами.
+      - name: Native dependencies — Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./spikes/Spike.Manifold/build-native.ps1
+          ./src/SmetaNA.Manifold/fetch-native.ps1
+          ./src/SmetaNA.Formats/ThreeMf/native/fetch-lib3mf.ps1 -Runtime win-x64
+
+      - name: Native dependencies — Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Manifold: сборка C API из официального release-тарболла (src/SmetaNA.Manifold/README.md)
+          curl -sSL -o manifold.tar.gz https://github.com/elalish/manifold/releases/download/v3.5.4/manifold-3.5.4.tar.gz
+          tar -xf manifold.tar.gz
+          cmake -S manifold-3.5.4 -B manifold-build -DMANIFOLD_CBIND=ON -DMANIFOLD_PAR=OFF \
+            -DMANIFOLD_TEST=OFF -DMANIFOLD_PYBIND=OFF -DBUILD_SHARED_LIBS=ON -DMANIFOLD_DOWNLOADS=ON
+          cmake --build manifold-build --config Release --target manifoldc -- -j"$(nproc)"
+          mkdir -p src/SmetaNA.Manifold/runtimes/linux-x64/native
+          find "$PWD/manifold-build" -name 'libmanifold*.so*' -exec cp -a {} src/SmetaNA.Manifold/runtimes/linux-x64/native/ \;
+          ls -la src/SmetaNA.Manifold/runtimes/linux-x64/native/
+          # lib3mf: официальные prebuilt-бинарники (BSD-2-Clause, SHA-256 проверяется скриптом)
+          pwsh -File src/SmetaNA.Formats/ThreeMf/native/fetch-lib3mf.ps1 -Runtime linux-x64
+
       - name: Build
         run: dotnet build --no-restore -c Release
 
       - name: Test
         run: dotnet test --no-build -c Release
+        env:
+          # резолюция libmanifold.so как зависимости libmanifoldc.so на Linux
+          LD_LIBRARY_PATH: ${{ github.workspace }}/src/SmetaNA.Manifold/runtimes/linux-x64/native
