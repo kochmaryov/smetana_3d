@@ -117,6 +117,30 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
 
     public string StatusReady => _localization.Get(LocalizationKeys.StatusReady);
 
+    public string ViewportModeLabel => _localization.Get(LocalizationKeys.ViewportModeLabel);
+    public string ViewportModeWireframe => _localization.Get(LocalizationKeys.ViewportModeWireframe);
+    public string ViewportModeShaded => _localization.Get(LocalizationKeys.ViewportModeShaded);
+    public string ViewportModeXRay => _localization.Get(LocalizationKeys.ViewportModeXRay);
+    public string ViewportProjectionLabel => _localization.Get(LocalizationKeys.ViewportProjectionLabel);
+    public string ViewportProjectionPerspective => _localization.Get(LocalizationKeys.ViewportProjectionPerspective);
+    public string ViewportProjectionOrtho => _localization.Get(LocalizationKeys.ViewportProjectionOrtho);
+    public string ViewportViewIso => _localization.Get(LocalizationKeys.ViewportViewIso);
+    public string ViewportViewFront => _localization.Get(LocalizationKeys.ViewportViewFront);
+    public string ViewportViewBack => _localization.Get(LocalizationKeys.ViewportViewBack);
+    public string ViewportViewLeft => _localization.Get(LocalizationKeys.ViewportViewLeft);
+    public string ViewportViewRight => _localization.Get(LocalizationKeys.ViewportViewRight);
+    public string ViewportViewTop => _localization.Get(LocalizationKeys.ViewportViewTop);
+    public string ViewportViewBottom => _localization.Get(LocalizationKeys.ViewportViewBottom);
+    public string ViewportZoomExtents => _localization.Get(LocalizationKeys.ViewportZoomExtents);
+    public string ViewportShowGrid => _localization.Get(LocalizationKeys.ViewportShowGrid);
+    public string ViewportShowAxes => _localization.Get(LocalizationKeys.ViewportShowAxes);
+    public string ViewportUnitLabel => _localization.Get(LocalizationKeys.ViewportUnitLabel);
+    public string ViewportHudStats => _localization.Get(LocalizationKeys.ViewportHudStats);
+    public string ViewportHudUnits => _localization.Get(LocalizationKeys.ViewportHudUnits);
+    public string ViewportHudSelection => _localization.Get(LocalizationKeys.ViewportHudSelection);
+    public string ViewportHudSelectionNone => _localization.Get(LocalizationKeys.ViewportHudSelectionNone);
+    public string ViewportCameraHint => _localization.Get(LocalizationKeys.ViewportCameraHint);
+
     private void OnCultureChanged() =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
 }

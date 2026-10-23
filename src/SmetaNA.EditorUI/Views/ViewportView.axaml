@@ -1,0 +1,103 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmetaNA.EditorUI.ViewModels"
+             xmlns:gl="using:SmetaNA.Rendering"
+             x:Class="SmetaNA.EditorUI.Views.ViewportView"
+             x:DataType="vm:ProjectTabViewModel">
+  <Grid>
+    <gl:GlViewportControl x:Name="Viewport" />
+
+    <!-- Панель режимов: отображение, проекция, сетка/оси, единицы -->
+    <Border HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Margin="8"
+            Padding="10,6"
+            CornerRadius="6"
+            Background="#B0000000">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <TextBlock Text="{Binding Strings.ViewportModeLabel}"
+                   VerticalAlignment="Center"
+                   Foreground="#E0E0E0" />
+        <ComboBox x:Name="ModeSelector"
+                  ItemsSource="{Binding RenderModes}"
+                  SelectedItem="{Binding SelectedRenderMode}"
+                  SelectionChanged="OnRenderModeChanged"
+                  Width="120">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:RenderModeOption">
+              <TextBlock Text="{Binding Name}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <TextBlock Text="{Binding Strings.ViewportProjectionLabel}"
+                   VerticalAlignment="Center"
+                   Foreground="#E0E0E0" />
+        <ToggleButton x:Name="OrthoToggle"
+                      Content="{Binding Strings.ViewportProjectionOrtho}"
+                      Click="OnProjectionToggle" />
+        <ToggleButton x:Name="GridToggle"
+                      Content="{Binding Strings.ViewportShowGrid}"
+                      IsChecked="True"
+                      Click="OnGridToggle" />
+        <ToggleButton x:Name="AxesToggle"
+                      Content="{Binding Strings.ViewportShowAxes}"
+                      IsChecked="True"
+                      Click="OnAxesToggle" />
+        <TextBlock Text="{Binding Strings.ViewportUnitLabel}"
+                   VerticalAlignment="Center"
+                   Foreground="#E0E0E0" />
+        <ComboBox ItemsSource="{Binding Units}"
+                  SelectedItem="{Binding SelectedUnit}"
+                  SelectionChanged="OnUnitChanged"
+                  Width="110">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:UnitOption">
+              <TextBlock Text="{Binding Name}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </StackPanel>
+    </Border>
+
+    <!-- HUD: статистика, единицы, выделение -->
+    <Border HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Margin="8"
+            Padding="10,6"
+            CornerRadius="6"
+            Background="#B0000000">
+      <StackPanel Spacing="2">
+        <TextBlock x:Name="StatsText" Foreground="#7CFC98" />
+        <TextBlock x:Name="UnitsText" Foreground="#D0D0D0" />
+        <TextBlock x:Name="SelectionText" Foreground="#F0C060" />
+      </StackPanel>
+    </Border>
+
+    <!-- Стандартные виды и вписывание -->
+    <Border HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Margin="8"
+            Padding="10,6"
+            CornerRadius="6"
+            Background="#B0000000">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <Button Content="{Binding Strings.ViewportViewIso}" Click="OnViewIso" />
+        <Button Content="{Binding Strings.ViewportViewFront}" Click="OnViewFront" />
+        <Button Content="{Binding Strings.ViewportViewBack}" Click="OnViewBack" />
+        <Button Content="{Binding Strings.ViewportViewLeft}" Click="OnViewLeft" />
+        <Button Content="{Binding Strings.ViewportViewRight}" Click="OnViewRight" />
+        <Button Content="{Binding Strings.ViewportViewTop}" Click="OnViewTop" />
+        <Button Content="{Binding Strings.ViewportViewBottom}" Click="OnViewBottom" />
+        <Button Content="{Binding Strings.ViewportZoomExtents}" Click="OnZoomExtents" />
+      </StackPanel>
+    </Border>
+
+    <!-- Подсказка управления камерой -->
+    <TextBlock HorizontalAlignment="Left"
+               VerticalAlignment="Bottom"
+               Margin="12"
+               Opacity="0.65"
+               Foreground="#D0D0D0"
+               Text="{Binding Strings.ViewportCameraHint}" />
+  </Grid>
+</UserControl>

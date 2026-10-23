@@ -20,6 +20,6 @@
     <None Include="..\..\src\SmetaNA.EditorUI\Views\HistoryPanel.axaml" Link="Source\Views\HistoryPanel.axaml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\SmetaNA.EditorUI\Views\PropertiesPanel.axaml" Link="Source\Views\PropertiesPanel.axaml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\SmetaNA.EditorUI\Views\ShortcutPanel.axaml" Link="Source\Views\ShortcutPanel.axaml" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\..\src\SmetaNA.EditorUI\Views\ViewportPlaceholder.axaml" Link="Source\Views\ViewportPlaceholder.axaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\SmetaNA.EditorUI\Views\ViewportView.axaml" Link="Source\Views\ViewportView.axaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

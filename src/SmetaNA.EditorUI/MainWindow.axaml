@@ -150,7 +150,7 @@
       </TabControl.ItemTemplate>
       <TabControl.ContentTemplate>
         <DataTemplate x:DataType="vm:ProjectTabViewModel">
-          <views:ViewportPlaceholder />
+          <views:ViewportView />
         </DataTemplate>
       </TabControl.ContentTemplate>
     </TabControl>
