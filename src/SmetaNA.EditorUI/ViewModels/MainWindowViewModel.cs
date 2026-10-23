@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using SmetaNA.Core.Model;
 using SmetaNA.EditorUI.Commands;
@@ -6,6 +7,7 @@ using SmetaNA.EditorUI.Localization;
 using SmetaNA.EditorUI.Sessions;
 using SmetaNA.EditorUI.Themes;
 using SmetaNA.EditorUI.Vcb;
+using SmetaNA.Rendering;
 
 namespace SmetaNA.EditorUI.ViewModels;
 
@@ -59,6 +61,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         _localization = localization;
         _theme = theme;
         _session = session;
+        SeedDemoScene(session);
 
         Strings = new LocalizedStrings(localization);
         _statusText = Strings.StatusReady;
@@ -355,9 +358,22 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private void AddProject()
     {
-        var project = new ProjectTabViewModel(_localization, Projects.Count + 1);
+        var project = new ProjectTabViewModel(_localization, _session.Scene, Projects.Count + 1);
         Projects.Add(project);
         SelectedProject = project;
+    }
+
+    /// <summary>
+    /// Демо-сцена ~500 000 треугольников для замеров производительности (задача 1.6):
+    /// настоящая иерархия сцены, поэтому работает пиккинг и пообъектное выделение.
+    /// </summary>
+    private static void SeedDemoScene(EditorSession session)
+    {
+        Stopwatch clock = Stopwatch.StartNew();
+        IReadOnlyList<MeshNode> chunks = DemoSceneFactory.AddTerrainToScene(session.Scene);
+        int triangles = chunks.Sum(chunk => chunk.Mesh.Faces.Count * 2); // квады → 2 треугольника
+        Console.WriteLine(
+            $"[DEMO] terrain: {chunks.Count} chunks, {triangles} triangles, {clock.ElapsedMilliseconds} ms");
     }
 
     private void ApplyGesture()

@@ -2,11 +2,14 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 using SmetaNA.EditorUI.Commands;
 using SmetaNA.EditorUI.Sessions;
 using SmetaNA.EditorUI.Smoke;
 using SmetaNA.EditorUI.ViewModels;
 using SmetaNA.EditorUI.Vcb;
+using SmetaNA.EditorUI.Views;
+using SmetaNA.Rendering;
 
 namespace SmetaNA.EditorUI;
 
@@ -59,7 +62,7 @@ public partial class MainWindow : Window
 
     /// <summary>
     /// Смоук-проверка окна: переключение темы и языка, связка
-    /// «VCB → история → undo/redo»; итог печатается в stdout.
+    /// «VCB → история → undo/redo», состояние GL-вьюпорта; итог печатается в stdout.
     /// </summary>
     internal SmokeReport RunSmokeChecks()
     {
@@ -81,7 +84,9 @@ public partial class MainWindow : Window
         ViewModel.UndoCommand.Execute(null);
         bool undoRedoWired = ViewModel.RedoCommand.CanExecute(null);
 
-        bool passed = opened && themeChanged && languageChanged && vcbCommitted && historyWired && undoRedoWired;
+        bool viewportWired = ReportViewportStats();
+
+        bool passed = opened && themeChanged && languageChanged && vcbCommitted && historyWired && undoRedoWired && viewportWired;
         string summary = string.Format(
             CultureInfo.InvariantCulture,
             "[SMOKE] opened={0} themeChanged={1} languageChanged={2} vcbCommitted={3} historyWired={4} undoRedoWired={5} title='{6}' -> '{7}' status='{8}' result={9}",
@@ -96,5 +101,40 @@ public partial class MainWindow : Window
             ViewModel.StatusText,
             passed ? "PASS" : "FAIL");
         return new SmokeReport(passed, summary);
+    }
+
+    /// <summary>
+    /// Статистика GL-вьюпорта для смоука: кадры, FPS (средний/минимальный),
+    /// размер сцены и GL-контекст. Печатает строку [VIEWPORT] в stdout.
+    /// </summary>
+    private bool ReportViewportStats()
+    {
+        ViewportView? view = this.GetVisualDescendants().OfType<ViewportView>().FirstOrDefault();
+        if (view is null)
+        {
+            Console.WriteLine("[VIEWPORT] view=missing result=FAIL");
+            return false;
+        }
+
+        ViewportStats stats = view.GetStats();
+        bool ok = stats.GlEverReady && stats.TriangleCount > 0;
+        Console.WriteLine(
+            string.Format(
+                CultureInfo.InvariantCulture,
+                "[VIEWPORT] frames={0} avgFps={1:F1} minFps={2:F1} frameMs={3:F2} triangles={4} edges={5} objects={6} glReady={7} glEverReady={8} gl='{9}' targetFps={10} mode={11} result={12}",
+                stats.FramesTotal,
+                stats.AverageFps,
+                stats.MinBucketFps,
+                stats.FrameMs,
+                stats.TriangleCount,
+                stats.EdgeCount,
+                stats.ObjectCount,
+                stats.GlReady,
+                stats.GlEverReady,
+                stats.GlInfo,
+                EditorOptions.TargetFps,
+                EditorOptions.ModeLabel,
+                ok ? "OK" : "FAIL"));
+        return ok;
     }
 }

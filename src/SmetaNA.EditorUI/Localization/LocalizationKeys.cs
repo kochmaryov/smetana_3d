@@ -108,6 +108,30 @@ public static class LocalizationKeys
 
     public const string StatusReady = "Status.Ready";
 
+    public const string ViewportModeLabel = "Viewport.ModeLabel";
+    public const string ViewportModeWireframe = "Viewport.Mode.Wireframe";
+    public const string ViewportModeShaded = "Viewport.Mode.Shaded";
+    public const string ViewportModeXRay = "Viewport.Mode.XRay";
+    public const string ViewportProjectionLabel = "Viewport.ProjectionLabel";
+    public const string ViewportProjectionPerspective = "Viewport.ProjectionPerspective";
+    public const string ViewportProjectionOrtho = "Viewport.ProjectionOrtho";
+    public const string ViewportViewIso = "Viewport.View.Iso";
+    public const string ViewportViewFront = "Viewport.View.Front";
+    public const string ViewportViewBack = "Viewport.View.Back";
+    public const string ViewportViewLeft = "Viewport.View.Left";
+    public const string ViewportViewRight = "Viewport.View.Right";
+    public const string ViewportViewTop = "Viewport.View.Top";
+    public const string ViewportViewBottom = "Viewport.View.Bottom";
+    public const string ViewportZoomExtents = "Viewport.ZoomExtents";
+    public const string ViewportShowGrid = "Viewport.ShowGrid";
+    public const string ViewportShowAxes = "Viewport.ShowAxes";
+    public const string ViewportUnitLabel = "Viewport.UnitLabel";
+    public const string ViewportHudStats = "Viewport.HudStats";
+    public const string ViewportHudUnits = "Viewport.HudUnits";
+    public const string ViewportHudSelection = "Viewport.HudSelection";
+    public const string ViewportHudSelectionNone = "Viewport.HudSelectionNone";
+    public const string ViewportCameraHint = "Viewport.CameraHint";
+
     /// <summary>Ключ сообщения об ошибке валидации VCB.</summary>
     public static string ForVcbError(VcbError error) => error switch
     {

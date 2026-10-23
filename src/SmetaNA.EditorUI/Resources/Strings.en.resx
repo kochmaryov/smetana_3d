@@ -261,4 +261,73 @@
   <data name="Status.Ready" xml:space="preserve">
     <value>Ready</value>
   </data>
+  <data name="Viewport.ModeLabel" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="Viewport.Mode.Wireframe" xml:space="preserve">
+    <value>Wireframe</value>
+  </data>
+  <data name="Viewport.Mode.Shaded" xml:space="preserve">
+    <value>Shaded</value>
+  </data>
+  <data name="Viewport.Mode.XRay" xml:space="preserve">
+    <value>X-Ray</value>
+  </data>
+  <data name="Viewport.ProjectionLabel" xml:space="preserve">
+    <value>Projection</value>
+  </data>
+  <data name="Viewport.ProjectionPerspective" xml:space="preserve">
+    <value>Perspective</value>
+  </data>
+  <data name="Viewport.ProjectionOrtho" xml:space="preserve">
+    <value>Orthographic</value>
+  </data>
+  <data name="Viewport.View.Iso" xml:space="preserve">
+    <value>Isometric</value>
+  </data>
+  <data name="Viewport.View.Front" xml:space="preserve">
+    <value>Front</value>
+  </data>
+  <data name="Viewport.View.Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Viewport.View.Left" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="Viewport.View.Right" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="Viewport.View.Top" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="Viewport.View.Bottom" xml:space="preserve">
+    <value>Bottom</value>
+  </data>
+  <data name="Viewport.ZoomExtents" xml:space="preserve">
+    <value>Zoom to fit</value>
+  </data>
+  <data name="Viewport.ShowGrid" xml:space="preserve">
+    <value>Grid</value>
+  </data>
+  <data name="Viewport.ShowAxes" xml:space="preserve">
+    <value>Axes</value>
+  </data>
+  <data name="Viewport.UnitLabel" xml:space="preserve">
+    <value>Units</value>
+  </data>
+  <data name="Viewport.HudStats" xml:space="preserve">
+    <value>FPS {0:F0} · frame {1:F1} ms · triangles: {2}</value>
+  </data>
+  <data name="Viewport.HudUnits" xml:space="preserve">
+    <value>Units: {0} · grid step: {1}</value>
+  </data>
+  <data name="Viewport.HudSelection" xml:space="preserve">
+    <value>Selected: {0}</value>
+  </data>
+  <data name="Viewport.HudSelectionNone" xml:space="preserve">
+    <value>Nothing selected</value>
+  </data>
+  <data name="Viewport.CameraHint" xml:space="preserve">
+    <value>LMB — orbit/pick · Shift+LMB — pan · wheel — zoom</value>
+  </data>
 </root>
