@@ -186,6 +186,199 @@ public static class MeshEditOps
         return count == 0 ? Vector3d.Zero : sum * (1.0 / count);
     }
 
+    /// <summary>
+    /// План трансформации вершин: семена (<paramref name="seeds"/>) и «склеенные»
+    /// с ними по позиции вершины из <paramref name="glueScope"/> отображаются
+    /// функцией <paramref name="map"/> (например, вращение/масштаб вокруг точки).
+    /// </summary>
+    public static IReadOnlyList<VertexMove> PlanTransform(
+        IReadOnlyList<MeshVertex> seeds,
+        IEnumerable<MeshVertex> glueScope,
+        Func<Vector3d, Vector3d> map,
+        double tolerance = DefaultToleranceMm)
+    {
+        ArgumentNullException.ThrowIfNull(seeds);
+        ArgumentNullException.ThrowIfNull(glueScope);
+        ArgumentNullException.ThrowIfNull(map);
+        if (tolerance < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(tolerance), "Допуск не может быть отрицательным.");
+        }
+
+        var moves = new List<VertexMove>();
+        var included = new HashSet<MeshVertex>();
+        var seedPositions = new List<Vector3d>();
+
+        foreach (MeshVertex seed in seeds)
+        {
+            if (seed is null)
+            {
+                throw new ArgumentException("Семена не содержат null.", nameof(seeds));
+            }
+
+            if (!included.Add(seed))
+            {
+                continue;
+            }
+
+            seedPositions.Add(seed.Position);
+            moves.Add(new VertexMove(seed, seed.Position, map(seed.Position)));
+        }
+
+        double toleranceSquared = tolerance * tolerance;
+        foreach (MeshVertex vertex in glueScope)
+        {
+            if (vertex is null || included.Contains(vertex))
+            {
+                continue;
+            }
+
+            if (!IsNearAny(vertex.Position, seedPositions, toleranceSquared))
+            {
+                continue;
+            }
+
+            included.Add(vertex);
+            moves.Add(new VertexMove(vertex, vertex.Position, map(vertex.Position)));
+        }
+
+        return moves;
+    }
+
+    /// <summary>Снимок стёртой грани для восстановления (undo).</summary>
+    /// <param name="Mesh">Меш, из которого удалена грань.</param>
+    /// <param name="Face">Удалённая грань (полуребра сохранены как есть).</param>
+    public readonly record struct FaceEraseRecord(HalfEdgeMesh Mesh, MeshFace Face);
+
+    /// <summary>
+    /// Стирание граней (Eraser): грани убираются из меша, возвращается набор
+    /// записей для <see cref="RestoreFaces"/>. Повторяющиеся и чужие грани игнорируются.
+    /// </summary>
+    public static IReadOnlyList<FaceEraseRecord> EraseFaces(HalfEdgeMesh mesh, IEnumerable<MeshFace> faces)
+    {
+        ArgumentNullException.ThrowIfNull(mesh);
+        ArgumentNullException.ThrowIfNull(faces);
+
+        var records = new List<FaceEraseRecord>();
+        var seen = new HashSet<MeshFace>();
+        foreach (MeshFace face in faces)
+        {
+            if (face is null || !seen.Add(face))
+            {
+                continue;
+            }
+
+            if (mesh.RemoveFace(face))
+            {
+                records.Add(new FaceEraseRecord(mesh, face));
+            }
+        }
+
+        return records;
+    }
+
+    /// <summary>Восстановление стёртых граней (обратная операция к <see cref="EraseFaces"/>).</summary>
+    public static void RestoreFaces(IReadOnlyList<FaceEraseRecord> records)
+    {
+        ArgumentNullException.ThrowIfNull(records);
+        foreach (FaceEraseRecord record in records)
+        {
+            record.Mesh.RestoreFace(record.Face);
+        }
+    }
+
+    /// <summary>
+    /// Стирание рёбер: удаляются все грани, инцидентные каждому ребру
+    /// (обе стороны twin-пары) — грань без замкнутого контура не сохраняется.
+    /// </summary>
+    public static IReadOnlyList<FaceEraseRecord> EraseEdges(HalfEdgeMesh mesh, IEnumerable<MeshHalfEdge> edges)
+    {
+        ArgumentNullException.ThrowIfNull(mesh);
+        ArgumentNullException.ThrowIfNull(edges);
+
+        var faces = new List<MeshFace>();
+        var seen = new HashSet<MeshFace>();
+        foreach (MeshHalfEdge edge in edges)
+        {
+            if (edge is null)
+            {
+                continue;
+            }
+
+            if (edge.Face is { } face && seen.Add(face))
+            {
+                faces.Add(face);
+            }
+
+            if (edge.Twin?.Face is { } twinFace && seen.Add(twinFace))
+            {
+                faces.Add(twinFace);
+            }
+        }
+
+        return EraseFaces(mesh, faces);
+    }
+
+    /// <summary>
+    /// Уникальные рёбра граней: по одному полуребру на ребро (twin-пара не дублируется).
+    /// </summary>
+    public static IReadOnlyList<MeshHalfEdge> CollectEdges(IEnumerable<MeshFace> faces)
+    {
+        ArgumentNullException.ThrowIfNull(faces);
+
+        var result = new List<MeshHalfEdge>();
+        var seen = new HashSet<MeshHalfEdge>();
+        foreach (MeshFace face in faces)
+        {
+            if (face is null)
+            {
+                continue;
+            }
+
+            MeshHalfEdge start = face.HalfEdge;
+            MeshHalfEdge edge = start;
+            do
+            {
+                if (edge.Twin is { } twin)
+                {
+                    if (seen.Add(edge) && seen.Add(twin))
+                    {
+                        result.Add(edge);
+                    }
+                }
+                else if (seen.Add(edge))
+                {
+                    result.Add(edge);
+                }
+
+                edge = edge.Next!;
+            }
+            while (edge != start);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Двугранный угол между гранями ребра в градусах (0 — сонаправлены,
+    /// 180 — вывернуты); <c>false</c> — ребро на границе (нет пары граней).
+    /// </summary>
+    public static bool TryGetDihedralAngleDegrees(MeshHalfEdge edge, out double degrees)
+    {
+        ArgumentNullException.ThrowIfNull(edge);
+        degrees = 0;
+        if (edge.Face is not { } own || edge.Twin?.Face is not { } other)
+        {
+            return false;
+        }
+
+        Vector3d n1 = MeshNormals.ComputeFaceNormal(own).Normalized();
+        Vector3d n2 = MeshNormals.ComputeFaceNormal(other).Normalized();
+        double cosine = Math.Clamp(Vector3d.Dot(n1, n2), -1.0, 1.0);
+        degrees = Math.Acos(cosine) * (180.0 / Math.PI);
+        return true;
+    }
+
     private static bool IsNearAny(Vector3d position, List<Vector3d> candidates, double toleranceSquared)
     {
         foreach (Vector3d candidate in candidates)

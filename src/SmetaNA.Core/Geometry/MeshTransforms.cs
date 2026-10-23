@@ -12,7 +12,12 @@ public static class MeshTransforms
     {
         ArgumentNullException.ThrowIfNull(mesh);
 
-        var copy = new HalfEdgeMesh();
+        var copy = new HalfEdgeMesh
+        {
+            // палитра общая: индексы материалов копии ссылаются на те же материалы
+            Materials = mesh.Materials,
+            DefaultMaterialIndex = mesh.DefaultMaterialIndex,
+        };
         var mapping = new Dictionary<MeshVertex, MeshVertex>(mesh.Vertices.Count);
         foreach (MeshVertex vertex in mesh.Vertices)
         {
@@ -22,12 +27,23 @@ public static class MeshTransforms
         foreach (MeshFace face in mesh.Faces)
         {
             var ring = new List<MeshVertex>();
+            var sourceEdges = new List<MeshHalfEdge>();
             foreach (MeshHalfEdge edge in MeshTraversal.EnumerateRing(face))
             {
                 ring.Add(mapping[edge.Origin]);
+                sourceEdges.Add(edge);
             }
 
-            copy.AddFace(ring).MaterialIndex = face.MaterialIndex;
+            MeshFace created = copy.AddFace(ring);
+            created.MaterialIndex = face.MaterialIndex;
+
+            MeshHalfEdge createdEdge = created.HalfEdge;
+            foreach (MeshHalfEdge sourceEdge in sourceEdges)
+            {
+                createdEdge.IsSmooth = sourceEdge.IsSmooth;
+                createdEdge.IsSoft = sourceEdge.IsSoft;
+                createdEdge = createdEdge.Next!;
+            }
         }
 
         return copy;
