@@ -46,6 +46,7 @@ public sealed class GlViewportControl : OpenGlControlBase
 
     private GL? _gl;
     private GlSceneRenderer? _renderer;
+    private readonly Annotations.DimensionGlRenderer _dimensionRenderer = new();
     private string _glInfo = "GL: инициализация…";
     private bool _glEverReady;
 
@@ -108,6 +109,9 @@ public sealed class GlViewportControl : OpenGlControlBase
     public bool ShowGrid { get; set; } = true;
 
     public bool ShowAxes { get; set; } = true;
+
+    /// <summary>Батч размеров/меток (M4) для оверлея вьюпорта; null — не рисуются.</summary>
+    public Annotations.DimensionBatch? AnnotationBatch { get; set; }
 
     /// <summary>Лимит кадров/с (свой frame pacing); 0 — без лимита.</summary>
     public double TargetFramesPerSecond { get; set; } = 60;
@@ -318,12 +322,18 @@ public sealed class GlViewportControl : OpenGlControlBase
             ShowGrid,
             ShowAxes);
 
+        if (_gl is { } dimensionGl)
+        {
+            _dimensionRenderer.Draw(dimensionGl, AnnotationBatch, mvp);
+        }
+
         RequestNextFrameRendering();
     }
 
     protected override void OnOpenGlDeinit(GlInterface glInterface)
     {
         _renderer?.Dispose();
+        _dimensionRenderer.Dispose();
         _renderer = null;
         if (_gl is { } api)
         {
