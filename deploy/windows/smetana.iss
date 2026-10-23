@@ -52,9 +52,8 @@ VersionInfoVersion={#AppVersionQuad}
 VersionInfoProductTextVersion={#AppVersion}
 VersionInfoDescription={#AppName} Setup
 ; Лицензионное соглашение — на первом шаге установки (черновик RU; EN — в docs/legal).
+; Метки чекбокса согласия берутся из isl-файлов секции [Languages] (Russian.isl / Default.isl).
 LicenseFile=..\..\docs\legal\EULA.ru.md
-LicenseAcceptedLabel=Я принимаю условия / I accept the terms
-LicenseRejectedLabel=Не принимаю / I do not accept
 
 [Languages]
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
