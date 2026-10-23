@@ -121,6 +121,40 @@ public sealed class HalfEdgeMesh
         return mesh;
     }
 
+    /// <summary>Кольцо вершин грани в порядке обхода CCW.</summary>
+    public IReadOnlyList<MeshVertex> GetRing(MeshFace face)
+    {
+        ArgumentNullException.ThrowIfNull(face);
+        var ring = new List<MeshVertex>();
+        MeshHalfEdge edge = face.HalfEdge;
+        do
+        {
+            ring.Add(edge.Origin);
+            edge = edge.Next!;
+        }
+        while (edge != face.HalfEdge);
+        return ring;
+    }
+
+    /// <summary>Грани, соседние с данной по общему ребру (twin-пара).</summary>
+    public IReadOnlyList<MeshFace> GetAdjacentFaces(MeshFace face)
+    {
+        ArgumentNullException.ThrowIfNull(face);
+        var adjacent = new List<MeshFace>();
+        MeshHalfEdge edge = face.HalfEdge;
+        do
+        {
+            if (edge.Twin?.Face is { } neighbour && !ReferenceEquals(neighbour, face) && !adjacent.Contains(neighbour))
+            {
+                adjacent.Add(neighbour);
+            }
+
+            edge = edge.Next!;
+        }
+        while (edge != face.HalfEdge);
+        return adjacent;
+    }
+
     /// <summary>
     /// Разложение в треугольный суп (веерная триангуляция n-угольных граней) —
     /// обмен с форматами (STL/OBJ) и CSG-бэкендом (Manifold).

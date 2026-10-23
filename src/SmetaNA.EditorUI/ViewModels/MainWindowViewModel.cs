@@ -2,10 +2,12 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using SmetaNA.Core.Model;
+using SmetaNA.Core.Tools;
 using SmetaNA.EditorUI.Commands;
 using SmetaNA.EditorUI.Localization;
 using SmetaNA.EditorUI.Sessions;
 using SmetaNA.EditorUI.Themes;
+using SmetaNA.EditorUI.Tools;
 using SmetaNA.EditorUI.Vcb;
 using SmetaNA.Rendering;
 
@@ -98,6 +100,9 @@ public sealed class MainWindowViewModel : ViewModelBase
     }
 
     public LocalizedStrings Strings { get; }
+
+    /// <summary>Контроллер инструментов сессии (маршрутизация ввода вьюпорта).</summary>
+    public ToolController Tools => _session.Tools;
 
     public ObservableCollection<ToolStubViewModel> PrimaryTools { get; }
     public ObservableCollection<ToolStubViewModel> AdvancedTools { get; }
@@ -315,6 +320,18 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
 
         string display = FormatScalar(result);
+        if (_session.Tools.IsActive)
+        {
+            // значение потребляет активный инструмент (Push/Pull и др.)
+            if (result.ValueInMillimeters is { } millimeters)
+            {
+                _session.Tools.CommitValue(millimeters);
+            }
+
+            StatusText = string.Format(Strings.VcbCommitted, display);
+            return;
+        }
+
         StatusText = string.Format(Strings.VcbCommitted, display);
         PushStubCommand(display);
     }
@@ -358,7 +375,7 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private void AddProject()
     {
-        var project = new ProjectTabViewModel(_localization, _session.Scene, Projects.Count + 1);
+        var project = new ProjectTabViewModel(_localization, _session.Scene, Projects.Count + 1, _session.Tools);
         Projects.Add(project);
         SelectedProject = project;
     }
@@ -444,6 +461,16 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private void ActivateTool(ToolStubViewModel tool)
     {
+        // реальные инструменты: Push/Pull (задача 2.2); остальные — заглушки
+        if (tool.CommandId == ShortcutCatalog.ToolPushPull)
+        {
+            _session.Tools.Activate(new PushPullTool());
+        }
+        else
+        {
+            _session.Tools.Deactivate();
+        }
+
         ActiveTool = tool;
         StatusText = string.Format(Strings.ToolStubStatus, tool.Name);
     }
