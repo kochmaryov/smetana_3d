@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmetaNA.EditorUI.ViewModels"
+             x:Class="SmetaNA.EditorUI.Views.ShortcutPanel"
+             x:DataType="vm:MainWindowViewModel">
+  <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+          BorderThickness="1"
+          CornerRadius="4"
+          Padding="12">
+    <DockPanel>
+      <TextBlock DockPanel.Dock="Top"
+                 Text="{Binding Strings.ShortcutsTitle}"
+                 FontWeight="SemiBold" />
+      <TextBlock DockPanel.Dock="Top"
+                 Text="{Binding Strings.ShortcutsHint}"
+                 TextWrapping="Wrap"
+                 Opacity="0.6"
+                 Margin="0,4,0,8" />
+      <Grid DockPanel.Dock="Bottom"
+            ColumnDefinitions="*,Auto,Auto,Auto"
+            Margin="0,8,0,0">
+        <ComboBox ItemsSource="{Binding ShortcutRows}"
+                  SelectedItem="{Binding SelectedShortcutRow}">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ShortcutRowViewModel">
+              <TextBlock Text="{Binding Name}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <TextBox Grid.Column="1"
+                 Text="{Binding GestureInput}"
+                 PlaceholderText="{Binding Strings.ShortcutsGesture}"
+                 Width="110"
+                 Margin="6,0" />
+        <Button Grid.Column="2"
+                Content="{Binding Strings.ShortcutsApply}"
+                Command="{Binding ApplyGestureCommand}"
+                Margin="0,0,6,0" />
+        <Button Grid.Column="3"
+                Content="{Binding Strings.ShortcutsReset}"
+                Command="{Binding ResetGestureCommand}" />
+      </Grid>
+      <Button DockPanel.Dock="Bottom"
+              Content="{Binding Strings.ShortcutsResetAll}"
+              Command="{Binding ResetAllGesturesCommand}"
+              Margin="0,6,0,0"
+              HorizontalAlignment="Stretch" />
+      <ListBox ItemsSource="{Binding ShortcutRows}">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:ShortcutRowViewModel">
+            <Grid ColumnDefinitions="*,Auto" Margin="0,1">
+              <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+              <TextBlock Grid.Column="1"
+                         Text="{Binding Gesture}"
+                         Margin="8,0,0,0"
+                         Opacity="0.75" />
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+  </Border>
+</UserControl>

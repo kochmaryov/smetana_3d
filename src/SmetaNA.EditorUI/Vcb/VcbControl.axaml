@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SmetaNA.EditorUI.Vcb.VcbControl">
+  <StackPanel Orientation="Horizontal" Spacing="8">
+    <TextBlock x:Name="PromptText"
+               VerticalAlignment="Center"
+               FontWeight="SemiBold"
+               MinWidth="80" />
+    <TextBox x:Name="InputBox"
+             Width="180"
+             KeyDown="OnInputKeyDown"
+             TextChanged="OnInputTextChanged" />
+    <TextBlock x:Name="ErrorText"
+               VerticalAlignment="Center"
+               MaxWidth="280"
+               TextWrapping="Wrap"
+               Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+  </StackPanel>
+</UserControl>

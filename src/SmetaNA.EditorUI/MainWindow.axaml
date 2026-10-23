@@ -1,13 +1,158 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SmetaNA.EditorUI.ViewModels"
+        xmlns:views="using:SmetaNA.EditorUI.Views"
+        xmlns:vcb="using:SmetaNA.EditorUI.Vcb"
         x:Class="SmetaNA.EditorUI.MainWindow"
-        Title="SmetaNA"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding Strings.AppTitle}"
         Width="1280"
-        Height="800">
-  <Panel>
-    <TextBlock HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               FontSize="20"
-               Text="SmetaNA — каркас приложения (фаза 0)" />
-  </Panel>
+        Height="800"
+        KeyDown="OnWindowKeyDown">
+  <DockPanel>
+    <!-- Лента инструментов: минимум на виду, продвинутое — в раскрываемой строке -->
+    <Border DockPanel.Dock="Top"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="8">
+      <StackPanel Spacing="8">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Button Content="{Binding Strings.ProjectNew}"
+                    Command="{Binding NewProjectCommand}" />
+            <Button Content="{Binding Strings.EditUndo}"
+                    Command="{Binding UndoCommand}"
+                    ToolTip.Tip="{Binding UndoHint}" />
+            <Button Content="{Binding Strings.EditRedo}"
+                    Command="{Binding RedoCommand}"
+                    ToolTip.Tip="{Binding RedoHint}" />
+            <TextBlock Text="{Binding Strings.ToolbarPrimary}"
+                       VerticalAlignment="Center"
+                       Opacity="0.7"
+                       Margin="12,0,0,0" />
+            <ItemsControl ItemsSource="{Binding PrimaryTools}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" Spacing="4" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ToolStubViewModel">
+                  <Button Command="{Binding ActivateCommand}" ToolTip.Tip="{Binding ToolTip}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                      <TextBlock Text="{Binding Gesture}"
+                                 VerticalAlignment="Center"
+                                 FontSize="11"
+                                 Opacity="0.55" />
+                    </StackPanel>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ToggleButton IsChecked="{Binding IsAdvancedVisible}"
+                          Content="{Binding Strings.ToolbarAdvancedToggle}"
+                          VerticalAlignment="Center" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="{Binding Strings.ThemeLabel}"
+                       VerticalAlignment="Center"
+                       Opacity="0.7" />
+            <Button Content="{Binding ThemeToggleLabel}"
+                    Command="{Binding ThemeToggleCommand}" />
+            <TextBlock Text="{Binding Strings.LanguageLabel}"
+                       VerticalAlignment="Center"
+                       Opacity="0.7" />
+            <ComboBox ItemsSource="{Binding Languages}"
+                      SelectedItem="{Binding SelectedLanguage}"
+                      Width="130">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:LanguageOption">
+                  <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </StackPanel>
+        </Grid>
+        <Border IsVisible="{Binding IsAdvancedVisible}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="{Binding Strings.ToolbarAdvanced}"
+                       VerticalAlignment="Center"
+                       Opacity="0.7" />
+            <ItemsControl ItemsSource="{Binding AdvancedTools}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" Spacing="4" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ToolStubViewModel">
+                  <Button Command="{Binding ActivateCommand}" ToolTip.Tip="{Binding ToolTip}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                      <TextBlock Text="{Binding Gesture}"
+                                 VerticalAlignment="Center"
+                                 FontSize="11"
+                                 Opacity="0.55" />
+                    </StackPanel>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </Border>
+
+    <!-- Строка значений (VCB) и статус -->
+    <Border DockPanel.Dock="Bottom"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="8">
+      <Grid ColumnDefinitions="Auto,*">
+        <vcb:VcbControl Prompt="{Binding VcbPrompt}"
+                        PlaceholderText="{Binding Strings.VcbWatermark}"
+                        Kind="{Binding VcbKind}"
+                        Unit="{Binding SceneUnit}"
+                        IsEnabled="{Binding HasVcb}"
+                        Committed="OnVcbCommitted" />
+        <TextBlock Grid.Column="1"
+                   Text="{Binding StatusText}"
+                   VerticalAlignment="Center"
+                   Margin="16,0,0,0"
+                   TextTrimming="CharacterEllipsis" />
+      </Grid>
+    </Border>
+
+    <!-- Правая колонка: свойства, история, горячие клавиши -->
+    <Border DockPanel.Dock="Right"
+            Width="320"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            BorderThickness="1,0,0,0"
+            Padding="8">
+      <ScrollViewer>
+        <StackPanel Spacing="8">
+          <views:PropertiesPanel />
+          <views:HistoryPanel />
+          <views:ShortcutPanel />
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
+    <!-- Вкладки проектов (заготовка) + место вьюпорта -->
+    <TabControl ItemsSource="{Binding Projects}"
+                SelectedItem="{Binding SelectedProject}"
+                Margin="8">
+      <TabControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:ProjectTabViewModel">
+          <TextBlock Text="{Binding Title}" />
+        </DataTemplate>
+      </TabControl.ItemTemplate>
+      <TabControl.ContentTemplate>
+        <DataTemplate x:DataType="vm:ProjectTabViewModel">
+          <views:ViewportPlaceholder />
+        </DataTemplate>
+      </TabControl.ContentTemplate>
+    </TabControl>
+  </DockPanel>
 </Window>

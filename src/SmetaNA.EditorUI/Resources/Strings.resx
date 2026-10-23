@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="App.Title" xml:space="preserve">
+    <value>SmetaNA — 3D-редактор</value>
+  </data>
+  <data name="Toolbar.Primary" xml:space="preserve">
+    <value>Основные инструменты</value>
+  </data>
+  <data name="Toolbar.Advanced" xml:space="preserve">
+    <value>Продвинутые инструменты</value>
+  </data>
+  <data name="Toolbar.AdvancedToggle" xml:space="preserve">
+    <value>Продвинутые</value>
+  </data>
+  <data name="Project.New" xml:space="preserve">
+    <value>Новый проект</value>
+  </data>
+  <data name="Project.Name" xml:space="preserve">
+    <value>Проект {0}</value>
+  </data>
+  <data name="Tool.Select" xml:space="preserve">
+    <value>Выделение</value>
+  </data>
+  <data name="Tool.Line" xml:space="preserve">
+    <value>Линия</value>
+  </data>
+  <data name="Tool.Rectangle" xml:space="preserve">
+    <value>Прямоугольник</value>
+  </data>
+  <data name="Tool.Circle" xml:space="preserve">
+    <value>Окружность</value>
+  </data>
+  <data name="Tool.Polygon" xml:space="preserve">
+    <value>Многоугольник</value>
+  </data>
+  <data name="Tool.Arc" xml:space="preserve">
+    <value>Дуга</value>
+  </data>
+  <data name="Tool.Freehand" xml:space="preserve">
+    <value>Рисование от руки</value>
+  </data>
+  <data name="Tool.PushPull" xml:space="preserve">
+    <value>Выдавливание</value>
+  </data>
+  <data name="Tool.Offset" xml:space="preserve">
+    <value>Смещение</value>
+  </data>
+  <data name="Tool.Move" xml:space="preserve">
+    <value>Перемещение</value>
+  </data>
+  <data name="Tool.Rotate" xml:space="preserve">
+    <value>Поворот</value>
+  </data>
+  <data name="Tool.Scale" xml:space="preserve">
+    <value>Масштаб</value>
+  </data>
+  <data name="Tool.Eraser" xml:space="preserve">
+    <value>Ластик</value>
+  </data>
+  <data name="Tool.Soften" xml:space="preserve">
+    <value>Сглаживание</value>
+  </data>
+  <data name="Tool.PaintBucket" xml:space="preserve">
+    <value>Заливка</value>
+  </data>
+  <data name="Tool.StubStatus" xml:space="preserve">
+    <value>«{0}» — заглушка: инструмент появится в фазе 2</value>
+  </data>
+  <data name="Tool.StubToolTip" xml:space="preserve">
+    <value>{0} — заглушка (фаза 2)</value>
+  </data>
+  <data name="Tool.None" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="Edit.Undo" xml:space="preserve">
+    <value>Отменить</value>
+  </data>
+  <data name="Edit.Redo" xml:space="preserve">
+    <value>Повторить</value>
+  </data>
+  <data name="Edit.UndoNamed" xml:space="preserve">
+    <value>Отменить: {0}</value>
+  </data>
+  <data name="Edit.RedoNamed" xml:space="preserve">
+    <value>Повторить: {0}</value>
+  </data>
+  <data name="History.Title" xml:space="preserve">
+    <value>История</value>
+  </data>
+  <data name="History.Empty" xml:space="preserve">
+    <value>История пуста</value>
+  </data>
+  <data name="History.Current" xml:space="preserve">
+    <value>текущее состояние</value>
+  </data>
+  <data name="History.StubCommand" xml:space="preserve">
+    <value>Ввод значения «{0}» (заглушка)</value>
+  </data>
+  <data name="Properties.Title" xml:space="preserve">
+    <value>Свойства</value>
+  </data>
+  <data name="Properties.ActiveTool" xml:space="preserve">
+    <value>Активный инструмент</value>
+  </data>
+  <data name="Properties.Selection" xml:space="preserve">
+    <value>Выделение</value>
+  </data>
+  <data name="Properties.NoSelection" xml:space="preserve">
+    <value>Ничего не выбрано</value>
+  </data>
+  <data name="Properties.Scene" xml:space="preserve">
+    <value>Сцена</value>
+  </data>
+  <data name="Properties.SceneUnit" xml:space="preserve">
+    <value>Единицы</value>
+  </data>
+  <data name="Properties.SceneNodes" xml:space="preserve">
+    <value>Объектов</value>
+  </data>
+  <data name="Properties.StubNote" xml:space="preserve">
+    <value>Инструменты моделирования появятся в фазе 2</value>
+  </data>
+  <data name="Viewport.Title" xml:space="preserve">
+    <value>3D-вьюпорт</value>
+  </data>
+  <data name="Viewport.Placeholder" xml:space="preserve">
+    <value>Место 3D-вьюпорта: OpenGL-интеграция — отдельная задача (фаза 1)</value>
+  </data>
+  <data name="Viewport.PlaceholderHint" xml:space="preserve">
+    <value>Заглушка вместо сцены; спик по GL — в spikes/Spike.Gl</value>
+  </data>
+  <data name="Vcb.PromptReady" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="Vcb.PromptLength" xml:space="preserve">
+    <value>Длина</value>
+  </data>
+  <data name="Vcb.PromptRadius" xml:space="preserve">
+    <value>Радиус</value>
+  </data>
+  <data name="Vcb.PromptAngle" xml:space="preserve">
+    <value>Угол</value>
+  </data>
+  <data name="Vcb.PromptCoordinates" xml:space="preserve">
+    <value>Координаты</value>
+  </data>
+  <data name="Vcb.Watermark" xml:space="preserve">
+    <value>например, 100</value>
+  </data>
+  <data name="Vcb.Committed" xml:space="preserve">
+    <value>Принято: {0}</value>
+  </data>
+  <data name="Vcb.ErrorEmpty" xml:space="preserve">
+    <value>Введите значение</value>
+  </data>
+  <data name="Vcb.ErrorInvalidNumber" xml:space="preserve">
+    <value>Значение должно быть числом</value>
+  </data>
+  <data name="Vcb.ErrorNotFinite" xml:space="preserve">
+    <value>Слишком большое или неопределённое число</value>
+  </data>
+  <data name="Vcb.ErrorNegative" xml:space="preserve">
+    <value>Значение не может быть отрицательным</value>
+  </data>
+  <data name="Vcb.ErrorNotPositive" xml:space="preserve">
+    <value>Значение должно быть больше нуля</value>
+  </data>
+  <data name="Vcb.ErrorUnknownUnit" xml:space="preserve">
+    <value>Неизвестная единица измерения</value>
+  </data>
+  <data name="Vcb.ErrorComponentCount" xml:space="preserve">
+    <value>Нужно три координаты через «;»: x; y; z</value>
+  </data>
+  <data name="Unit.Millimeter" xml:space="preserve">
+    <value>мм</value>
+  </data>
+  <data name="Unit.Centimeter" xml:space="preserve">
+    <value>см</value>
+  </data>
+  <data name="Unit.Meter" xml:space="preserve">
+    <value>м</value>
+  </data>
+  <data name="Unit.Inch" xml:space="preserve">
+    <value>дюйм</value>
+  </data>
+  <data name="Shortcuts.Title" xml:space="preserve">
+    <value>Горячие клавиши</value>
+  </data>
+  <data name="Shortcuts.Hint" xml:space="preserve">
+    <value>Маппинги настраиваются прямо здесь, без модальных окон</value>
+  </data>
+  <data name="Shortcuts.Command" xml:space="preserve">
+    <value>Команда</value>
+  </data>
+  <data name="Shortcuts.Gesture" xml:space="preserve">
+    <value>Клавиши</value>
+  </data>
+  <data name="Shortcuts.Apply" xml:space="preserve">
+    <value>Применить</value>
+  </data>
+  <data name="Shortcuts.Reset" xml:space="preserve">
+    <value>Сбросить</value>
+  </data>
+  <data name="Shortcuts.ResetAll" xml:space="preserve">
+    <value>Сбросить все</value>
+  </data>
+  <data name="Shortcuts.ErrorInvalid" xml:space="preserve">
+    <value>Нераспознанная комбинация клавиш</value>
+  </data>
+  <data name="Shortcuts.ErrorConflict" xml:space="preserve">
+    <value>Комбинация уже занята: {0}</value>
+  </data>
+  <data name="Shortcuts.ErrorUnknown" xml:space="preserve">
+    <value>Неизвестная команда</value>
+  </data>
+  <data name="Shortcuts.Applied" xml:space="preserve">
+    <value>Назначено: {0} → {1}</value>
+  </data>
+  <data name="Command.ToggleTheme" xml:space="preserve">
+    <value>Переключить тему</value>
+  </data>
+  <data name="Command.ToggleLanguage" xml:space="preserve">
+    <value>Переключить язык</value>
+  </data>
+  <data name="Theme.Label" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="Theme.Light" xml:space="preserve">
+    <value>Светлая тема</value>
+  </data>
+  <data name="Theme.Dark" xml:space="preserve">
+    <value>Тёмная тема</value>
+  </data>
+  <data name="Theme.Switched" xml:space="preserve">
+    <value>Тема: {0}</value>
+  </data>
+  <data name="Language.Label" xml:space="preserve">
+    <value>Язык</value>
+  </data>
+  <data name="Language.Russian" xml:space="preserve">
+    <value>Русский</value>
+  </data>
+  <data name="Language.English" xml:space="preserve">
+    <value>Английский</value>
+  </data>
+  <data name="Language.Switched" xml:space="preserve">
+    <value>Язык интерфейса: {0}</value>
+  </data>
+  <data name="Status.Ready" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+</root>
