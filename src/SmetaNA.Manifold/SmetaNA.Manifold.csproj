@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmetaNA.Core\SmetaNA.Core.csproj" />
+  </ItemGroup>
+
+  <!--
+    Нативные библиотеки Manifold (runtimes/<rid>/native, NuGet-раскладка) копируются
+    в корень выходного каталога: DllImport("manifoldc") ищет их рядом с assembly.
+    Сами бинарники в git не коммитятся — см. README.md и fetch-native.ps1.
+  -->
+  <ItemGroup>
+    <None Update="runtimes\win-x64\native\*.dll" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="runtimes\linux-x64\native\*.so" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="runtimes\linux-x64\native\*.so.*" LinkBase="runtimes/linux-x64/native" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="fetch-native.ps1" CopyToOutputDirectory="Never" />
+    <None Update="README.md" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+</Project>
