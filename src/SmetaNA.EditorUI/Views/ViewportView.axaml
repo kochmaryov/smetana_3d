@@ -7,6 +7,9 @@
   <Grid>
     <gl:GlViewportControl x:Name="Viewport" />
 
+    <!-- Оверлей предпросмотра инструментов (мировые координаты → пиксели камерой) -->
+    <Canvas x:Name="ToolOverlay" IsHitTestVisible="False" />
+
     <!-- Панель режимов: отображение, проекция, сетка/оси, единицы -->
     <Border HorizontalAlignment="Left"
             VerticalAlignment="Top"

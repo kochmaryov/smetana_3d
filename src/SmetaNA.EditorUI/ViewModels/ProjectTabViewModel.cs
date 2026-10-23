@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using SmetaNA.Core.Model;
 using SmetaNA.EditorUI.Localization;
+using SmetaNA.EditorUI.Tools;
 using SmetaNA.Rendering;
 
 namespace SmetaNA.EditorUI.ViewModels;
@@ -12,13 +13,18 @@ public sealed class ProjectTabViewModel : ViewModelBase
     private UnitOption _selectedUnit;
     private RenderModeOption _selectedRenderMode;
 
-    public ProjectTabViewModel(ILocalizationService localization, Scene scene, int number)
+    public ProjectTabViewModel(
+        ILocalizationService localization,
+        Scene scene,
+        int number,
+        ToolController? tools = null)
     {
         ArgumentNullException.ThrowIfNull(localization);
         ArgumentNullException.ThrowIfNull(scene);
         _localization = localization;
         Scene = scene;
         Number = number;
+        Tools = tools;
 
         Strings = new LocalizedStrings(localization);
         Units = new ObservableCollection<UnitOption>(
@@ -36,6 +42,9 @@ public sealed class ProjectTabViewModel : ViewModelBase
 
     /// <summary>Сцена вкладки (контракты SmetaNA.Core используются только для чтения/вызова).</summary>
     public Scene Scene { get; }
+
+    /// <summary>Контроллер инструментов вьюпорта (общий для сессии) или <c>null</c>.</summary>
+    public ToolController? Tools { get; }
 
     public LocalizedStrings Strings { get; }
 

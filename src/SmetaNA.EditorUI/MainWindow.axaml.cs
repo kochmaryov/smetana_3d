@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
+using SmetaNA.Core.Tools;
 using SmetaNA.EditorUI.Commands;
 using SmetaNA.EditorUI.Sessions;
 using SmetaNA.EditorUI.Smoke;
@@ -30,6 +31,14 @@ public partial class MainWindow : Window
         // ввод в полях VCB и редакторах маппингов не перехватывается
         if (e.Source is TextBox)
         {
+            return;
+        }
+
+        // Escape прерывает действие активного инструмента (сцена не меняется)
+        if (e.Key == Key.Escape && ViewModel.Tools.IsActive
+            && ViewModel.Tools.RouteKey(new KeyInput(ToolKey.Escape)))
+        {
+            e.Handled = true;
             return;
         }
 

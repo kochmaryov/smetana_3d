@@ -1,8 +1,17 @@
+using System.Diagnostics;
 using System.Globalization;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
+using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Threading;
+using SmetaNA.Core.Geometry;
+using SmetaNA.Core.Inference;
 using SmetaNA.Core.Model;
+using SmetaNA.Core.Tools;
+using SmetaNA.EditorUI.Tools;
 using SmetaNA.EditorUI.ViewModels;
 using SmetaNA.Rendering;
 
@@ -16,8 +25,12 @@ namespace SmetaNA.EditorUI.Views;
 /// </summary>
 public partial class ViewportView : UserControl
 {
+    private static readonly long ToolHoverIntervalTicks = Stopwatch.Frequency / 25;
+
     private DispatcherTimer? _hudTimer;
     private ProjectTabViewModel? _viewModel;
+    private ToolController? _tools;
+    private long _lastToolHoverTicks;
 
     public ViewportView()
     {
@@ -27,6 +40,13 @@ public partial class ViewportView : UserControl
         DetachedFromVisualTree += OnDetachedFromVisualTree;
         Viewport.SelectionChanged += OnSelectionChanged;
         Viewport.HoverChanged += OnSelectionChanged;
+
+        // Маршрутизация ввода в активный инструмент: туннелирующие обработчики
+        // идут раньше камеры вьюпорта и потребляют события, если их взял инструмент.
+        AddHandler(InputElement.PointerPressedEvent, OnToolPointerPressed, RoutingStrategies.Tunnel);
+        AddHandler(InputElement.PointerReleasedEvent, OnToolPointerReleased, RoutingStrategies.Tunnel);
+        AddHandler(InputElement.PointerMovedEvent, OnToolPointerMoved, RoutingStrategies.Tunnel);
+        AddHandler(InputElement.KeyDownEvent, OnToolKeyDown, RoutingStrategies.Tunnel);
     }
 
     /// <summary>Снимок статистики вьюпорта (для смоук-прогона).</summary>
@@ -39,7 +59,21 @@ public partial class ViewportView : UserControl
             _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         }
 
+        if (_tools is not null)
+        {
+            _tools.Changed -= OnToolStateChanged;
+            _tools.Context.UndoStack.Changed -= OnSceneHistoryChanged;
+        }
+
         _viewModel = DataContext as ProjectTabViewModel;
+        _tools = _viewModel?.Tools;
+        if (_tools is not null)
+        {
+            _tools.Changed += OnToolStateChanged;
+            _tools.Context.UndoStack.Changed += OnSceneHistoryChanged;
+        }
+
+        RedrawToolOverlay();
         if (_viewModel is null)
         {
             return;
@@ -74,6 +108,248 @@ public partial class ViewportView : UserControl
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) => UpdateHud();
 
     private void OnSelectionChanged(object? sender, EventArgs e) => UpdateHud();
+
+    private void OnToolStateChanged() => RedrawToolOverlay();
+
+    private void OnSceneHistoryChanged() => Viewport.RefreshScene();
+
+    private void OnToolPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (_tools is not { IsActive: true } tools)
+        {
+            return;
+        }
+
+        PointerPoint point = e.GetCurrentPoint(Viewport);
+        if (!point.Properties.IsLeftButtonPressed)
+        {
+            return;
+        }
+
+        // Shift+ЛКМ — панорама камеры, инструменту не передаётся
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        {
+            return;
+        }
+
+        UpdateToolViewport();
+        bool handled = tools.RoutePointer(PointerInputFactory.Create(
+            point.Position.X,
+            point.Position.Y,
+            PointerEventKind.Press,
+            PointerButton.Left,
+            e.KeyModifiers.HasFlag(KeyModifiers.Shift),
+            e.KeyModifiers.HasFlag(KeyModifiers.Control),
+            e.KeyModifiers.HasFlag(KeyModifiers.Alt)));
+        if (handled)
+        {
+            e.Pointer.Capture(Viewport);
+            e.Handled = true;
+        }
+    }
+
+    private void OnToolPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (_tools is not { IsActive: true } tools || e.InitialPressMouseButton != MouseButton.Left)
+        {
+            return;
+        }
+
+        Point position = e.GetPosition(Viewport);
+        UpdateToolViewport();
+        bool handled = tools.RoutePointer(PointerInputFactory.Create(
+            position.X,
+            position.Y,
+            PointerEventKind.Release,
+            PointerButton.Left,
+            e.KeyModifiers.HasFlag(KeyModifiers.Shift),
+            e.KeyModifiers.HasFlag(KeyModifiers.Control),
+            e.KeyModifiers.HasFlag(KeyModifiers.Alt)));
+        if (handled)
+        {
+            e.Pointer.Capture(null);
+            e.Handled = true;
+        }
+    }
+
+    private void OnToolPointerMoved(object? sender, PointerEventArgs e)
+    {
+        // камера могла повернуться — перепроецировать предпросмотр
+        RedrawToolOverlay();
+
+        if (_tools is not { IsActive: true } tools)
+        {
+            return;
+        }
+
+        if (tools.ActiveTool is not { IsInteracting: true })
+        {
+            long now = Stopwatch.GetTimestamp();
+            if (now - _lastToolHoverTicks < ToolHoverIntervalTicks)
+            {
+                return;
+            }
+
+            _lastToolHoverTicks = now;
+        }
+
+        Point position = e.GetPosition(Viewport);
+        UpdateToolViewport();
+        bool handled = tools.RoutePointer(PointerInputFactory.Create(
+            position.X,
+            position.Y,
+            PointerEventKind.Move,
+            PointerButton.None,
+            e.KeyModifiers.HasFlag(KeyModifiers.Shift),
+            e.KeyModifiers.HasFlag(KeyModifiers.Control),
+            e.KeyModifiers.HasFlag(KeyModifiers.Alt)));
+        if (handled)
+        {
+            e.Handled = true;
+        }
+    }
+
+    private void OnToolKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (_tools is not { IsActive: true } tools)
+        {
+            return;
+        }
+
+        ToolKey? key = e.Key switch
+        {
+            Key.Escape => ToolKey.Escape,
+            Key.Enter => ToolKey.Enter,
+            Key.Delete => ToolKey.Delete,
+            _ => null,
+        };
+        if (key is null)
+        {
+            return;
+        }
+
+        bool handled = tools.RouteKey(PointerInputFactory.Key(
+            key.Value,
+            e.KeyModifiers.HasFlag(KeyModifiers.Shift),
+            e.KeyModifiers.HasFlag(KeyModifiers.Control),
+            e.KeyModifiers.HasFlag(KeyModifiers.Alt)));
+        if (handled)
+        {
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>Обновить вьюпорт инструментов (лучи/проекции) из камеры GL-вьюпорта.</summary>
+    private void UpdateToolViewport()
+    {
+        if (_tools is not { } tools)
+        {
+            return;
+        }
+
+        Camera camera = Viewport.Camera;
+        double width = Math.Max(1.0, Bounds.Width);
+        double height = Math.Max(1.0, Bounds.Height);
+        tools.Context.Viewport = camera.Mode == ProjectionMode.Perspective
+            ? InferenceViewport.CreatePerspective(
+                camera.EyePosition, camera.Forward, camera.Up, camera.FieldOfViewY, width, height)
+            : InferenceViewport.CreateOrthographic(
+                camera.EyePosition, camera.Forward, camera.Up, camera.OrthoHeight, width, height);
+    }
+
+    /// <summary>Отрисовка предпросмотра инструмента поверх GL-кадра.</summary>
+    private void RedrawToolOverlay()
+    {
+        ToolOverlay.Children.Clear();
+        if (_tools is not { } tools)
+        {
+            return;
+        }
+
+        ToolPreview preview = tools.Preview;
+        foreach (ToolPreviewLine line in preview.Lines)
+        {
+            if (!TryProject(line.Start, out Point start) || !TryProject(line.End, out Point end))
+            {
+                continue;
+            }
+
+            ToolOverlay.Children.Add(new Line
+            {
+                StartPoint = start,
+                EndPoint = end,
+                Stroke = BrushFor(line.Style),
+                StrokeThickness = line.Style == ToolPreviewStyle.Guide ? 1.5 : 2,
+            });
+        }
+
+        foreach (ToolPreviewPoint point in preview.Points)
+        {
+            if (!TryProject(point.Position, out Point pixel))
+            {
+                continue;
+            }
+
+            var marker = new Ellipse
+            {
+                Width = 8,
+                Height = 8,
+                Fill = BrushFor(point.Style),
+                Stroke = Brushes.White,
+                StrokeThickness = 1,
+            };
+            ToolOverlay.Children.Add(marker);
+            Canvas.SetLeft(marker, pixel.X - 4);
+            Canvas.SetTop(marker, pixel.Y - 4);
+        }
+
+        foreach (ToolPreviewLabel label in preview.Labels)
+        {
+            if (!TryProject(label.Anchor, out Point pixel))
+            {
+                continue;
+            }
+
+            var text = new TextBlock
+            {
+                Text = label.Text,
+                Foreground = Brushes.White,
+                Background = new SolidColorBrush(Color.FromArgb(160, 0, 0, 0)),
+                Padding = new Thickness(4, 2),
+            };
+            ToolOverlay.Children.Add(text);
+            Canvas.SetLeft(text, pixel.X + 8);
+            Canvas.SetTop(text, pixel.Y + 8);
+        }
+    }
+
+    /// <summary>Проекция мировой точки в пиксели вьюпорта; <c>false</c> — за камерой.</summary>
+    private bool TryProject(Vector3d worldPoint, out Point pixel)
+    {
+        pixel = default;
+        Camera camera = Viewport.Camera;
+        if (Vector3d.Dot(worldPoint - camera.EyePosition, camera.Forward) <= 0)
+        {
+            return false;
+        }
+
+        Vector3d ndc = camera.Project(worldPoint);
+        if (!double.IsFinite(ndc.X) || !double.IsFinite(ndc.Y))
+        {
+            return false;
+        }
+
+        pixel = new Point((ndc.X + 1.0) * 0.5 * Bounds.Width, (1.0 - ndc.Y) * 0.5 * Bounds.Height);
+        return true;
+    }
+
+    private static IBrush BrushFor(ToolPreviewStyle style) => style switch
+    {
+        ToolPreviewStyle.Highlight => new SolidColorBrush(Color.FromRgb(255, 183, 77)),
+        ToolPreviewStyle.Guide => new SolidColorBrush(Color.FromRgb(79, 195, 247)),
+        ToolPreviewStyle.Warning => new SolidColorBrush(Color.FromRgb(255, 82, 82)),
+        _ => new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
+    };
 
     private void UpdateHud()
     {
