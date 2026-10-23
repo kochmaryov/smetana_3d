@@ -17,14 +17,48 @@ namespace SmetaNA.EditorUI;
 /// <summary>Главное окно редактора: сборка ленты, панелей, VCB и вкладок.</summary>
 public partial class MainWindow : Window
 {
+    private LicenseWindow? _licenseWindow;
+
     public MainWindow()
     {
         InitializeComponent();
         ViewModel = new MainWindowViewModel(EditorServices.Localization, EditorServices.Theme, new EditorSession());
         DataContext = ViewModel;
+        ViewModel.LicenseRequested += (_, _) => OpenLicenseWindow();
+        Opened += OnFirstOpened;
     }
 
     internal MainWindowViewModel ViewModel { get; }
+
+    /// <summary>Экран лицензии: показывается из меню и при старте, если лицензии нет.</summary>
+    internal void OpenLicenseWindow()
+    {
+        if (_licenseWindow is { } open && open.IsVisible)
+        {
+            open.Activate();
+            return;
+        }
+
+        _licenseWindow = new LicenseWindow(EditorServices.CreateLicenseViewModel());
+        _licenseWindow.Closed += (_, _) => _licenseWindow = null;
+        _licenseWindow.Show(this);
+    }
+
+    private void OnFirstOpened(object? sender, EventArgs e)
+    {
+        Opened -= OnFirstOpened;
+
+        // в смоук-режиме модальный экран лицензии не открываем
+        if (App.Smoke is not null)
+        {
+            return;
+        }
+
+        if (EditorServices.CreateLicenseViewModel().RequiresAttention)
+        {
+            OpenLicenseWindow();
+        }
+    }
 
     private void OnWindowKeyDown(object? sender, KeyEventArgs e)
     {
@@ -94,22 +128,83 @@ public partial class MainWindow : Window
         bool undoRedoWired = ViewModel.RedoCommand.CanExecute(null);
 
         bool viewportWired = ReportViewportStats();
+        bool noviceWired = ReportNoviceMode();
+        bool licenseWired = ReportLicenseStatus();
 
-        bool passed = opened && themeChanged && languageChanged && vcbCommitted && historyWired && undoRedoWired && viewportWired;
+        bool passed = opened && themeChanged && languageChanged && vcbCommitted && historyWired && undoRedoWired
+            && viewportWired && noviceWired && licenseWired;
         string summary = string.Format(
             CultureInfo.InvariantCulture,
-            "[SMOKE] opened={0} themeChanged={1} languageChanged={2} vcbCommitted={3} historyWired={4} undoRedoWired={5} title='{6}' -> '{7}' status='{8}' result={9}",
+            "[SMOKE] opened={0} themeChanged={1} languageChanged={2} vcbCommitted={3} historyWired={4} undoRedoWired={5} noviceWired={6} licenseWired={7} title='{8}' -> '{9}' status='{10}' result={11}",
             opened,
             themeChanged,
             languageChanged,
             vcbCommitted,
             historyWired,
             undoRedoWired,
+            noviceWired,
+            licenseWired,
             titleBefore,
             titleAfter,
             ViewModel.StatusText,
             passed ? "PASS" : "FAIL");
         return new SmokeReport(passed, summary);
+    }
+
+    /// <summary>
+    /// Режим «Новичок» и урок S1: переключение режима, шаги с подсветкой кнопки.
+    /// </summary>
+    private bool ReportNoviceMode()
+    {
+        bool startsNovice = ViewModel.IsNoviceMode;
+        ViewModel.ToggleMode();
+        bool toggled = ViewModel.IsNoviceMode != startsNovice;
+        ViewModel.IsNoviceMode = true;
+
+        ViewModel.Tutorial.Start();
+        ViewModel.Tutorial.Next();
+        bool stepsRun = ViewModel.Tutorial.IsActive
+            && ViewModel.Tutorial.CurrentStepIndex == 1
+            && ViewModel.Tutorial.HighlightedCommandId == ShortcutCatalog.ToolCircle;
+        bool highlightWired = ViewModel.AllTools.Any(tool => tool.IsHighlighted);
+        ViewModel.Tutorial.Close();
+        bool closed = !ViewModel.Tutorial.IsActive;
+
+        bool passed = startsNovice && toggled && stepsRun && highlightWired && closed;
+        Console.WriteLine(
+            $"[NOVICE] mode={startsNovice} toggled={toggled} steps={stepsRun} highlight={highlightWired} closed={closed} result={(passed ? "PASS" : "FAIL")}");
+        return passed;
+    }
+
+    /// <summary>Экран лицензии: статус, триал и устройство доступны без сети; окно открывается.</summary>
+    private bool ReportLicenseStatus()
+    {
+        try
+        {
+            var viewModel = EditorServices.CreateLicenseViewModel();
+            bool ok = viewModel.StatusText.Length > 0
+                && viewModel.TrialText.Length > 0
+                && viewModel.DeviceHash.Length > 0;
+
+            // разметка экрана лицензии должна отрабатывать без ошибок
+            OpenLicenseWindow();
+            bool windowShown = _licenseWindow?.IsVisible == true;
+            if (_licenseWindow is { } window)
+            {
+                _licenseWindow = null;
+                window.Close();
+            }
+
+            ok = ok && windowShown;
+            Console.WriteLine(
+                $"[LICENSE] status='{viewModel.StatusText}' trial='{viewModel.TrialText}' devKey={viewModel.IsDevKey} window={windowShown} result={(ok ? "OK" : "FAIL")}");
+            return ok;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[LICENSE] result=FAIL error={ex.Message}");
+            return false;
+        }
     }
 
     /// <summary>

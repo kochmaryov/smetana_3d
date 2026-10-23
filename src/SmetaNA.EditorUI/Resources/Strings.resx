@@ -330,4 +330,331 @@
   <data name="Viewport.CameraHint" xml:space="preserve">
     <value>ЛКМ — орбита/выбор · Shift+ЛКМ — панорама · колесо — зум</value>
   </data>
+  <data name="Tool.Arc3Point" xml:space="preserve">
+    <value>Дуга (3 точки)</value>
+  </data>
+  <data name="Tool.Dimension" xml:space="preserve">
+    <value>Размер</value>
+  </data>
+  <data name="Tool.ScaleToDimension" xml:space="preserve">
+    <value>Масштаб по размеру</value>
+  </data>
+  <data name="Tool.Hint.Select" xml:space="preserve">
+    <value>Выбор объектов: клик — выбрать, повторный клик — войти в группу</value>
+  </data>
+  <data name="Tool.Hint.Line" xml:space="preserve">
+    <value>Линия по двум точкам; длину можно ввести в строке значений</value>
+  </data>
+  <data name="Tool.Hint.Rectangle" xml:space="preserve">
+    <value>Прямоугольник от угла до угла; размеры — в строке значений</value>
+  </data>
+  <data name="Tool.Hint.Circle" xml:space="preserve">
+    <value>Окружность: клик — центр, второй клик — точка на радиусе</value>
+  </data>
+  <data name="Tool.Hint.Polygon" xml:space="preserve">
+    <value>Правильный многоугольник: центр, радиус и число сторон</value>
+  </data>
+  <data name="Tool.Hint.Arc" xml:space="preserve">
+    <value>Дуга по двум точкам и углу: задайте хорду и высоту дуги</value>
+  </data>
+  <data name="Tool.Hint.Arc3Point" xml:space="preserve">
+    <value>Дуга по трём точкам: начало, точка на дуге, конец</value>
+  </data>
+  <data name="Tool.Hint.Freehand" xml:space="preserve">
+    <value>Свободная кривая: ведите курсор и отпустите кнопку мыши</value>
+  </data>
+  <data name="Tool.Hint.PushPull" xml:space="preserve">
+    <value>Выдавливание: потяните грань или введите расстояние в строке значений</value>
+  </data>
+  <data name="Tool.Hint.Offset" xml:space="preserve">
+    <value>Смещение контура: выберите грань и укажите расстояние</value>
+  </data>
+  <data name="Tool.Hint.Move" xml:space="preserve">
+    <value>Перемещение: точка-основание, затем точка назначения</value>
+  </data>
+  <data name="Tool.Hint.Rotate" xml:space="preserve">
+    <value>Вращение вокруг оси: центр, направление и угол поворота</value>
+  </data>
+  <data name="Tool.Hint.Scale" xml:space="preserve">
+    <value>Масштабирование по ручкам или заданному коэффициенту</value>
+  </data>
+  <data name="Tool.Hint.Eraser" xml:space="preserve">
+    <value>Ластик: стирает грани и рёбра одним движением</value>
+  </data>
+  <data name="Tool.Hint.Soften" xml:space="preserve">
+    <value>Сглаживание рёбер: грани сглаживаются без потери формы</value>
+  </data>
+  <data name="Tool.Hint.PaintBucket" xml:space="preserve">
+    <value>Заливка: применяет цвет или материал к грани</value>
+  </data>
+  <data name="Tool.Hint.Dimension" xml:space="preserve">
+    <value>Размерная линия: две точки и место выноски; число — в строке значений</value>
+  </data>
+  <data name="Tool.Hint.ScaleToDimension" xml:space="preserve">
+    <value>Масштабирует модель так, чтобы отрезок стал заданного размера</value>
+  </data>
+  <data name="Properties.ToolHint" xml:space="preserve">
+    <value>Подсказка</value>
+  </data>
+  <data name="Properties.ToolShortcut" xml:space="preserve">
+    <value>Клавиша</value>
+  </data>
+  <data name="Properties.ToolInput" xml:space="preserve">
+    <value>Ввод</value>
+  </data>
+  <data name="Mode.Label" xml:space="preserve">
+    <value>Режим</value>
+  </data>
+  <data name="Mode.Novice" xml:space="preserve">
+    <value>Новичок</value>
+  </data>
+  <data name="Mode.Expert" xml:space="preserve">
+    <value>Профи</value>
+  </data>
+  <data name="Mode.Switched" xml:space="preserve">
+    <value>Режим: {0}</value>
+  </data>
+  <data name="Mode.NoviceHint" xml:space="preserve">
+    <value>Режим «Новичок»: подсказки к инструментам и пошаговый урок</value>
+  </data>
+  <data name="Tutorial.Title" xml:space="preserve">
+    <value>Урок: стакан за 15 минут</value>
+  </data>
+  <data name="Tutorial.Start" xml:space="preserve">
+    <value>Начать урок</value>
+  </data>
+  <data name="Tutorial.Close" xml:space="preserve">
+    <value>Закрыть урок</value>
+  </data>
+  <data name="Tutorial.Next" xml:space="preserve">
+    <value>Далее</value>
+  </data>
+  <data name="Tutorial.Back" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="Tutorial.Restart" xml:space="preserve">
+    <value>Начать заново</value>
+  </data>
+  <data name="Tutorial.Completed" xml:space="preserve">
+    <value>Урок завершён!</value>
+  </data>
+  <data name="Tutorial.Progress" xml:space="preserve">
+    <value>Шаг {0} из {1}</value>
+  </data>
+  <data name="Tutorial.S1.Name" xml:space="preserve">
+    <value>Стакан за 15 минут</value>
+  </data>
+  <data name="Tutorial.S1.Intro" xml:space="preserve">
+    <value>Соберём простой стакан: семь коротких шагов, каждый подсвечивает нужную кнопку.</value>
+  </data>
+  <data name="Tutorial.S1.Step1" xml:space="preserve">
+    <value>Осмотритесь: средняя кнопка мыши вращает вид, колесо — приближает.</value>
+  </data>
+  <data name="Tutorial.S1.Step2" xml:space="preserve">
+    <value>Инструмент «Окружность»: нарисуйте дно стакана — центр и радиус 40 мм.</value>
+  </data>
+  <data name="Tutorial.S1.Step3" xml:space="preserve">
+    <value>Инструмент «Выдавливание»: потяните дно вверх на 120 мм — получится тело стакана.</value>
+  </data>
+  <data name="Tutorial.S1.Step4" xml:space="preserve">
+    <value>Снова «Окружность»: на верхней грани нарисуйте контур полости радиусом 35 мм.</value>
+  </data>
+  <data name="Tutorial.S1.Step5" xml:space="preserve">
+    <value>«Выдавливание»: выдавите полость вниз на 110 мм — стенки останутся толщиной 5 мм.</value>
+  </data>
+  <data name="Tutorial.S1.Step6" xml:space="preserve">
+    <value>«Сглаживание»: смягчите рёбра у дна, чтобы стакан выглядел аккуратно.</value>
+  </data>
+  <data name="Tutorial.S1.Step7" xml:space="preserve">
+    <value>«Заливка»: раскрасьте стакан в любимый цвет.</value>
+  </data>
+  <data name="Tutorial.S1.Done" xml:space="preserve">
+    <value>Готово! Стакан собран. Попробуйте изменить размеры через строку значений.</value>
+  </data>
+  <data name="License.Title" xml:space="preserve">
+    <value>Лицензия</value>
+  </data>
+  <data name="License.Open" xml:space="preserve">
+    <value>Лицензия…</value>
+  </data>
+  <data name="License.Status" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="License.ValidUntil" xml:space="preserve">
+    <value>Действует до: {0}</value>
+  </data>
+  <data name="License.KeyLabel" xml:space="preserve">
+    <value>Лицензионный ключ</value>
+  </data>
+  <data name="License.KeyPlaceholder" xml:space="preserve">
+    <value>например, SMN1-…</value>
+  </data>
+  <data name="License.KeyValidate" xml:space="preserve">
+    <value>Проверить ключ</value>
+  </data>
+  <data name="License.KeyEmpty" xml:space="preserve">
+    <value>Введите лицензионный ключ</value>
+  </data>
+  <data name="License.KeyValid" xml:space="preserve">
+    <value>Ключ действителен</value>
+  </data>
+  <data name="License.KeyInvalid" xml:space="preserve">
+    <value>Ключ недействителен: {0}</value>
+  </data>
+  <data name="License.ActivationRequest" xml:space="preserve">
+    <value>Запрос активации</value>
+  </data>
+  <data name="License.ActivationRequestHint" xml:space="preserve">
+    <value>Отправьте запрос продавцу и полученный токен вставьте ниже. Интернет не нужен.</value>
+  </data>
+  <data name="License.TokenLabel" xml:space="preserve">
+    <value>Токен активации</value>
+  </data>
+  <data name="License.TokenPlaceholder" xml:space="preserve">
+    <value>вставьте токен от продавца</value>
+  </data>
+  <data name="License.ApplyToken" xml:space="preserve">
+    <value>Активировать</value>
+  </data>
+  <data name="License.TokenEmpty" xml:space="preserve">
+    <value>Вставьте токен активации</value>
+  </data>
+  <data name="License.TokenApplied" xml:space="preserve">
+    <value>Лицензия активирована на этом устройстве</value>
+  </data>
+  <data name="License.TokenFailed" xml:space="preserve">
+    <value>Активация не удалась: {0}</value>
+  </data>
+  <data name="License.TrialTitle" xml:space="preserve">
+    <value>Пробный период</value>
+  </data>
+  <data name="License.TrialStart" xml:space="preserve">
+    <value>Начать пробный период</value>
+  </data>
+  <data name="License.TrialStarted" xml:space="preserve">
+    <value>Пробный период запущен</value>
+  </data>
+  <data name="License.TrialNotStarted" xml:space="preserve">
+    <value>Пробный период ещё не начат</value>
+  </data>
+  <data name="License.TrialDaysLeft" xml:space="preserve">
+    <value>Осталось дней: {0}</value>
+  </data>
+  <data name="License.TrialUntil" xml:space="preserve">
+    <value>Пробный период до: {0}</value>
+  </data>
+  <data name="License.Deactivate" xml:space="preserve">
+    <value>Деактивировать (перенос)</value>
+  </data>
+  <data name="License.Deactivated" xml:space="preserve">
+    <value>Лицензия деактивирована; теперь её можно перенести на другое устройство</value>
+  </data>
+  <data name="License.DeactivateFailed" xml:space="preserve">
+    <value>Деактивация невозможна: {0}</value>
+  </data>
+  <data name="License.DeactivateReceipt" xml:space="preserve">
+    <value>Квитанция деактивации</value>
+  </data>
+  <data name="License.DeactivateReceiptHint" xml:space="preserve">
+    <value>Передайте квитанцию продавцу — после этого активацию можно перенести.</value>
+  </data>
+  <data name="License.DeviceLabel" xml:space="preserve">
+    <value>Устройство</value>
+  </data>
+  <data name="License.OfflineNote" xml:space="preserve">
+    <value>Активация и проверка лицензии работают без интернета</value>
+  </data>
+  <data name="License.DevKeyWarning" xml:space="preserve">
+    <value>Внимание: используется временный ключ разработчика — перед релизом подключите ключ продавца</value>
+  </data>
+  <data name="License.Refresh" xml:space="preserve">
+    <value>Обновить статус</value>
+  </data>
+  <data name="License.Close" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="License.State.NotLicensed" xml:space="preserve">
+    <value>Лицензия отсутствует</value>
+  </data>
+  <data name="License.State.NotActivated" xml:space="preserve">
+    <value>Ключ действителен, нужна активация</value>
+  </data>
+  <data name="License.State.Licensed" xml:space="preserve">
+    <value>Лицензия активна</value>
+  </data>
+  <data name="License.State.LicenseExpired" xml:space="preserve">
+    <value>Срок действия истёк</value>
+  </data>
+  <data name="License.State.DeviceMismatch" xml:space="preserve">
+    <value>Привязано к другому устройству</value>
+  </data>
+  <data name="License.State.Revoked" xml:space="preserve">
+    <value>Активация отозвана</value>
+  </data>
+  <data name="License.State.Deactivated" xml:space="preserve">
+    <value>Деактивирована на этом устройстве</value>
+  </data>
+  <data name="License.State.TrialActive" xml:space="preserve">
+    <value>Пробный период</value>
+  </data>
+  <data name="License.State.TrialExpired" xml:space="preserve">
+    <value>Пробный период истёк</value>
+  </data>
+  <data name="License.State.InvalidKey" xml:space="preserve">
+    <value>Недействительный ключ</value>
+  </data>
+  <data name="License.State.InvalidState" xml:space="preserve">
+    <value>Состояние лицензии повреждено</value>
+  </data>
+  <data name="License.Problem.InvalidSignature" xml:space="preserve">
+    <value>подпись ключа не прошла проверку</value>
+  </data>
+  <data name="License.Problem.Malformed" xml:space="preserve">
+    <value>некорректный формат ключа</value>
+  </data>
+  <data name="License.Problem.NotYetValid" xml:space="preserve">
+    <value>срок действия ключа ещё не начался</value>
+  </data>
+  <data name="License.Problem.Expired" xml:space="preserve">
+    <value>срок действия ключа истёк</value>
+  </data>
+  <data name="License.Problem.LicenseeMismatch" xml:space="preserve">
+    <value>ключ выдан на другого лицензиата</value>
+  </data>
+  <data name="License.TokenProblem.InvalidSignature" xml:space="preserve">
+    <value>токен повреждён или подделан</value>
+  </data>
+  <data name="License.TokenProblem.DeviceMismatch" xml:space="preserve">
+    <value>токен привязан к другому устройству</value>
+  </data>
+  <data name="License.TokenProblem.NotYetValid" xml:space="preserve">
+    <value>срок действия токена ещё не начался</value>
+  </data>
+  <data name="License.TokenProblem.Expired" xml:space="preserve">
+    <value>срок действия токена истёк</value>
+  </data>
+  <data name="License.TokenProblem.Revoked" xml:space="preserve">
+    <value>токен отозван (лицензия перенесена)</value>
+  </data>
+  <data name="License.TokenProblem.KeyMismatch" xml:space="preserve">
+    <value>токен не подходит к этому ключу</value>
+  </data>
+  <data name="License.TokenProblem.KeyExpired" xml:space="preserve">
+    <value>ключ, выдавший токен, больше не действует</value>
+  </data>
+  <data name="License.TokenProblem.InvalidKey" xml:space="preserve">
+    <value>токен содержит недействительный ключ</value>
+  </data>
+  <data name="Menu.File" xml:space="preserve">
+    <value>Файл</value>
+  </data>
+  <data name="Menu.Edit" xml:space="preserve">
+    <value>Правка</value>
+  </data>
+  <data name="Menu.View" xml:space="preserve">
+    <value>Вид</value>
+  </data>
+  <data name="Menu.Help" xml:space="preserve">
+    <value>Справка</value>
+  </data>
 </root>

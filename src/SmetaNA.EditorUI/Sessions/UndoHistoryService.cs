@@ -16,6 +16,7 @@ public sealed class UndoHistoryService
 {
     private readonly List<string> _log = [];
     private int _cursor;
+    private bool _isInternalChange;
 
     public UndoHistoryService(UndoStack stack, int maxDepth = 100)
     {
@@ -27,6 +28,27 @@ public sealed class UndoHistoryService
 
         Stack = stack;
         MaxDepth = maxDepth;
+        Stack.Changed += OnStackChanged;
+    }
+
+    private void OnStackChanged()
+    {
+        if (_isInternalChange)
+        {
+            return;
+        }
+
+        // Внешнее изменение — команда инструмента (ToolContext.Execute → UndoStack.Push):
+        // она заносится в конец журнала, redo-хвост сбрасывается стеком.
+        if (_cursor < _log.Count)
+        {
+            _log.RemoveRange(_cursor, _log.Count - _cursor);
+        }
+
+        _log.Add(Stack.NextUndoDescription ?? string.Empty);
+        _cursor = _log.Count;
+        TrimToMaxDepth();
+        Changed?.Invoke();
     }
 
     /// <summary>Стек Core: кнопки undo/redo и история привязаны к нему.</summary>
@@ -64,7 +86,15 @@ public sealed class UndoHistoryService
     public void Execute(IEditCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
-        Stack.Push(command);
+        _isInternalChange = true;
+        try
+        {
+            Stack.Push(command);
+        }
+        finally
+        {
+            _isInternalChange = false;
+        }
 
         if (_cursor < _log.Count)
         {
@@ -84,7 +114,16 @@ public sealed class UndoHistoryService
             return;
         }
 
-        Stack.Undo();
+        _isInternalChange = true;
+        try
+        {
+            Stack.Undo();
+        }
+        finally
+        {
+            _isInternalChange = false;
+        }
+
         _cursor--;
         Changed?.Invoke();
     }
@@ -96,14 +135,32 @@ public sealed class UndoHistoryService
             return;
         }
 
-        Stack.Redo();
+        _isInternalChange = true;
+        try
+        {
+            Stack.Redo();
+        }
+        finally
+        {
+            _isInternalChange = false;
+        }
+
         _cursor++;
         Changed?.Invoke();
     }
 
     public void Clear()
     {
-        Stack.Clear();
+        _isInternalChange = true;
+        try
+        {
+            Stack.Clear();
+        }
+        finally
+        {
+            _isInternalChange = false;
+        }
+
         _log.Clear();
         _cursor = 0;
         Changed?.Invoke();

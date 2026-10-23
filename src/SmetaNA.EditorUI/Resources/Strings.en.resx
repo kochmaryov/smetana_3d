@@ -330,4 +330,331 @@
   <data name="Viewport.CameraHint" xml:space="preserve">
     <value>LMB — orbit/pick · Shift+LMB — pan · wheel — zoom</value>
   </data>
+  <data name="Tool.Arc3Point" xml:space="preserve">
+    <value>3-Point Arc</value>
+  </data>
+  <data name="Tool.Dimension" xml:space="preserve">
+    <value>Dimension</value>
+  </data>
+  <data name="Tool.ScaleToDimension" xml:space="preserve">
+    <value>Scale to dimension</value>
+  </data>
+  <data name="Tool.Hint.Select" xml:space="preserve">
+    <value>Select objects: click to select, click again to enter a group</value>
+  </data>
+  <data name="Tool.Hint.Line" xml:space="preserve">
+    <value>Line between two points; type the length in the value box</value>
+  </data>
+  <data name="Tool.Hint.Rectangle" xml:space="preserve">
+    <value>Rectangle from corner to corner; sizes go in the value box</value>
+  </data>
+  <data name="Tool.Hint.Circle" xml:space="preserve">
+    <value>Circle: click the centre, then a point on the radius</value>
+  </data>
+  <data name="Tool.Hint.Polygon" xml:space="preserve">
+    <value>Regular polygon: centre, radius and side count</value>
+  </data>
+  <data name="Tool.Hint.Arc" xml:space="preserve">
+    <value>2-point arc: set the chord and the arc bulge</value>
+  </data>
+  <data name="Tool.Hint.Arc3Point" xml:space="preserve">
+    <value>3-point arc: start, point on arc, end</value>
+  </data>
+  <data name="Tool.Hint.Freehand" xml:space="preserve">
+    <value>Freehand curve: drag the pointer and release the button</value>
+  </data>
+  <data name="Tool.Hint.PushPull" xml:space="preserve">
+    <value>Push/Pull: drag a face or type the distance in the value box</value>
+  </data>
+  <data name="Tool.Hint.Offset" xml:space="preserve">
+    <value>Offset: pick a face and set the distance</value>
+  </data>
+  <data name="Tool.Hint.Move" xml:space="preserve">
+    <value>Move: base point first, then the destination point</value>
+  </data>
+  <data name="Tool.Hint.Rotate" xml:space="preserve">
+    <value>Rotate around an axis: centre, direction and angle</value>
+  </data>
+  <data name="Tool.Hint.Scale" xml:space="preserve">
+    <value>Scale with grips or a typed factor</value>
+  </data>
+  <data name="Tool.Hint.Eraser" xml:space="preserve">
+    <value>Eraser: removes faces and edges in one stroke</value>
+  </data>
+  <data name="Tool.Hint.Soften" xml:space="preserve">
+    <value>Soften edges: faces blend smoothly without losing shape</value>
+  </data>
+  <data name="Tool.Hint.PaintBucket" xml:space="preserve">
+    <value>Paint bucket: applies a colour or material to a face</value>
+  </data>
+  <data name="Tool.Hint.Dimension" xml:space="preserve">
+    <value>Dimension line: two points and the witness line place; number goes in the value box</value>
+  </data>
+  <data name="Tool.Hint.ScaleToDimension" xml:space="preserve">
+    <value>Scales the model so the segment matches the typed size</value>
+  </data>
+  <data name="Properties.ToolHint" xml:space="preserve">
+    <value>Hint</value>
+  </data>
+  <data name="Properties.ToolShortcut" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="Properties.ToolInput" xml:space="preserve">
+    <value>Input</value>
+  </data>
+  <data name="Mode.Label" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="Mode.Novice" xml:space="preserve">
+    <value>Novice</value>
+  </data>
+  <data name="Mode.Expert" xml:space="preserve">
+    <value>Expert</value>
+  </data>
+  <data name="Mode.Switched" xml:space="preserve">
+    <value>Mode: {0}</value>
+  </data>
+  <data name="Mode.NoviceHint" xml:space="preserve">
+    <value>Novice mode: tool hints and a step-by-step tutorial</value>
+  </data>
+  <data name="Tutorial.Title" xml:space="preserve">
+    <value>Tutorial: glass in 15 minutes</value>
+  </data>
+  <data name="Tutorial.Start" xml:space="preserve">
+    <value>Start tutorial</value>
+  </data>
+  <data name="Tutorial.Close" xml:space="preserve">
+    <value>Close tutorial</value>
+  </data>
+  <data name="Tutorial.Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Tutorial.Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Tutorial.Restart" xml:space="preserve">
+    <value>Start over</value>
+  </data>
+  <data name="Tutorial.Completed" xml:space="preserve">
+    <value>Tutorial completed!</value>
+  </data>
+  <data name="Tutorial.Progress" xml:space="preserve">
+    <value>Step {0} of {1}</value>
+  </data>
+  <data name="Tutorial.S1.Name" xml:space="preserve">
+    <value>Glass in 15 minutes</value>
+  </data>
+  <data name="Tutorial.S1.Intro" xml:space="preserve">
+    <value>Let us build a simple glass: seven short steps, each highlights the button you need.</value>
+  </data>
+  <data name="Tutorial.S1.Step1" xml:space="preserve">
+    <value>Look around: hold the middle mouse button to orbit, use the wheel to zoom.</value>
+  </data>
+  <data name="Tutorial.S1.Step2" xml:space="preserve">
+    <value>Circle tool: draw the glass bottom — centre and radius 40 mm.</value>
+  </data>
+  <data name="Tutorial.S1.Step3" xml:space="preserve">
+    <value>Push/Pull tool: pull the bottom up by 120 mm to make the glass body.</value>
+  </data>
+  <data name="Tutorial.S1.Step4" xml:space="preserve">
+    <value>Circle again: on the top face draw the cavity outline with radius 35 mm.</value>
+  </data>
+  <data name="Tutorial.S1.Step5" xml:space="preserve">
+    <value>Push/Pull: push the cavity down by 110 mm — walls stay 5 mm thick.</value>
+  </data>
+  <data name="Tutorial.S1.Step6" xml:space="preserve">
+    <value>Soften: smooth the bottom edges to make the glass look neat.</value>
+  </data>
+  <data name="Tutorial.S1.Step7" xml:space="preserve">
+    <value>Paint bucket: colour the glass as you like.</value>
+  </data>
+  <data name="Tutorial.S1.Done" xml:space="preserve">
+    <value>Done! The glass is ready. Try changing the sizes via the value box.</value>
+  </data>
+  <data name="License.Title" xml:space="preserve">
+    <value>License</value>
+  </data>
+  <data name="License.Open" xml:space="preserve">
+    <value>License…</value>
+  </data>
+  <data name="License.Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="License.ValidUntil" xml:space="preserve">
+    <value>Valid until: {0}</value>
+  </data>
+  <data name="License.KeyLabel" xml:space="preserve">
+    <value>License key</value>
+  </data>
+  <data name="License.KeyPlaceholder" xml:space="preserve">
+    <value>e.g. SMN1-…</value>
+  </data>
+  <data name="License.KeyValidate" xml:space="preserve">
+    <value>Validate key</value>
+  </data>
+  <data name="License.KeyEmpty" xml:space="preserve">
+    <value>Enter the license key</value>
+  </data>
+  <data name="License.KeyValid" xml:space="preserve">
+    <value>Key is valid</value>
+  </data>
+  <data name="License.KeyInvalid" xml:space="preserve">
+    <value>Key is invalid: {0}</value>
+  </data>
+  <data name="License.ActivationRequest" xml:space="preserve">
+    <value>Activation request</value>
+  </data>
+  <data name="License.ActivationRequestHint" xml:space="preserve">
+    <value>Send the request to the vendor and paste the token you get back. No internet needed here.</value>
+  </data>
+  <data name="License.TokenLabel" xml:space="preserve">
+    <value>Activation token</value>
+  </data>
+  <data name="License.TokenPlaceholder" xml:space="preserve">
+    <value>paste the token from the vendor</value>
+  </data>
+  <data name="License.ApplyToken" xml:space="preserve">
+    <value>Activate</value>
+  </data>
+  <data name="License.TokenEmpty" xml:space="preserve">
+    <value>Paste the activation token</value>
+  </data>
+  <data name="License.TokenApplied" xml:space="preserve">
+    <value>License activated on this device</value>
+  </data>
+  <data name="License.TokenFailed" xml:space="preserve">
+    <value>Activation failed: {0}</value>
+  </data>
+  <data name="License.TrialTitle" xml:space="preserve">
+    <value>Trial period</value>
+  </data>
+  <data name="License.TrialStart" xml:space="preserve">
+    <value>Start trial</value>
+  </data>
+  <data name="License.TrialStarted" xml:space="preserve">
+    <value>Trial started</value>
+  </data>
+  <data name="License.TrialNotStarted" xml:space="preserve">
+    <value>Trial has not started yet</value>
+  </data>
+  <data name="License.TrialDaysLeft" xml:space="preserve">
+    <value>Days left: {0}</value>
+  </data>
+  <data name="License.TrialUntil" xml:space="preserve">
+    <value>Trial runs until: {0}</value>
+  </data>
+  <data name="License.Deactivate" xml:space="preserve">
+    <value>Deactivate (transfer)</value>
+  </data>
+  <data name="License.Deactivated" xml:space="preserve">
+    <value>License deactivated; it can now be moved to another device</value>
+  </data>
+  <data name="License.DeactivateFailed" xml:space="preserve">
+    <value>Cannot deactivate: {0}</value>
+  </data>
+  <data name="License.DeactivateReceipt" xml:space="preserve">
+    <value>Deactivation receipt</value>
+  </data>
+  <data name="License.DeactivateReceiptHint" xml:space="preserve">
+    <value>Give the receipt to the vendor — after that the activation can be transferred.</value>
+  </data>
+  <data name="License.DeviceLabel" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="License.OfflineNote" xml:space="preserve">
+    <value>Activation and license checks work without internet access</value>
+  </data>
+  <data name="License.DevKeyWarning" xml:space="preserve">
+    <value>Warning: a temporary developer key is in use — plug in the vendor key before release</value>
+  </data>
+  <data name="License.Refresh" xml:space="preserve">
+    <value>Refresh status</value>
+  </data>
+  <data name="License.Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="License.State.NotLicensed" xml:space="preserve">
+    <value>No license</value>
+  </data>
+  <data name="License.State.NotActivated" xml:space="preserve">
+    <value>Key is valid, activation required</value>
+  </data>
+  <data name="License.State.Licensed" xml:space="preserve">
+    <value>License is active</value>
+  </data>
+  <data name="License.State.LicenseExpired" xml:space="preserve">
+    <value>The license has expired</value>
+  </data>
+  <data name="License.State.DeviceMismatch" xml:space="preserve">
+    <value>Bound to another device</value>
+  </data>
+  <data name="License.State.Revoked" xml:space="preserve">
+    <value>Activation revoked</value>
+  </data>
+  <data name="License.State.Deactivated" xml:space="preserve">
+    <value>Deactivated on this device</value>
+  </data>
+  <data name="License.State.TrialActive" xml:space="preserve">
+    <value>Trial period</value>
+  </data>
+  <data name="License.State.TrialExpired" xml:space="preserve">
+    <value>Trial has expired</value>
+  </data>
+  <data name="License.State.InvalidKey" xml:space="preserve">
+    <value>Invalid key</value>
+  </data>
+  <data name="License.State.InvalidState" xml:space="preserve">
+    <value>License state is damaged</value>
+  </data>
+  <data name="License.Problem.InvalidSignature" xml:space="preserve">
+    <value>key signature check failed</value>
+  </data>
+  <data name="License.Problem.Malformed" xml:space="preserve">
+    <value>key format is invalid</value>
+  </data>
+  <data name="License.Problem.NotYetValid" xml:space="preserve">
+    <value>key is not valid yet</value>
+  </data>
+  <data name="License.Problem.Expired" xml:space="preserve">
+    <value>key has expired</value>
+  </data>
+  <data name="License.Problem.LicenseeMismatch" xml:space="preserve">
+    <value>key was issued to another licensee</value>
+  </data>
+  <data name="License.TokenProblem.InvalidSignature" xml:space="preserve">
+    <value>token is damaged or forged</value>
+  </data>
+  <data name="License.TokenProblem.DeviceMismatch" xml:space="preserve">
+    <value>token is bound to another device</value>
+  </data>
+  <data name="License.TokenProblem.NotYetValid" xml:space="preserve">
+    <value>token is not valid yet</value>
+  </data>
+  <data name="License.TokenProblem.Expired" xml:space="preserve">
+    <value>token has expired</value>
+  </data>
+  <data name="License.TokenProblem.Revoked" xml:space="preserve">
+    <value>token was revoked (license transferred)</value>
+  </data>
+  <data name="License.TokenProblem.KeyMismatch" xml:space="preserve">
+    <value>token does not match this key</value>
+  </data>
+  <data name="License.TokenProblem.KeyExpired" xml:space="preserve">
+    <value>the key that issued the token is no longer valid</value>
+  </data>
+  <data name="License.TokenProblem.InvalidKey" xml:space="preserve">
+    <value>token carries an invalid key</value>
+  </data>
+  <data name="Menu.File" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="Menu.Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Menu.View" xml:space="preserve">
+    <value>View</value>
+  </data>
+  <data name="Menu.Help" xml:space="preserve">
+    <value>Help</value>
+  </data>
 </root>

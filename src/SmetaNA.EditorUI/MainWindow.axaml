@@ -10,6 +10,30 @@
         Height="800"
         KeyDown="OnWindowKeyDown">
   <DockPanel>
+    <!-- Меню: быстрый доступ к основным командам (progressive disclosure) -->
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="{Binding Strings.MenuFile}">
+        <MenuItem Header="{Binding Strings.ProjectNew}" Command="{Binding NewProjectCommand}" />
+        <MenuItem Header="{Binding Strings.LicenseOpen}" Command="{Binding OpenLicenseCommand}" />
+      </MenuItem>
+      <MenuItem Header="{Binding Strings.MenuEdit}">
+        <MenuItem Header="{Binding Strings.EditUndo}"
+                  Command="{Binding UndoCommand}"
+                  ToolTip.Tip="{Binding UndoHint}" />
+        <MenuItem Header="{Binding Strings.EditRedo}"
+                  Command="{Binding RedoCommand}"
+                  ToolTip.Tip="{Binding RedoHint}" />
+      </MenuItem>
+      <MenuItem Header="{Binding Strings.MenuView}">
+        <MenuItem Header="{Binding Strings.CommandToggleTheme}" Command="{Binding ThemeToggleCommand}" />
+        <MenuItem Header="{Binding Strings.ModeLabel}" Command="{Binding ToggleModeCommand}" />
+      </MenuItem>
+      <MenuItem Header="{Binding Strings.MenuHelp}">
+        <MenuItem Header="{Binding Strings.TutorialStart}" Command="{Binding Tutorial.StartCommand}" />
+        <MenuItem Header="{Binding Strings.LicenseOpen}" Command="{Binding OpenLicenseCommand}" />
+      </MenuItem>
+    </Menu>
+
     <!-- Лента инструментов: минимум на виду, продвинутое — в раскрываемой строке -->
     <Border DockPanel.Dock="Top"
             BorderBrush="{DynamicResource ThemeBorderMidBrush}"
@@ -38,7 +62,9 @@
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:ToolStubViewModel">
-                  <Button Command="{Binding ActivateCommand}" ToolTip.Tip="{Binding ToolTip}">
+                  <Button Command="{Binding ActivateCommand}"
+                          ToolTip.Tip="{Binding ToolTip}"
+                          Classes.highlighted="{Binding IsHighlighted}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                       <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
                       <TextBlock Text="{Binding Gesture}"
@@ -55,6 +81,16 @@
                           VerticalAlignment="Center" />
           </StackPanel>
           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="{Binding Strings.ModeLabel}"
+                       VerticalAlignment="Center"
+                       Opacity="0.7" />
+            <Button Content="{Binding ModeToggleLabel}"
+                    Command="{Binding ToggleModeCommand}"
+                    ToolTip.Tip="{Binding Strings.ModeNoviceHint}" />
+            <Button Content="{Binding Strings.TutorialStart}"
+                    Command="{Binding Tutorial.StartCommand}" />
+            <Button Content="{Binding Strings.LicenseOpen}"
+                    Command="{Binding OpenLicenseCommand}" />
             <TextBlock Text="{Binding Strings.ThemeLabel}"
                        VerticalAlignment="Center"
                        Opacity="0.7" />
@@ -87,7 +123,9 @@
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:ToolStubViewModel">
-                  <Button Command="{Binding ActivateCommand}" ToolTip.Tip="{Binding ToolTip}">
+                  <Button Command="{Binding ActivateCommand}"
+                          ToolTip.Tip="{Binding ToolTip}"
+                          Classes.highlighted="{Binding IsHighlighted}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                       <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
                       <TextBlock Text="{Binding Gesture}"
@@ -132,6 +170,7 @@
             Padding="8">
       <ScrollViewer>
         <StackPanel Spacing="8">
+          <views:TutorialPanel />
           <views:PropertiesPanel />
           <views:HistoryPanel />
           <views:ShortcutPanel />

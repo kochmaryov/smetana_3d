@@ -11,6 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SmetaNA.Core\SmetaNA.Core.csproj" />
+    <ProjectReference Include="..\SmetaNA.Licensing\SmetaNA.Licensing.csproj" />
     <ProjectReference Include="..\SmetaNA.Rendering\SmetaNA.Rendering.csproj" />
   </ItemGroup>
 </Project>

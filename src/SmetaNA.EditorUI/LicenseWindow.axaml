@@ -1,0 +1,133 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SmetaNA.EditorUI.ViewModels"
+        x:Class="SmetaNA.EditorUI.LicenseWindow"
+        x:DataType="vm:LicenseWindowViewModel"
+        Title="{Binding Strings.LicenseTitle}"
+        Width="640"
+        SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+  <DockPanel Margin="16">
+    <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="0,12,0,0">
+      <TextBlock Text="{Binding Strings.LicenseOfflineNote}" Opacity="0.7" TextWrapping="Wrap" />
+      <TextBlock Text="{Binding Strings.LicenseDevKeyWarning}"
+                 IsVisible="{Binding IsDevKey}"
+                 Opacity="0.85"
+                 TextWrapping="Wrap" />
+      <Button Content="{Binding Strings.LicenseClose}"
+              HorizontalAlignment="Right"
+              Click="OnCloseClick" />
+    </StackPanel>
+
+    <ScrollViewer>
+      <StackPanel Spacing="10">
+        <!-- Статус и триал -->
+        <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12">
+          <StackPanel Spacing="6">
+            <Grid ColumnDefinitions="Auto,*">
+              <TextBlock Text="{Binding Strings.LicenseStatus}" Opacity="0.7" />
+              <TextBlock Grid.Column="1"
+                         Text="{Binding StatusText}"
+                         FontWeight="SemiBold"
+                         Margin="12,0,0,0" />
+            </Grid>
+            <TextBlock Text="{Binding ValidUntilText}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding Strings.LicenseTrialTitle}" FontWeight="SemiBold" Margin="0,6,0,0" />
+            <TextBlock Text="{Binding TrialText}" TextWrapping="Wrap" />
+            <Button Content="{Binding Strings.LicenseTrialStart}"
+                    Command="{Binding StartTrialCommand}"
+                    HorizontalAlignment="Left" />
+            <Grid ColumnDefinitions="Auto,*" Margin="0,6,0,0">
+              <TextBlock Text="{Binding Strings.LicenseDeviceLabel}" Opacity="0.7" />
+              <TextBlock Grid.Column="1"
+                         Text="{Binding DeviceHash}"
+                         Margin="12,0,0,0"
+                         TextWrapping="Wrap" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- Ключ и запрос активации -->
+        <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12">
+          <StackPanel Spacing="6">
+            <TextBlock Text="{Binding Strings.LicenseKeyLabel}" FontWeight="SemiBold" />
+            <TextBox Text="{Binding KeyInput}"
+                     PlaceholderText="{Binding Strings.LicenseKeyPlaceholder}"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     MinHeight="56" />
+            <Button Content="{Binding Strings.LicenseKeyValidate}"
+                    Command="{Binding ValidateKeyCommand}"
+                    HorizontalAlignment="Left" />
+            <TextBlock Text="{Binding FeedbackText}"
+                       FontWeight="SemiBold"
+                       TextWrapping="Wrap" />
+            <TextBlock Text="{Binding Strings.LicenseActivationRequestHint}"
+                       Opacity="0.7"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding HasActivationRequest}" />
+            <TextBlock Text="{Binding Strings.LicenseActivationRequest}"
+                       FontWeight="SemiBold"
+                       IsVisible="{Binding HasActivationRequest}" />
+            <TextBox Text="{Binding ActivationRequestText}"
+                     IsVisible="{Binding HasActivationRequest}"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     MinHeight="56" />
+          </StackPanel>
+        </Border>
+
+        <!-- Офлайн-активация токеном -->
+        <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12">
+          <StackPanel Spacing="6">
+            <TextBlock Text="{Binding Strings.LicenseTokenLabel}" FontWeight="SemiBold" />
+            <TextBox Text="{Binding TokenInput}"
+                     PlaceholderText="{Binding Strings.LicenseTokenPlaceholder}"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     MinHeight="56" />
+            <Button Content="{Binding Strings.LicenseApplyToken}"
+                    Command="{Binding ApplyTokenCommand}"
+                    HorizontalAlignment="Left" />
+          </StackPanel>
+        </Border>
+
+        <!-- Перенос лицензии -->
+        <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12">
+          <StackPanel Spacing="6">
+            <Button Content="{Binding Strings.LicenseDeactivate}"
+                    Command="{Binding DeactivateCommand}"
+                    HorizontalAlignment="Left" />
+            <TextBlock Text="{Binding Strings.LicenseDeactivateReceiptHint}"
+                       Opacity="0.7"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding HasReceipt}" />
+            <TextBlock Text="{Binding Strings.LicenseDeactivateReceipt}"
+                       FontWeight="SemiBold"
+                       IsVisible="{Binding HasReceipt}" />
+            <TextBox Text="{Binding ReceiptText}"
+                     IsVisible="{Binding HasReceipt}"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     MinHeight="56" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>
