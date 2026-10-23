@@ -7,7 +7,7 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <Version>0.1.0</Version>
+    <Version>0.1.0-beta</Version>
     <Product>SmetaNA</Product>
   </PropertyGroup>
 </Project>
