@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pv="using:SmetaNA.EditorUI.PrintVolume"
+             x:Class="SmetaNA.EditorUI.PrintVolume.PrintVolumePanel"
+             x:DataType="pv:PrintVolumeViewModel">
+  <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+          BorderThickness="1"
+          CornerRadius="4"
+          Padding="12">
+    <StackPanel Spacing="8">
+      <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+      <CheckBox IsChecked="{Binding IsVolumeVisible}" Content="{Binding ShowVolumeLabel}" />
+      <ComboBox ItemsSource="{Binding Profiles}"
+                SelectedItem="{Binding SelectedProfile}"
+                HorizontalAlignment="Stretch">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="pv:PrinterProfileOption">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="{Binding Name}" />
+              <TextBlock Text="{Binding Summary}" Opacity="0.6" />
+            </StackPanel>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+        <TextBlock Text="{Binding ProfileLabel}" Opacity="0.7" />
+        <TextBlock Grid.Column="1" Text="{Binding ProfileName}" Margin="12,0,0,0" />
+        <TextBlock Grid.Row="1" Text="{Binding VolumeLabel}" Opacity="0.7" />
+        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding VolumeText}" Margin="12,0,0,0" />
+        <TextBlock Grid.Row="2" Text="{Binding NozzleLabel}" Opacity="0.7" />
+        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding NozzleText}" Margin="12,0,0,0" />
+        <TextBlock Grid.Row="3" Text="{Binding LayerLabel}" Opacity="0.7" />
+        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding LayerText}" Margin="12,0,0,0" />
+        <TextBlock Grid.Row="4" Text="{Binding NotesLabel}" Opacity="0.7" />
+        <TextBlock Grid.Row="4" Grid.Column="1"
+                   Text="{Binding NotesText}"
+                   Margin="12,0,0,0"
+                   TextWrapping="Wrap" />
+      </Grid>
+    </StackPanel>
+  </Border>
+</UserControl>

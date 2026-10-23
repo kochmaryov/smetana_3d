@@ -32,7 +32,7 @@ public sealed record ViewportStats(
 /// средняя кнопка — панорама, колесо — зум; собственный frame pacing
 /// (<see cref="TargetFramesPerSecond"/>).
 /// </summary>
-public sealed class GlViewportControl : OpenGlControlBase
+public sealed partial class GlViewportControl : OpenGlControlBase
 {
     private const double OrbitSpeed = 0.01; // рад/пиксель
     private static readonly long HoverIntervalTicks = Stopwatch.Frequency / 25;
@@ -327,6 +327,8 @@ public sealed class GlViewportControl : OpenGlControlBase
             _dimensionRenderer.Draw(dimensionGl, AnnotationBatch, mvp);
         }
 
+        DrawPrintVolume(mvp, mv);
+
         RequestNextFrameRendering();
     }
 
@@ -334,6 +336,7 @@ public sealed class GlViewportControl : OpenGlControlBase
     {
         _renderer?.Dispose();
         _dimensionRenderer.Dispose();
+        DisposePrintVolume();
         _renderer = null;
         if (_gl is { } api)
         {
