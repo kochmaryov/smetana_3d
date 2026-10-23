@@ -7,6 +7,9 @@ public enum ToolValueKind
     Length,
     Angle,
     Coordinate,
+
+    /// <summary>Целое количество (например, стороны многоугольника).</summary>
+    Count,
 }
 
 /// <summary>Состояние числового ввода (VCB) активного инструмента.</summary>
