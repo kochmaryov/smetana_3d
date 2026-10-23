@@ -53,7 +53,8 @@ $cmakeArgs = "-DMANIFOLD_CBIND=ON -DMANIFOLD_PAR=OFF -DMANIFOLD_TEST=OFF -DMANIF
 
 function Invoke-InMsvcEnv([string]$body) {
     $cmdLine = @("call `"$vcvars`" >nul", "cd /d $build", $body) -join " && "
-    & $env:ComSpec /c $cmdLine
+    # вывод — в консоль мимо pipeline, иначе функция вернёт его вместо кода выхода
+    & $env:ComSpec /c $cmdLine | Out-Host
     return $LASTEXITCODE
 }
 
@@ -65,7 +66,7 @@ $code = Invoke-InMsvcEnv "$cmakeExe -S manifold-$ManifoldVersion -B $buildDirNam
 if ($code -ne 0) {
     Write-Host "Генератор Visual Studio 17 2022 недоступен — откат на NMake Makefiles."
     $buildDirName = "manifold-build-nmake"
-    $code = Invoke-InMsvcEnv "$cmakeExe -S manifold-$ManifoldVersion -B $buildDirName -G `"NMake Makefiles`" $cmakeArgs"
+    $code = Invoke-InMsvcEnv "$cmakeExe -S manifold-$ManifoldVersion -B $buildDirName -G `"NMake Makefiles`" -DCMAKE_BUILD_TYPE=Release $cmakeArgs"
 }
 if ($code -ne 0) { throw "Конфигурация Manifold завершилась с ошибкой ($code)." }
 
