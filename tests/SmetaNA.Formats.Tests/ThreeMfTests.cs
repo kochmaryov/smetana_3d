@@ -19,7 +19,10 @@ public sealed class ThreeMfTests
     [Fact]
     public void Export_MatchesGoldenFixture_Cube()
     {
-        Assert.Equal(Fixtures.Read("cube.3mf"), ThreeMfExporter.Export(GoldenMeshes.Cube()));
+        // Сравнение с golden-фикстурой — по записям ZIP с нормализацией переводов строк:
+        // нативный lib3mf пишет XML с платформенными окончаниями (CRLF на Windows, LF на Linux),
+        // поэтому байты контейнера межплатформенно различаются при идентичном содержимом.
+        AssertZipMatchesGolden(Fixtures.Read("cube.3mf"), ThreeMfExporter.Export(GoldenMeshes.Cube()));
     }
 
     [Fact]
@@ -259,6 +262,46 @@ public sealed class ThreeMfTests
     }
 
     /// <summary>Экспорт меша с единицами вне <see cref="LengthUnit"/> (микрометр, фут) напрямую через lib3mf.</summary>
+    private static void AssertZipMatchesGolden(byte[] expected, byte[] actual)
+    {
+        using var expectedStream = new MemoryStream(expected);
+        using var actualStream = new MemoryStream(actual);
+        using var expectedZip = new ZipArchive(expectedStream, ZipArchiveMode.Read);
+        using var actualZip = new ZipArchive(actualStream, ZipArchiveMode.Read);
+
+        List<string> expectedNames = expectedZip.Entries.Select(e => e.FullName).OrderBy(n => n, StringComparer.Ordinal).ToList();
+        List<string> actualNames = actualZip.Entries.Select(e => e.FullName).OrderBy(n => n, StringComparer.Ordinal).ToList();
+        Assert.Equal(expectedNames, actualNames);
+
+        foreach (string name in expectedNames)
+        {
+            byte[] expectedBytes = ReadEntry(expectedZip.GetEntry(name)!);
+            byte[] actualBytes = ReadEntry(actualZip.GetEntry(name)!);
+            bool isText = name.EndsWith(".model", StringComparison.OrdinalIgnoreCase)
+                || name.EndsWith(".xml", StringComparison.OrdinalIgnoreCase)
+                || name.EndsWith(".rels", StringComparison.OrdinalIgnoreCase);
+            if (isText)
+            {
+                Assert.Equal(NormalizeNewLines(expectedBytes), NormalizeNewLines(actualBytes));
+            }
+            else
+            {
+                Assert.Equal(expectedBytes, actualBytes);
+            }
+        }
+    }
+
+    private static byte[] ReadEntry(ZipArchiveEntry entry)
+    {
+        using Stream stream = entry.Open();
+        using var buffer = new MemoryStream();
+        stream.CopyTo(buffer);
+        return buffer.ToArray();
+    }
+
+    private static string NormalizeNewLines(byte[] content) =>
+        Encoding.UTF8.GetString(content).Replace("\r\n", "\n", StringComparison.Ordinal);
+
     private static byte[] ExportWithUnit(MeshData mesh, eModelUnit unit, double millimetersPerUnit)
     {
         using CModel model = Wrapper.CreateModel();

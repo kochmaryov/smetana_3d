@@ -48,19 +48,36 @@ if (-not (Test-Path $vcvars)) {
 }
 if (-not (Test-Path $vcvars)) { throw "Не найден vcvars64.bat — установите VS 2022 Build Tools (MSVC)." }
 
-$buildDir = Join-Path $build "manifold-build"
 $cmakeExe = "tools\cmake-$CMakeVersion-windows-x86_64\bin\cmake.exe"
-$cmd = @(
-    "call `"$vcvars`" >nul",
-    "cd /d $build",
-    "$cmakeExe -S manifold-$ManifoldVersion -B manifold-build -G `"Visual Studio 17 2022`" -A x64 -DMANIFOLD_CBIND=ON -DMANIFOLD_PAR=OFF -DMANIFOLD_TEST=OFF -DMANIFOLD_PYBIND=OFF -DBUILD_SHARED_LIBS=ON",
-    "$cmakeExe --build manifold-build --config Release --target manifoldc -- /m"
-) -join " && "
-& $env:ComSpec /c $cmd
-if ($LASTEXITCODE -ne 0) { throw "Сборка Manifold завершилась с ошибкой ($LASTEXITCODE)." }
+$cmakeArgs = "-DMANIFOLD_CBIND=ON -DMANIFOLD_PAR=OFF -DMANIFOLD_TEST=OFF -DMANIFOLD_PYBIND=OFF -DBUILD_SHARED_LIBS=ON"
+
+function Invoke-InMsvcEnv([string]$body) {
+    $cmdLine = @("call `"$vcvars`" >nul", "cd /d $build", $body) -join " && "
+    & $env:ComSpec /c $cmdLine
+    return $LASTEXITCODE
+}
+
+# Параллельный VS-генератор; если установленная VS неизвестна закреплённому CMake
+# (например, более новая VS на раннере GitHub Actions), откатываемся на NMake
+# из того же MSVC-окружения — он не зависит от версии VS.
+$buildDirName = "manifold-build"
+$code = Invoke-InMsvcEnv "$cmakeExe -S manifold-$ManifoldVersion -B $buildDirName -G `"Visual Studio 17 2022`" -A x64 $cmakeArgs"
+if ($code -ne 0) {
+    Write-Host "Генератор Visual Studio 17 2022 недоступен — откат на NMake Makefiles."
+    $buildDirName = "manifold-build-nmake"
+    $code = Invoke-InMsvcEnv "$cmakeExe -S manifold-$ManifoldVersion -B $buildDirName -G `"NMake Makefiles`" $cmakeArgs"
+}
+if ($code -ne 0) { throw "Конфигурация Manifold завершилась с ошибкой ($code)." }
+
+$buildArgs = if ($buildDirName -eq "manifold-build") { "--config Release --target manifoldc -- /m" } else { "--target manifoldc" }
+$code = Invoke-InMsvcEnv "$cmakeExe --build $buildDirName $buildArgs"
+if ($code -ne 0) { throw "Сборка Manifold завершилась с ошибкой ($code)." }
+
+$buildDir = Join-Path $build $buildDirName
 
 # 4. Копируем нативные библиотеки в native\win-x64 (рядом с exe при запуске spike).
 $outDirs = @(
+    $buildDir,
     (Join-Path $buildDir "bin\Release"),
     (Join-Path $buildDir "lib\Release"),
     (Join-Path $buildDir "Release")
