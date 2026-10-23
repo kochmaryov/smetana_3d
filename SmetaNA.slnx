@@ -8,5 +8,9 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SmetaNA.Core.Tests/SmetaNA.Core.Tests.csproj" />
+    <Project Path="tests/SmetaNA.EditorUI.Tests/SmetaNA.EditorUI.Tests.csproj" />
+    <Project Path="tests/SmetaNA.Formats.Tests/SmetaNA.Formats.Tests.csproj" />
+    <Project Path="tests/SmetaNA.Licensing.Tests/SmetaNA.Licensing.Tests.csproj" />
+    <Project Path="tests/SmetaNA.Rendering.Tests/SmetaNA.Rendering.Tests.csproj" />
   </Folder>
 </Solution>
