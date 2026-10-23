@@ -3,6 +3,7 @@
         xmlns:vm="using:SmetaNA.EditorUI.ViewModels"
         xmlns:views="using:SmetaNA.EditorUI.Views"
         xmlns:vcb="using:SmetaNA.EditorUI.Vcb"
+        xmlns:printvolume="using:SmetaNA.EditorUI.PrintVolume"
         x:Class="SmetaNA.EditorUI.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="{Binding Strings.AppTitle}"
@@ -135,6 +136,7 @@
           <views:PropertiesPanel />
           <views:HistoryPanel />
           <views:ShortcutPanel />
+          <printvolume:PrintVolumePanel />
         </StackPanel>
       </ScrollViewer>
     </Border>
