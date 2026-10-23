@@ -127,6 +127,7 @@ public sealed class SceneRenderModel
             sourceNode,
             triangles,
             EdgeExtractor.FromHalfEdgeMesh(mesh),
-            BoundingBox3d.FromMeshData(triangles));
+            BoundingBox3d.FromMeshData(triangles),
+            MaterialColorPath.Build(mesh));
     }
 }

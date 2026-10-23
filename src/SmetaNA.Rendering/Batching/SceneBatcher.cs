@@ -19,6 +19,12 @@ public sealed class RenderBatch
 
     public required uint[] EdgeIndices { get; init; }
 
+    /// <summary>
+    /// Путь цвета материалов: RGBA 0..1 по 4 канала на треугольник
+    /// (<see cref="TriangleIndices"/>); <c>null</c> — цвета материалов не назначены.
+    /// </summary>
+    public float[]? TriangleColors { get; init; }
+
     public required IReadOnlyList<ObjectRange> Ranges { get; init; }
 
     public int VertexCount => Vertices.Length / 3;
@@ -26,6 +32,9 @@ public sealed class RenderBatch
     public int TriangleCount => TriangleIndices.Length / 3;
 
     public int EdgeCount => EdgeIndices.Length / 2;
+
+    /// <summary>Есть ли пообъектные цвета материалов (<see cref="TriangleColors"/>).</summary>
+    public bool HasTriangleColors => TriangleColors is not null;
 }
 
 /// <summary>
@@ -54,6 +63,24 @@ public static class SceneBatcher
         var edgeIndices = new uint[edgeIndexTotal];
         var ranges = new List<ObjectRange>(objects.Count);
 
+        // путь цвета материалов: собирается, только если у объектов есть назначения;
+        // объекты без цветов получают базовый белый
+        bool anyColors = false;
+        foreach (RenderObject obj in objects)
+        {
+            if (obj.HasTriangleColors)
+            {
+                anyColors = true;
+                break;
+            }
+        }
+
+        float[]? triangleColors = anyColors ? new float[(triangleIndexTotal / 3) * 4] : null;
+        if (triangleColors is not null)
+        {
+            Array.Fill(triangleColors, 1.0f);
+        }
+
         int vertexBase = 0;
         int triangleCursor = 0;
         int edgeCursor = 0;
@@ -79,6 +106,11 @@ public static class SceneBatcher
                 edgeIndices[edgeCursor + i] = (uint)(vertexBase + obj.EdgeIndices[i]);
             }
 
+            if (triangleColors is not null && obj.TriangleColors is { } objectColors)
+            {
+                Array.Copy(objectColors, 0, triangleColors, (triangleCursor / 3) * 4, objectColors.Length);
+            }
+
             ranges.Add(new ObjectRange(
                 obj,
                 vertexBase,
@@ -98,6 +130,7 @@ public static class SceneBatcher
             Vertices = vertices,
             TriangleIndices = triangleIndices,
             EdgeIndices = edgeIndices,
+            TriangleColors = triangleColors,
             Ranges = ranges,
         };
     }
