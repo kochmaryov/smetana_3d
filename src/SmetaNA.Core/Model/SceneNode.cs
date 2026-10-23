@@ -15,12 +15,23 @@ public abstract class SceneNode
     public bool IsVisible { get; set; } = true;
     public Transform3d LocalTransform { get; set; } = Transform3d.Identity;
 
+    /// <summary>Тег (слой) узла; null — без тега. Скрытый тег скрывает поддерево узла.</summary>
+    public Tag? Tag { get; set; }
+
     public SceneNode? Parent { get; private set; }
     public IReadOnlyList<SceneNode> Children => _children;
 
-    public void AddChild(SceneNode child)
+    public void AddChild(SceneNode child) => InsertChild(_children.Count, child);
+
+    /// <summary>Вставка потомка в указанную позицию списка детей (нужно командам undo).</summary>
+    public void InsertChild(int index, SceneNode child)
     {
         ArgumentNullException.ThrowIfNull(child);
+        if ((uint)index > (uint)_children.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index), "Индекс позиции вне диапазона детей узла.");
+        }
+
         if (ReferenceEquals(child, this))
         {
             throw new InvalidOperationException("Узел не может быть собственным потомком.");
@@ -31,9 +42,20 @@ public abstract class SceneNode
             throw new InvalidOperationException("Узел уже принадлежит иерархии; сначала удалите его из прежнего родителя.");
         }
 
+        for (SceneNode? ancestor = this; ancestor is not null; ancestor = ancestor.Parent)
+        {
+            if (ReferenceEquals(ancestor, child))
+            {
+                throw new InvalidOperationException("Нельзя сделать узел потомком его собственного поддерева.");
+            }
+        }
+
         child.Parent = this;
-        _children.Add(child);
+        _children.Insert(index, child);
     }
+
+    /// <summary>Индекс потомка среди детей узла; -1, если узел не является потомком.</summary>
+    public int IndexOfChild(SceneNode child) => _children.IndexOf(child);
 
     public void RemoveChild(SceneNode child)
     {
