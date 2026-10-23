@@ -8,6 +8,9 @@ using SmetaNA.EditorUI.Localization;
 using SmetaNA.EditorUI.Sessions;
 using SmetaNA.EditorUI.Themes;
 using SmetaNA.EditorUI.Tools;
+using SmetaNA.EditorUI.Tools.Drawing;
+using SmetaNA.EditorUI.Tools.Editing;
+using SmetaNA.EditorUI.Annotations;
 using SmetaNA.EditorUI.Vcb;
 using SmetaNA.Rendering;
 
@@ -461,18 +464,42 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private void ActivateTool(ToolStubViewModel tool)
     {
-        // реальные инструменты: Push/Pull (задача 2.2); остальные — заглушки
         if (tool.CommandId == ShortcutCatalog.ToolPushPull)
         {
             _session.Tools.Activate(new PushPullTool());
         }
-        else
+        else if (!TryActivateModuleTool(tool.CommandId))
         {
             _session.Tools.Deactivate();
         }
 
         ActiveTool = tool;
         StatusText = string.Format(Strings.ToolStubStatus, tool.Name);
+    }
+
+    private bool TryActivateModuleTool(string commandId)
+    {
+        if (RegisterDrawingTools.TryActivate(_session.Tools, commandId))
+        {
+            return true;
+        }
+
+        if (RegisterEditingTools.Create(commandId) is { } editingTool)
+        {
+            _session.Tools.Activate(editingTool);
+            return true;
+        }
+
+        foreach (DimensionToolDescriptor descriptor in RegisterDimensionTools.CreateDescriptors())
+        {
+            if (descriptor.Id == commandId)
+            {
+                _session.Tools.Activate(descriptor.Create());
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void OnHistoryChanged()

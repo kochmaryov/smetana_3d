@@ -215,24 +215,6 @@ public sealed partial class HalfEdgeMesh
         RefreshVertexHalfEdge(reverse.Origin);
     }
 
-    /// <summary>
-    /// Удалить изолированную вершину (без рёбер). Вершина, входящая в рёбра,
-    /// сохраняется — сначала удаляются рёбра.
-    /// </summary>
-    public void RemoveVertex(MeshVertex vertex)
-    {
-        ArgumentNullException.ThrowIfNull(vertex);
-        if (vertex.HalfEdge is not null)
-        {
-            throw new ArgumentException("Вершина используется рёбрами — сначала удалите рёбра.", nameof(vertex));
-        }
-
-        if (!_vertices.Remove(vertex))
-        {
-            throw new ArgumentException("Вершина не принадлежит мешу.", nameof(vertex));
-        }
-    }
-
     /// <summary>Исходящее полуребро вершины после удалений (или <c>null</c>).</summary>
     private void RefreshVertexHalfEdge(MeshVertex vertex)
     {

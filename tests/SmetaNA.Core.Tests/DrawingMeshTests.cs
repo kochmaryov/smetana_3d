@@ -125,7 +125,7 @@ public class DrawingMeshTests
         (HalfEdgeMesh mesh, MeshVertex[] vertices) = SquareWire();
         MeshHalfEdge[] ring = WireLoop(mesh, vertices);
 
-        Assert.Throws<ArgumentException>(() => mesh.RemoveVertex(vertices[0]));
+        Assert.Throws<InvalidOperationException>(() => mesh.RemoveVertex(vertices[0]));
         mesh.RemoveWireEdge(ring[0]);
         Assert.Equal(6, mesh.HalfEdges.Count);
         mesh.RemoveWireEdge(ring[1]);
