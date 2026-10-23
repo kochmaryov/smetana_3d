@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Купить SmetaNA — лицензия</title>
+  <meta name="description" content="Покупка лицензии SmetaNA: персональная лицензия, оплата картами РФ, кассовый чек по 54-ФЗ, офлайн-активация.">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header>
+    <a class="logo" href="index.html">SmetaNA</a>
+    <nav>
+      <a href="index.html#features">Возможности</a>
+      <a href="buy.html">Купить</a>
+      <a href="activation.html">Активация</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Покупка лицензии</h1>
+      <p class="lead">
+        Бессрочная персональная лицензия + 12 месяцев обновлений. Оплата — картами РФ и через СБП,
+        электронный кассовый чек по 54-ФЗ приходит на email. Активация — офлайн, без VPN.
+      </p>
+    </section>
+
+    <section class="cards" aria-label="Тарифы">
+      <div class="card selected" data-tariff="personal" role="button" tabindex="0">
+        <h3>Личная</h3>
+        <div class="price">TBD ₽ <small>разово</small></div>
+        <ul>
+          <li>1 пользователь, 1 устройство</li>
+          <li>Бессрочная лицензия</li>
+          <li>Обновления 1.x — 12 месяцев</li>
+          <li>2 переноса лицензии в год</li>
+        </ul>
+      </div>
+      <div class="card" data-tariff="personal-3" role="button" tabindex="0">
+        <h3>Личная + (до 3 устройств)</h3>
+        <div class="price">TBD ₽ <small>разово</small></div>
+        <ul>
+          <li>1 пользователь, 3 устройства</li>
+          <li>Бессрочная лицензия</li>
+          <li>Обновления 1.x — 12 месяцев</li>
+          <li>6 переносов лицензии в год</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="notice">
+      Триал 14 дней — бесплатно, без оплаты и регистрации (входит в приложение).
+      Учебные (сетевые) лицензии для классов появятся в v1.x.
+    </div>
+
+    <form id="buy-form" novalidate>
+      <h3>Оформление</h3>
+
+      <label for="email">Email (для лицензионного ключа и кассового чека)</label>
+      <input type="email" id="email" name="email" required placeholder="buyer@example.ru" autocomplete="email">
+
+      <label for="name">Имя <span style="color:#5b6675">(необязательно)</span></label>
+      <input type="text" id="name" name="name" placeholder="Как обращаться" autocomplete="given-name">
+
+      <input type="hidden" name="tariffId" value="personal">
+
+      <div class="consent">
+        <input type="checkbox" id="acceptEula" name="acceptEula">
+        <label for="acceptEula" style="margin:0">
+          Я принимаю <a href="../docs/legal/EULA.ru.md">лицензионное соглашение</a>
+        </label>
+      </div>
+      <div class="consent">
+        <input type="checkbox" id="acceptPrivacy" name="acceptPrivacy">
+        <label for="acceptPrivacy" style="margin:0">
+          Я согласен с <a href="../docs/legal/PRIVACY.md">политикой приватности</a>
+          (обработка email для оплаты, чека и доставки ключа)
+        </label>
+      </div>
+
+      <button class="btn" type="submit">Перейти к оплате</button>
+      <div id="buy-status" class="form-status" role="status" aria-live="polite"></div>
+    </form>
+
+    <p style="margin-top:1.2rem">
+      Уже купили? <a href="activation.html">Инструкция по активации</a> — ключ из письма вводится
+      в приложении один раз, дальше всё работает офлайн.
+    </p>
+  </main>
+
+  <footer>
+    <div>© 2026 SmetaNA. Оплата — через платёжные сервисы (ЮKassa / CloudPayments), чеки по 54-ФЗ.</div>
+    <div>
+      <a href="../docs/legal/EULA.ru.md">EULA (RU)</a>
+      <a href="../docs/legal/EULA.en.md">EULA (EN)</a>
+      <a href="../docs/legal/PRIVACY.md">Приватность</a>
+    </div>
+  </footer>
+
+  <script src="assets/buy.js"></script>
+</body>
+</html>

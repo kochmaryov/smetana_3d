@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Активация SmetaNA — офлайн, без VPN</title>
+  <meta name="description" content="Как активировать лицензию SmetaNA: ввод ключа, офлайн-активация, перенос на другое устройство.">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header>
+    <a class="logo" href="index.html">SmetaNA</a>
+    <nav>
+      <a href="index.html#features">Возможности</a>
+      <a href="buy.html">Купить</a>
+      <a href="activation.html">Активация</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Активация лицензии</h1>
+      <p class="lead">
+        Активация выполняется на компьютере без подключения к интернету — никаких аккаунтов
+        и VPN не требуется (DoD §5.8: работает ≥ 30 дней и дольше без сети).
+      </p>
+    </section>
+
+    <div class="card">
+      <h3>Порядок действий</h3>
+      <ol class="steps">
+        <li>Установите SmetaNA: <strong>Windows</strong> — <code>SmetaNA-&lt;версия&gt;-win-x64.exe</code>;
+            <strong>Linux</strong> — <code>sudo apt install ./smetana_&lt;версия&gt;_amd64.deb</code>.</li>
+        <li>Запустите приложение: меню <em>Справка → Активация</em> (в режиме пробного периода — окно активации при запуске).</li>
+        <li>Вставьте <strong>лицензионный ключ</strong> из письма о покупке и нажмите «Активировать».</li>
+        <li>Готово: лицензия привязывается к этому компьютеру, интернет не нужен.</li>
+      </ol>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3>Перенос на другой компьютер</h3>
+        <ol class="steps">
+          <li>На старом компьютере: <em>Справка → Активация → Деактивировать</em> — сохраните файл-чек деактивации.</li>
+          <li>На новом: активируйте тот же ключ (количество переносов ограничено тарифом).</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>Если что-то не получается</h3>
+        <ul>
+          <li>Проверьте, что ключ скопирован целиком (включая дефисы).</li>
+          <li>Пробный период 14 дней работает без ключа.</li>
+          <li>Восстановление ключа — через поддержку: support@smetana.example.ru, укажите email покупки.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="notice">
+      При активации приложение запоминает только идентификатор ключа и необратимый отпечаток
+      компьютера (хеш конфигурации) — никакие ваши модели и файлы не передаются и не покидают
+      компьютер. Подробности: <a href="../docs/legal/PRIVACY.md">политика приватности</a>.
+    </div>
+
+    <p>Нет лицензии? <a href="buy.html">Купить SmetaNA</a> или начните с пробного периода в приложении.</p>
+  </main>
+
+  <footer>
+    <div>© 2026 SmetaNA.</div>
+    <div>
+      <a href="../docs/legal/EULA.ru.md">EULA (RU)</a>
+      <a href="../docs/legal/EULA.en.md">EULA (EN)</a>
+      <a href="../docs/legal/PRIVACY.md">Приватность</a>
+    </div>
+  </footer>
+</body>
+</html>

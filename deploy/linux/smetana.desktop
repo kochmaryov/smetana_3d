@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Name=SmetaNA
+Name[ru]=SmetaNA
+GenericName=3D model editor
+GenericName[ru]=3D-редактор
+Comment=3D modeling with precise dimensions and 3D-printing export
+Comment[ru]=3D-моделирование с точными размерами и экспортом для 3D-печати
+Exec=smetana %f
+Icon=smetana
+Terminal=false
+Categories=Graphics;3DGraphics;Engineering;Education;
+MimeType=application/x-smetana-project;
+Keywords=3D;CAD;modeling;STL;3MF;Sketch;
+Keywords[ru]=3D;CAD;моделирование;STL;3MF;черчение;
+StartupNotify=true
