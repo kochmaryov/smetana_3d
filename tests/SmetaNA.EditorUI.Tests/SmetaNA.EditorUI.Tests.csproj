@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SmetaNA.EditorUI\SmetaNA.EditorUI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- ресурсы локализации и разметка — для проверки паритета и 100% строк -->
+    <None Include="..\..\src\SmetaNA.EditorUI\Resources\Strings.resx" Link="Resources\Strings.resx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\SmetaNA.EditorUI\Resources\Strings.en.resx" Link="Resources\Strings.en.resx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\SmetaNA.EditorUI\App.axaml" Link="Source\App.axaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\SmetaNA.EditorUI\MainWindow.axaml" Link="Source\MainWindow.axaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\SmetaNA.EditorUI\Vcb\VcbControl.axaml" Link="Source\Vcb\VcbControl.axaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\SmetaNA.EditorUI\Views\HistoryPanel.axaml" Link="Source\Views\HistoryPanel.axaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\SmetaNA.EditorUI\Views\PropertiesPanel.axaml" Link="Source\Views\PropertiesPanel.axaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\SmetaNA.EditorUI\Views\ShortcutPanel.axaml" Link="Source\Views\ShortcutPanel.axaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\SmetaNA.EditorUI\Views\ViewportPlaceholder.axaml" Link="Source\Views\ViewportPlaceholder.axaml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
