@@ -120,7 +120,11 @@ public static class RegisterM6Tools
     /// (для добавления в коллекции панели инструментов без правки её кода).
     /// </summary>
     public static IReadOnlyList<ToolDefinition> RibbonDefinitions { get; } =
-        [.. Definitions.Select(definition => new ToolDefinition(definition.CommandId, definition.NameKey, definition.VcbKind))];
+        [.. Definitions.Select(definition => new ToolDefinition(
+            definition.CommandId,
+            definition.NameKey,
+            definition.VcbKind,
+            M6ToolStrings.HintKeyFor(definition.NameKey)))];
 
     /// <summary>Имя инструмента для текущего или указанного языка.</summary>
     public static string DisplayName(string commandId, EditorCulture culture)

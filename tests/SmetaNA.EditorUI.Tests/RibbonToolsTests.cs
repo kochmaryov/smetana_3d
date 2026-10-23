@@ -7,6 +7,7 @@ using SmetaNA.EditorUI.Localization;
 using SmetaNA.EditorUI.Tools;
 using SmetaNA.EditorUI.Tools.Drawing;
 using SmetaNA.EditorUI.Tools.Editing;
+using SmetaNA.EditorUI.Tools.M6;
 using SmetaNA.EditorUI.ViewModels;
 using SmetaNA.EditorUI.Vcb;
 using Xunit;
@@ -116,6 +117,10 @@ public sealed class RibbonToolsTests
                 is { } dimension)
             {
                 tools.Activate(dimension.Create());
+                routed = true;
+            }
+            else if (RegisterM6Tools.TryActivate(tools, definition.CommandId))
+            {
                 routed = true;
             }
 

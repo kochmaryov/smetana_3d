@@ -30,6 +30,13 @@ public static class ShortcutCatalog
     public const string ToolPaintBucket = "tool.paint";
     public const string ToolDimension = "tool.dimension";
     public const string ToolScaleToDimension = "tool.scale_to_dimension";
+    public const string ToolArrayLinear = "tool.array.linear";
+    public const string ToolArrayPolar = "tool.array.polar";
+    public const string ToolMirrorAxis = "tool.mirror.axis";
+    public const string ToolMirrorPoints = "tool.mirror.points";
+    public const string ToolMirrorFace = "tool.mirror.face";
+    public const string ToolFollowMe = "tool.followme";
+    public const string ToolRevolve = "tool.revolve";
     public const string ViewToggleTheme = "view.toggleTheme";
     public const string ViewToggleLanguage = "view.toggleLanguage";
 
@@ -57,6 +64,13 @@ public static class ShortcutCatalog
         new(ToolPaintBucket, Localization.LocalizationKeys.ToolPaintBucket, Shortcut.Parse("B")),
         new(ToolDimension, Localization.LocalizationKeys.ToolDimension, Shortcut.Parse("D")),
         new(ToolScaleToDimension, Localization.LocalizationKeys.ToolScaleToDimension, Shortcut.Parse("Shift+D")),
+        new(ToolArrayLinear, SmetaNA.EditorUI.Tools.M6.M6ToolStrings.LinearArrayName, Shortcut.Parse("Alt+M")),
+        new(ToolArrayPolar, SmetaNA.EditorUI.Tools.M6.M6ToolStrings.PolarArrayName, Shortcut.Parse("Alt+Shift+M")),
+        new(ToolMirrorAxis, SmetaNA.EditorUI.Tools.M6.M6ToolStrings.MirrorAxisName, Shortcut.Parse("Alt+X")),
+        new(ToolMirrorPoints, SmetaNA.EditorUI.Tools.M6.M6ToolStrings.MirrorPointsName, Shortcut.Parse("Alt+2")),
+        new(ToolMirrorFace, SmetaNA.EditorUI.Tools.M6.M6ToolStrings.MirrorFaceName, Shortcut.Parse("Alt+F")),
+        new(ToolFollowMe, SmetaNA.EditorUI.Tools.M6.M6ToolStrings.FollowMeName, Shortcut.Parse("Alt+W")),
+        new(ToolRevolve, SmetaNA.EditorUI.Tools.M6.M6ToolStrings.RevolveName, Shortcut.Parse("Alt+V")),
         new(ViewToggleTheme, Localization.LocalizationKeys.CommandToggleTheme, Shortcut.Parse("Ctrl+Shift+T")),
         new(ViewToggleLanguage, Localization.LocalizationKeys.CommandToggleLanguage, Shortcut.Parse("Ctrl+Shift+L")),
     ];

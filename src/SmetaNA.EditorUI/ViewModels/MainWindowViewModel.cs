@@ -49,6 +49,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         new(ShortcutCatalog.ToolScale, LocalizationKeys.ToolScale, VcbInputKind.Length, LocalizationKeys.ToolHintScale),
         new(ShortcutCatalog.ToolSoften, LocalizationKeys.ToolSoften, VcbInputKind.Angle, LocalizationKeys.ToolHintSoften),
         new(ShortcutCatalog.ToolPaintBucket, LocalizationKeys.ToolPaintBucket, null, LocalizationKeys.ToolHintPaintBucket),
+        .. SmetaNA.EditorUI.Tools.M6.RegisterM6Tools.RibbonDefinitions,
         FromDimensionDescriptor(
             RegisterDimensionTools.DimensionCommandId,
             LocalizationKeys.ToolDimension,
@@ -644,6 +645,11 @@ public sealed class MainWindowViewModel : ViewModelBase
                 _session.Tools.Activate(descriptor.Create());
                 return true;
             }
+        }
+
+        if (SmetaNA.EditorUI.Tools.M6.RegisterM6Tools.TryActivate(_session.Tools, commandId))
+        {
+            return true;
         }
 
         return false;

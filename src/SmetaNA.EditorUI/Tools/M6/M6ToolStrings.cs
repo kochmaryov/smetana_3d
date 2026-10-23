@@ -43,6 +43,33 @@ public static class M6ToolStrings
     /// <summary>Ключ подсказки VCB «сегменты».</summary>
     public const string VcbSegments = "M6.Vcb.Segments";
 
+    /// <summary>Ключи подсказок режима «Новичок» (имя ключа + суффикс).</summary>
+    public const string HintKeySuffix = ".Hint";
+
+    /// <summary>Ключ подсказки «Массив (линейный)».</summary>
+    public const string LinearArrayHint = "M6.Tool.ArrayLinear.Hint";
+
+    /// <summary>Ключ подсказки «Массив (круговой)».</summary>
+    public const string PolarArrayHint = "M6.Tool.ArrayPolar.Hint";
+
+    /// <summary>Ключ подсказки «Зеркало (ось)».</summary>
+    public const string MirrorAxisHint = "M6.Tool.MirrorAxis.Hint";
+
+    /// <summary>Ключ подсказки «Зеркало (2 точки)».</summary>
+    public const string MirrorPointsHint = "M6.Tool.MirrorPoints.Hint";
+
+    /// <summary>Ключ подсказки «Зеркало (грань)».</summary>
+    public const string MirrorFaceHint = "M6.Tool.MirrorFace.Hint";
+
+    /// <summary>Ключ подсказки «Follow Me».</summary>
+    public const string FollowMeHint = "M6.Tool.FollowMe.Hint";
+
+    /// <summary>Ключ подсказки «Вращение».</summary>
+    public const string RevolveHint = "M6.Tool.Revolve.Hint";
+
+    /// <summary>Ключ подсказки по ключу имени (конвенция: имя-ключа + <see cref="HintKeySuffix"/>).</summary>
+    public static string HintKeyFor(string nameKey) => nameKey + HintKeySuffix;
+
     /// <summary>Строка модуля по ключу и языку; неизвестный ключ возвращается как есть.</summary>
     public static string Get(string key, EditorCulture culture) => (key, culture) switch
     {
@@ -68,6 +95,20 @@ public static class M6ToolStrings
         (VcbCount, EditorCulture.English) => "Count",
         (VcbSegments, EditorCulture.Russian) => "Сегменты",
         (VcbSegments, EditorCulture.English) => "Segments",
+        (LinearArrayHint, EditorCulture.Russian) => "Копирует выделенное с заданным шагом и количеством",
+        (LinearArrayHint, EditorCulture.English) => "Copies the selection with given spacing and count",
+        (PolarArrayHint, EditorCulture.Russian) => "Копирует выделенное по кругу с заданным угловым шагом",
+        (PolarArrayHint, EditorCulture.English) => "Copies the selection around a center with given angle",
+        (MirrorAxisHint, EditorCulture.Russian) => "Зеркально отражает выделенное относительно оси",
+        (MirrorAxisHint, EditorCulture.English) => "Mirrors the selection across an axis",
+        (MirrorPointsHint, EditorCulture.Russian) => "Зеркально отражает относительно плоскости по двум точкам",
+        (MirrorPointsHint, EditorCulture.English) => "Mirrors across a plane defined by two points",
+        (MirrorFaceHint, EditorCulture.Russian) => "Зеркально отражает относительно плоскости грани",
+        (MirrorFaceHint, EditorCulture.English) => "Mirrors across a face plane",
+        (FollowMeHint, EditorCulture.Russian) => "Выдавливает профиль вдоль траектории из рёбер",
+        (FollowMeHint, EditorCulture.English) => "Extrudes a profile along an edge path",
+        (RevolveHint, EditorCulture.Russian) => "Вращает профиль вокруг оси",
+        (RevolveHint, EditorCulture.English) => "Revolves a profile around an axis",
         _ => key,
     };
 
