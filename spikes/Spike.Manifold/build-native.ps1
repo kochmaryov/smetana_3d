@@ -87,6 +87,11 @@ $nativeOut = Join-Path $root "native\win-x64"
 New-Item -ItemType Directory -Force -Path $nativeOut | Out-Null
 foreach ($dll in @("manifoldc.dll", "manifold.dll")) {
     $found = $outDirs | ForEach-Object { Join-Path $_ $dll } | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if (-not $found) {
+        # одноконфигурационные генераторы (NMake) кладут бинарники без подкаталога Release
+        $found = Get-ChildItem -Path $buildDir -Recurse -Filter $dll -File -ErrorAction SilentlyContinue |
+            Select-Object -First 1 -ExpandProperty FullName
+    }
     if (-not $found) { throw "Не найден $dll после сборки (проверьте $buildDir)." }
     Copy-Item $found $nativeOut -Force
     Write-Host "Скопирован: $found -> $nativeOut"
