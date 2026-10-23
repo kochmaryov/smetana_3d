@@ -1,0 +1,31 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:gl="using:Spike.Gl"
+        x:Class="Spike.Gl.MainWindow"
+        Title="Spike.Gl — OpenGL-вьюпорт"
+        Width="1024"
+        Height="720"
+        WindowStartupLocation="CenterScreen"
+        Background="#15171A">
+  <Grid>
+    <gl:GlViewport x:Name="Viewport" />
+    <Border HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Margin="12"
+            Padding="12,8"
+            CornerRadius="6"
+            Background="#B0000000">
+      <StackPanel Spacing="2">
+        <TextBlock x:Name="FpsText"
+                   FontSize="20"
+                   FontWeight="SemiBold"
+                   Foreground="#7CFC98"
+                   Text="FPS: …" />
+        <TextBlock x:Name="InfoText"
+                   FontSize="12"
+                   Foreground="#D0D0D0"
+                   Text="GL: инициализация…" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

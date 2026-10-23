@@ -28,3 +28,6 @@ Thumbs.db
 
 # Session/tool state (not project content)
 .playwright-mcp/
+
+# Spike native binaries (regenerate: spikes/Spike.Manifold/build-native.ps1)
+spikes/**/native/
