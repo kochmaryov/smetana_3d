@@ -18,6 +18,7 @@ public static class ShortcutCatalog
     public const string ToolCircle = "tool.circle";
     public const string ToolPolygon = "tool.polygon";
     public const string ToolArc = "tool.arc";
+    public const string ToolArc3Point = "tool.arc.3point";
     public const string ToolFreehand = "tool.freehand";
     public const string ToolPushPull = "tool.pushpull";
     public const string ToolOffset = "tool.offset";
@@ -26,7 +27,9 @@ public static class ShortcutCatalog
     public const string ToolScale = "tool.scale";
     public const string ToolEraser = "tool.eraser";
     public const string ToolSoften = "tool.soften";
-    public const string ToolPaintBucket = "tool.paintbucket";
+    public const string ToolPaintBucket = "tool.paint";
+    public const string ToolDimension = "tool.dimension";
+    public const string ToolScaleToDimension = "tool.scale_to_dimension";
     public const string ViewToggleTheme = "view.toggleTheme";
     public const string ViewToggleLanguage = "view.toggleLanguage";
 
@@ -42,6 +45,7 @@ public static class ShortcutCatalog
         new(ToolCircle, Localization.LocalizationKeys.ToolCircle, Shortcut.Parse("C")),
         new(ToolPolygon, Localization.LocalizationKeys.ToolPolygon, Shortcut.Parse("G")),
         new(ToolArc, Localization.LocalizationKeys.ToolArc, Shortcut.Parse("A")),
+        new(ToolArc3Point, Localization.LocalizationKeys.ToolArc3Point, Shortcut.Parse("Shift+A")),
         new(ToolFreehand, Localization.LocalizationKeys.ToolFreehand, Shortcut.Parse("F")),
         new(ToolPushPull, Localization.LocalizationKeys.ToolPushPull, Shortcut.Parse("P")),
         new(ToolOffset, Localization.LocalizationKeys.ToolOffset, Shortcut.Parse("O")),
@@ -51,6 +55,8 @@ public static class ShortcutCatalog
         new(ToolEraser, Localization.LocalizationKeys.ToolEraser, Shortcut.Parse("E")),
         new(ToolSoften, Localization.LocalizationKeys.ToolSoften, Shortcut.Parse("H")),
         new(ToolPaintBucket, Localization.LocalizationKeys.ToolPaintBucket, Shortcut.Parse("B")),
+        new(ToolDimension, Localization.LocalizationKeys.ToolDimension, Shortcut.Parse("D")),
+        new(ToolScaleToDimension, Localization.LocalizationKeys.ToolScaleToDimension, Shortcut.Parse("Shift+D")),
         new(ViewToggleTheme, Localization.LocalizationKeys.CommandToggleTheme, Shortcut.Parse("Ctrl+Shift+T")),
         new(ViewToggleLanguage, Localization.LocalizationKeys.CommandToggleLanguage, Shortcut.Parse("Ctrl+Shift+L")),
     ];

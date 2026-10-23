@@ -34,6 +34,7 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string ToolCircle => _localization.Get(LocalizationKeys.ToolCircle);
     public string ToolPolygon => _localization.Get(LocalizationKeys.ToolPolygon);
     public string ToolArc => _localization.Get(LocalizationKeys.ToolArc);
+    public string ToolArc3Point => _localization.Get(LocalizationKeys.ToolArc3Point);
     public string ToolFreehand => _localization.Get(LocalizationKeys.ToolFreehand);
     public string ToolPushPull => _localization.Get(LocalizationKeys.ToolPushPull);
     public string ToolOffset => _localization.Get(LocalizationKeys.ToolOffset);
@@ -43,9 +44,30 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string ToolEraser => _localization.Get(LocalizationKeys.ToolEraser);
     public string ToolSoften => _localization.Get(LocalizationKeys.ToolSoften);
     public string ToolPaintBucket => _localization.Get(LocalizationKeys.ToolPaintBucket);
+    public string ToolDimension => _localization.Get(LocalizationKeys.ToolDimension);
+    public string ToolScaleToDimension => _localization.Get(LocalizationKeys.ToolScaleToDimension);
     public string ToolStubStatus => _localization.Get(LocalizationKeys.ToolStubStatus);
     public string ToolStubToolTip => _localization.Get(LocalizationKeys.ToolStubToolTip);
     public string ToolNone => _localization.Get(LocalizationKeys.ToolNone);
+
+    public string ToolHintSelect => _localization.Get(LocalizationKeys.ToolHintSelect);
+    public string ToolHintLine => _localization.Get(LocalizationKeys.ToolHintLine);
+    public string ToolHintRectangle => _localization.Get(LocalizationKeys.ToolHintRectangle);
+    public string ToolHintCircle => _localization.Get(LocalizationKeys.ToolHintCircle);
+    public string ToolHintPolygon => _localization.Get(LocalizationKeys.ToolHintPolygon);
+    public string ToolHintArc => _localization.Get(LocalizationKeys.ToolHintArc);
+    public string ToolHintArc3Point => _localization.Get(LocalizationKeys.ToolHintArc3Point);
+    public string ToolHintFreehand => _localization.Get(LocalizationKeys.ToolHintFreehand);
+    public string ToolHintPushPull => _localization.Get(LocalizationKeys.ToolHintPushPull);
+    public string ToolHintOffset => _localization.Get(LocalizationKeys.ToolHintOffset);
+    public string ToolHintMove => _localization.Get(LocalizationKeys.ToolHintMove);
+    public string ToolHintRotate => _localization.Get(LocalizationKeys.ToolHintRotate);
+    public string ToolHintScale => _localization.Get(LocalizationKeys.ToolHintScale);
+    public string ToolHintEraser => _localization.Get(LocalizationKeys.ToolHintEraser);
+    public string ToolHintSoften => _localization.Get(LocalizationKeys.ToolHintSoften);
+    public string ToolHintPaintBucket => _localization.Get(LocalizationKeys.ToolHintPaintBucket);
+    public string ToolHintDimension => _localization.Get(LocalizationKeys.ToolHintDimension);
+    public string ToolHintScaleToDimension => _localization.Get(LocalizationKeys.ToolHintScaleToDimension);
 
     public string EditUndo => _localization.Get(LocalizationKeys.EditUndo);
     public string EditRedo => _localization.Get(LocalizationKeys.EditRedo);
@@ -65,6 +87,9 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string PropertiesSceneUnit => _localization.Get(LocalizationKeys.PropertiesSceneUnit);
     public string PropertiesSceneNodes => _localization.Get(LocalizationKeys.PropertiesSceneNodes);
     public string PropertiesStubNote => _localization.Get(LocalizationKeys.PropertiesStubNote);
+    public string PropertiesToolHint => _localization.Get(LocalizationKeys.PropertiesToolHint);
+    public string PropertiesToolShortcut => _localization.Get(LocalizationKeys.PropertiesToolShortcut);
+    public string PropertiesToolInput => _localization.Get(LocalizationKeys.PropertiesToolInput);
 
     public string ViewportTitle => _localization.Get(LocalizationKeys.ViewportTitle);
     public string ViewportPlaceholder => _localization.Get(LocalizationKeys.ViewportPlaceholder);
@@ -140,6 +165,52 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string ViewportHudSelection => _localization.Get(LocalizationKeys.ViewportHudSelection);
     public string ViewportHudSelectionNone => _localization.Get(LocalizationKeys.ViewportHudSelectionNone);
     public string ViewportCameraHint => _localization.Get(LocalizationKeys.ViewportCameraHint);
+
+    public string ModeLabel => _localization.Get(LocalizationKeys.ModeLabel);
+    public string ModeNovice => _localization.Get(LocalizationKeys.ModeNovice);
+    public string ModeExpert => _localization.Get(LocalizationKeys.ModeExpert);
+    public string ModeSwitched => _localization.Get(LocalizationKeys.ModeSwitched);
+    public string ModeNoviceHint => _localization.Get(LocalizationKeys.ModeNoviceHint);
+
+    public string TutorialTitle => _localization.Get(LocalizationKeys.TutorialTitle);
+    public string TutorialStart => _localization.Get(LocalizationKeys.TutorialStart);
+    public string TutorialClose => _localization.Get(LocalizationKeys.TutorialClose);
+    public string TutorialNext => _localization.Get(LocalizationKeys.TutorialNext);
+    public string TutorialBack => _localization.Get(LocalizationKeys.TutorialBack);
+    public string TutorialRestart => _localization.Get(LocalizationKeys.TutorialRestart);
+    public string TutorialCompleted => _localization.Get(LocalizationKeys.TutorialCompleted);
+    public string TutorialProgress => _localization.Get(LocalizationKeys.TutorialProgress);
+    public string TutorialS1Name => _localization.Get(LocalizationKeys.TutorialS1Name);
+    public string TutorialS1Intro => _localization.Get(LocalizationKeys.TutorialS1Intro);
+    public string TutorialS1Done => _localization.Get(LocalizationKeys.TutorialS1Done);
+
+    public string LicenseTitle => _localization.Get(LocalizationKeys.LicenseTitle);
+    public string LicenseOpen => _localization.Get(LocalizationKeys.LicenseOpen);
+    public string LicenseStatus => _localization.Get(LocalizationKeys.LicenseStatus);
+    public string LicenseValidUntil => _localization.Get(LocalizationKeys.LicenseValidUntil);
+    public string LicenseKeyLabel => _localization.Get(LocalizationKeys.LicenseKeyLabel);
+    public string LicenseKeyPlaceholder => _localization.Get(LocalizationKeys.LicenseKeyPlaceholder);
+    public string LicenseKeyValidate => _localization.Get(LocalizationKeys.LicenseKeyValidate);
+    public string LicenseActivationRequest => _localization.Get(LocalizationKeys.LicenseActivationRequest);
+    public string LicenseActivationRequestHint => _localization.Get(LocalizationKeys.LicenseActivationRequestHint);
+    public string LicenseTokenLabel => _localization.Get(LocalizationKeys.LicenseTokenLabel);
+    public string LicenseTokenPlaceholder => _localization.Get(LocalizationKeys.LicenseTokenPlaceholder);
+    public string LicenseApplyToken => _localization.Get(LocalizationKeys.LicenseApplyToken);
+    public string LicenseTrialTitle => _localization.Get(LocalizationKeys.LicenseTrialTitle);
+    public string LicenseTrialStart => _localization.Get(LocalizationKeys.LicenseTrialStart);
+    public string LicenseDeactivate => _localization.Get(LocalizationKeys.LicenseDeactivate);
+    public string LicenseDeactivateReceipt => _localization.Get(LocalizationKeys.LicenseDeactivateReceipt);
+    public string LicenseDeactivateReceiptHint => _localization.Get(LocalizationKeys.LicenseDeactivateReceiptHint);
+    public string LicenseDeviceLabel => _localization.Get(LocalizationKeys.LicenseDeviceLabel);
+    public string LicenseOfflineNote => _localization.Get(LocalizationKeys.LicenseOfflineNote);
+    public string LicenseDevKeyWarning => _localization.Get(LocalizationKeys.LicenseDevKeyWarning);
+    public string LicenseRefresh => _localization.Get(LocalizationKeys.LicenseRefresh);
+    public string LicenseClose => _localization.Get(LocalizationKeys.LicenseClose);
+
+    public string MenuFile => _localization.Get(LocalizationKeys.MenuFile);
+    public string MenuEdit => _localization.Get(LocalizationKeys.MenuEdit);
+    public string MenuView => _localization.Get(LocalizationKeys.MenuView);
+    public string MenuHelp => _localization.Get(LocalizationKeys.MenuHelp);
 
     private void OnCultureChanged() =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));

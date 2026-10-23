@@ -11,6 +11,7 @@ using SmetaNA.EditorUI.Tools;
 using SmetaNA.EditorUI.Tools.Drawing;
 using SmetaNA.EditorUI.Tools.Editing;
 using SmetaNA.EditorUI.Annotations;
+using SmetaNA.EditorUI.Tutorial;
 using SmetaNA.EditorUI.Vcb;
 using SmetaNA.Rendering;
 
@@ -25,26 +26,72 @@ public sealed class MainWindowViewModel : ViewModelBase
 {
     private static readonly ToolDefinition[] PrimaryToolDefinitions =
     [
-        new(ShortcutCatalog.ToolSelect, LocalizationKeys.ToolSelect, null),
-        new(ShortcutCatalog.ToolLine, LocalizationKeys.ToolLine, VcbInputKind.Length),
-        new(ShortcutCatalog.ToolRectangle, LocalizationKeys.ToolRectangle, VcbInputKind.Length),
-        new(ShortcutCatalog.ToolPushPull, LocalizationKeys.ToolPushPull, VcbInputKind.Length),
-        new(ShortcutCatalog.ToolMove, LocalizationKeys.ToolMove, VcbInputKind.Coordinate),
-        new(ShortcutCatalog.ToolEraser, LocalizationKeys.ToolEraser, null),
+        new(ShortcutCatalog.ToolSelect, LocalizationKeys.ToolSelect, null, LocalizationKeys.ToolHintSelect),
+        new(ShortcutCatalog.ToolLine, LocalizationKeys.ToolLine, VcbInputKind.Length, LocalizationKeys.ToolHintLine),
+        new(ShortcutCatalog.ToolRectangle, LocalizationKeys.ToolRectangle, VcbInputKind.Length, LocalizationKeys.ToolHintRectangle),
+        new(ShortcutCatalog.ToolPushPull, LocalizationKeys.ToolPushPull, VcbInputKind.Length, LocalizationKeys.ToolHintPushPull),
+        new(ShortcutCatalog.ToolMove, LocalizationKeys.ToolMove, VcbInputKind.Coordinate, LocalizationKeys.ToolHintMove),
+        new(ShortcutCatalog.ToolEraser, LocalizationKeys.ToolEraser, null, LocalizationKeys.ToolHintEraser),
     ];
 
     private static readonly ToolDefinition[] AdvancedToolDefinitions =
     [
-        new(ShortcutCatalog.ToolCircle, LocalizationKeys.ToolCircle, VcbInputKind.Radius),
-        new(ShortcutCatalog.ToolPolygon, LocalizationKeys.ToolPolygon, VcbInputKind.Radius),
-        new(ShortcutCatalog.ToolArc, LocalizationKeys.ToolArc, VcbInputKind.Angle),
-        new(ShortcutCatalog.ToolFreehand, LocalizationKeys.ToolFreehand, null),
-        new(ShortcutCatalog.ToolOffset, LocalizationKeys.ToolOffset, VcbInputKind.Length),
-        new(ShortcutCatalog.ToolRotate, LocalizationKeys.ToolRotate, VcbInputKind.Angle),
-        new(ShortcutCatalog.ToolScale, LocalizationKeys.ToolScale, VcbInputKind.Length),
-        new(ShortcutCatalog.ToolSoften, LocalizationKeys.ToolSoften, VcbInputKind.Angle),
-        new(ShortcutCatalog.ToolPaintBucket, LocalizationKeys.ToolPaintBucket, null),
+        new(ShortcutCatalog.ToolCircle, LocalizationKeys.ToolCircle, VcbInputKind.Radius, LocalizationKeys.ToolHintCircle),
+        new(ShortcutCatalog.ToolPolygon, LocalizationKeys.ToolPolygon, VcbInputKind.Radius, LocalizationKeys.ToolHintPolygon),
+        new(ShortcutCatalog.ToolArc, LocalizationKeys.ToolArc, VcbInputKind.Angle, LocalizationKeys.ToolHintArc),
+        FromDrawingRibbon(
+            RegisterDrawingTools.ToolArc3PointId,
+            LocalizationKeys.ToolArc3Point,
+            LocalizationKeys.ToolHintArc3Point),
+        new(ShortcutCatalog.ToolFreehand, LocalizationKeys.ToolFreehand, null, LocalizationKeys.ToolHintFreehand),
+        new(ShortcutCatalog.ToolOffset, LocalizationKeys.ToolOffset, VcbInputKind.Length, LocalizationKeys.ToolHintOffset),
+        new(ShortcutCatalog.ToolRotate, LocalizationKeys.ToolRotate, VcbInputKind.Angle, LocalizationKeys.ToolHintRotate),
+        new(ShortcutCatalog.ToolScale, LocalizationKeys.ToolScale, VcbInputKind.Length, LocalizationKeys.ToolHintScale),
+        new(ShortcutCatalog.ToolSoften, LocalizationKeys.ToolSoften, VcbInputKind.Angle, LocalizationKeys.ToolHintSoften),
+        new(ShortcutCatalog.ToolPaintBucket, LocalizationKeys.ToolPaintBucket, null, LocalizationKeys.ToolHintPaintBucket),
+        FromDimensionDescriptor(
+            RegisterDimensionTools.DimensionCommandId,
+            LocalizationKeys.ToolDimension,
+            VcbInputKind.Length,
+            LocalizationKeys.ToolHintDimension),
+        FromDimensionDescriptor(
+            RegisterDimensionTools.ScaleToDimensionCommandId,
+            LocalizationKeys.ToolScaleToDimension,
+            VcbInputKind.Length,
+            LocalizationKeys.ToolHintScaleToDimension),
     ];
+
+    /// <summary>Определения кнопок основной строки ленты (для тестов и смоука).</summary>
+    public static IReadOnlyList<ToolDefinition> PrimaryRibbonDefinitions => PrimaryToolDefinitions;
+
+    /// <summary>Определения кнопок расширенной строки ленты (для тестов и смоука).</summary>
+    public static IReadOnlyList<ToolDefinition> AdvancedRibbonDefinitions => AdvancedToolDefinitions;
+
+    /// <summary>
+    /// Кнопка из регистраций модуля рисования (<see cref="RegisterDrawingTools.RibbonDefinitions"/>):
+    /// id и вид VCB берутся из модуля, имя и подсказка — из общего каталога локализации.
+    /// </summary>
+    private static ToolDefinition FromDrawingRibbon(string commandId, string nameKey, string hintKey)
+    {
+        ToolDefinition definition = RegisterDrawingTools.RibbonDefinitions
+            .First(candidate => candidate.CommandId == commandId);
+        return new ToolDefinition(definition.CommandId, nameKey, definition.VcbKind, hintKey);
+    }
+
+    /// <summary>
+    /// Кнопка из регистраций модуля размеров (<see cref="RegisterDimensionTools"/>):
+    /// id берётся из модуля, имя и подсказка — из общего каталога локализации.
+    /// </summary>
+    private static ToolDefinition FromDimensionDescriptor(
+        string commandId,
+        string nameKey,
+        VcbInputKind vcbKind,
+        string hintKey)
+    {
+        DimensionToolDescriptor descriptor = RegisterDimensionTools.CreateDescriptors()
+            .First(candidate => candidate.Id == commandId);
+        return new ToolDefinition(descriptor.Id, nameKey, vcbKind, hintKey);
+    }
 
     private readonly ILocalizationService _localization;
     private readonly ThemeService _theme;
@@ -53,6 +100,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private ToolStubViewModel? _activeTool;
     private string _statusText;
     private bool _isAdvancedVisible;
+    private bool _isNoviceMode = true;
     private ProjectTabViewModel? _selectedProject;
     private ShortcutRowViewModel? _selectedShortcutRow;
     private string _gestureInput = string.Empty;
@@ -74,6 +122,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         PrimaryTools = new ObservableCollection<ToolStubViewModel>(CreateTools(PrimaryToolDefinitions));
         AdvancedTools = new ObservableCollection<ToolStubViewModel>(CreateTools(AdvancedToolDefinitions));
 
+        Tutorial = new TutorialViewModel(localization, GlassTutorialLesson.Create());
+        Tutorial.StateChanged += OnTutorialStateChanged;
+
         Languages =
         [
             new LanguageOption(localization, EditorCulture.Russian),
@@ -93,6 +144,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         RedoCommand = new RelayCommand(_ => _session.History.Redo(), _ => _session.History.CanRedo);
         NewProjectCommand = new RelayCommand(AddProject);
         ThemeToggleCommand = new RelayCommand(ToggleTheme);
+        ToggleModeCommand = new RelayCommand(ToggleMode);
+        OpenLicenseCommand = new RelayCommand(_ => LicenseRequested?.Invoke(this, EventArgs.Empty));
         ApplyGestureCommand = new RelayCommand(ApplyGesture);
         ResetGestureCommand = new RelayCommand(ResetGesture);
         ResetAllGesturesCommand = new RelayCommand(ResetAllGestures);
@@ -107,6 +160,9 @@ public sealed class MainWindowViewModel : ViewModelBase
     /// <summary>Контроллер инструментов сессии (маршрутизация ввода вьюпорта).</summary>
     public ToolController Tools => _session.Tools;
 
+    /// <summary>Интерактивный урок S1 (режим «Новичок»).</summary>
+    public TutorialViewModel Tutorial { get; }
+
     public ObservableCollection<ToolStubViewModel> PrimaryTools { get; }
     public ObservableCollection<ToolStubViewModel> AdvancedTools { get; }
     public ObservableCollection<LanguageOption> Languages { get; }
@@ -118,9 +174,14 @@ public sealed class MainWindowViewModel : ViewModelBase
     public RelayCommand RedoCommand { get; }
     public RelayCommand NewProjectCommand { get; }
     public RelayCommand ThemeToggleCommand { get; }
+    public RelayCommand ToggleModeCommand { get; }
+    public RelayCommand OpenLicenseCommand { get; }
     public RelayCommand ApplyGestureCommand { get; }
     public RelayCommand ResetGestureCommand { get; }
     public RelayCommand ResetAllGesturesCommand { get; }
+
+    /// <summary>Запрос открытия экрана лицензии (обрабатывается окном).</summary>
+    public event EventHandler? LicenseRequested;
 
     /// <summary>Активный инструмент (заглушка) или <c>null</c> — нет.</summary>
     public ToolStubViewModel? ActiveTool
@@ -134,6 +195,9 @@ public sealed class MainWindowViewModel : ViewModelBase
             }
 
             OnPropertyChanged(nameof(ActiveToolName));
+            OnPropertyChanged(nameof(ActiveToolHint));
+            OnPropertyChanged(nameof(ActiveToolGesture));
+            OnPropertyChanged(nameof(ActiveToolInputName));
             OnPropertyChanged(nameof(HasVcb));
             OnPropertyChanged(nameof(VcbKind));
             OnPropertyChanged(nameof(VcbPrompt));
@@ -141,6 +205,44 @@ public sealed class MainWindowViewModel : ViewModelBase
     }
 
     public string ActiveToolName => ActiveTool?.Name ?? Strings.ToolNone;
+
+    /// <summary>Контекстная подсказка активного инструмента (режим «Новичок»).</summary>
+    public string ActiveToolHint =>
+        IsNoviceMode ? ActiveTool?.Hint ?? string.Empty : string.Empty;
+
+    /// <summary>Горячая клавиша активного инструмента.</summary>
+    public string ActiveToolGesture => ActiveTool?.Gesture ?? string.Empty;
+
+    /// <summary>Вид числового ввода активного инструмента для панели свойств.</summary>
+    public string ActiveToolInputName =>
+        ActiveTool?.VcbKind is { } kind
+            ? _localization.Get(LocalizationKeys.ForVcbPrompt(kind))
+            : Strings.ToolNone;
+
+    /// <summary>Режим «Новичок»: подсказки к инструментам и урок.</summary>
+    public bool IsNoviceMode
+    {
+        get => _isNoviceMode;
+        set
+        {
+            if (!SetField(ref _isNoviceMode, value))
+            {
+                return;
+            }
+
+            RefreshToolTips();
+            OnPropertyChanged(nameof(ActiveToolHint));
+            OnPropertyChanged(nameof(ModeToggleLabel));
+            OnPropertyChanged(nameof(IsTutorialVisible));
+        }
+    }
+
+    /// <summary>Подпись переключателя режима: режим, в который произойдёт переключение.</summary>
+    public string ModeToggleLabel =>
+        _isNoviceMode ? Strings.ModeExpert : Strings.ModeNovice;
+
+    /// <summary>Панель урока видна в режиме «Новичок».</summary>
+    public bool IsTutorialVisible => _isNoviceMode;
 
     public bool IsAdvancedVisible
     {
@@ -275,6 +377,15 @@ public sealed class MainWindowViewModel : ViewModelBase
         _theme.Toggle();
     }
 
+    /// <summary>Переключить режим «Новичок»/«Профи».</summary>
+    public void ToggleMode()
+    {
+        IsNoviceMode = !IsNoviceMode;
+        StatusText = string.Format(
+            Strings.ModeSwitched,
+            IsNoviceMode ? Strings.ModeNovice : Strings.ModeExpert);
+    }
+
     public void ToggleLanguage() =>
         _localization.SetCulture(
             _localization.Culture == EditorCulture.Russian
@@ -325,13 +436,17 @@ public sealed class MainWindowViewModel : ViewModelBase
         string display = FormatScalar(result);
         if (_session.Tools.IsActive)
         {
-            // значение потребляет активный инструмент (Push/Pull и др.)
-            if (result.ValueInMillimeters is { } millimeters)
-            {
-                _session.Tools.CommitValue(millimeters);
-            }
+            // значение потребляет активный инструмент (Push/Pull и др.);
+            // не потребленное значение фиксируем командой в истории
+            bool consumed = result.ValueInMillimeters is { } millimeters
+                && _session.Tools.CommitValue(millimeters);
 
             StatusText = string.Format(Strings.VcbCommitted, display);
+            if (!consumed)
+            {
+                PushStubCommand(display);
+            }
+
             return;
         }
 
@@ -460,7 +575,39 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private IEnumerable<ToolStubViewModel> CreateTools(IEnumerable<ToolDefinition> definitions) =>
         definitions.Select(definition =>
-            new ToolStubViewModel(_localization, _session.Shortcuts, definition, ActivateTool));
+            new ToolStubViewModel(
+                _localization,
+                _session.Shortcuts,
+                definition,
+                ActivateTool,
+                () => _isNoviceMode));
+
+    /// <summary>Все кнопки инструментов ленты.</summary>
+    public IEnumerable<ToolStubViewModel> AllTools => PrimaryTools.Concat(AdvancedTools);
+
+    private void RefreshToolTips()
+    {
+        foreach (ToolStubViewModel tool in AllTools)
+        {
+            tool.Refresh();
+        }
+    }
+
+    private void OnTutorialStateChanged()
+    {
+        string? highlight = Tutorial.HighlightedCommandId;
+        foreach (ToolStubViewModel tool in AllTools)
+        {
+            tool.IsHighlighted = highlight is not null && tool.CommandId == highlight;
+        }
+
+        if (Tutorial.IsActive)
+        {
+            StatusText = Tutorial.CurrentStepText;
+        }
+
+        OnPropertyChanged(nameof(IsTutorialVisible));
+    }
 
     private void ActivateTool(ToolStubViewModel tool)
     {
@@ -522,10 +669,15 @@ public sealed class MainWindowViewModel : ViewModelBase
     private void OnCultureChanged()
     {
         OnHistoryChanged();
+        RefreshToolTips();
         OnPropertyChanged(nameof(ActiveToolName));
+        OnPropertyChanged(nameof(ActiveToolHint));
+        OnPropertyChanged(nameof(ActiveToolGesture));
+        OnPropertyChanged(nameof(ActiveToolInputName));
         OnPropertyChanged(nameof(VcbPrompt));
         OnPropertyChanged(nameof(SceneUnitName));
         OnPropertyChanged(nameof(ThemeToggleLabel));
+        OnPropertyChanged(nameof(ModeToggleLabel));
         OnPropertyChanged(nameof(UndoHint));
         OnPropertyChanged(nameof(RedoHint));
         StatusText = string.Format(
