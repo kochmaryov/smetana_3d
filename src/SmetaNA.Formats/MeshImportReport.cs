@@ -12,6 +12,10 @@ namespace SmetaNA.Formats;
 /// <param name="DegenerateTriangleIndices">Индексы вырожденных треугольников (нулевая площадь или повтор вершин).</param>
 /// <param name="LostFeatures">Что не переносится форматом/импортом (материалы, группы, имена и т.п.).</param>
 /// <param name="Warnings">Предупреждения разбора и нормализации.</param>
+/// <param name="SourceUnitName">
+/// Имя единиц файла, если оно не выражается через <see cref="LengthUnit"/>
+/// (например, микрометр и фут из 3MF); точный масштаб — в <paramref name="MillimetersPerUnit"/>.
+/// </param>
 public sealed record MeshImportReport(
     MeshFileFormat Format,
     LengthUnit SourceUnit,
@@ -21,7 +25,8 @@ public sealed record MeshImportReport(
     int TriangleCount,
     IReadOnlyList<int> DegenerateTriangleIndices,
     IReadOnlyList<string> LostFeatures,
-    IReadOnlyList<string> Warnings)
+    IReadOnlyList<string> Warnings,
+    string? SourceUnitName = null)
 {
     /// <summary>Вырожденных треугольников.</summary>
     public int DegenerateTriangleCount => DegenerateTriangleIndices.Count;
@@ -35,7 +40,7 @@ public sealed record MeshImportReport(
         var lines = new List<string>
         {
             $"Формат: {Format}",
-            $"Единицы файла: {UnitConversion.GetName(SourceUnit)} ({UnitConversion.MillimetersPerUnit(SourceUnit)} мм в единице)",
+            $"Единицы файла: {SourceUnitName ?? UnitConversion.GetName(SourceUnit)} ({MillimetersPerUnit} мм в единице)",
             $"Вершин: {VertexCount} (записей в файле: {SourceVertexCount}, сварено: {WeldedVertexCount})",
             $"Треугольников: {TriangleCount}",
             $"Вырожденных треугольников: {DegenerateTriangleCount}",

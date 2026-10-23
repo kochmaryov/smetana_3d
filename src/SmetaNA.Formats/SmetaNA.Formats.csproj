@@ -1,5 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Официальный автогенеренный C#-биндинг lib3mf (ThreeMf/Lib3MF/Lib3MF.cs) использует unsafe. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SmetaNA.Core\SmetaNA.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      Нативные библиотеки lib3mf (ThreeMf/native/fetch-lib3mf.ps1, BSD-2-Clause) копируются
+      в выходной каталог в NuGet-раскладку runtimes/<rid>/native/ — так же поставляются
+      в продакшене (Windows/Linux); Lib3mfNative находит их там и рядом со сборкой.
+    -->
+    <None Update="ThreeMf\native\win-x64\lib3mf.dll" CopyToOutputDirectory="PreserveNewest" TargetPath="runtimes\win-x64\native\lib3mf.dll" />
+    <None Update="ThreeMf\native\linux-x64\lib3mf.so" CopyToOutputDirectory="PreserveNewest" TargetPath="runtimes\linux-x64\native\lib3mf.so" />
   </ItemGroup>
 </Project>

@@ -11,4 +11,7 @@ public enum MeshFileFormat
 
     /// <summary>Wavefront OBJ: v/f, полигоны, ссылки v/vt/vn.</summary>
     Obj,
+
+    /// <summary>3MF: OPC-архив (ZIP) с моделью 3D/3dmodel.model (XML) и атрибутом unit.</summary>
+    ThreeMf,
 }

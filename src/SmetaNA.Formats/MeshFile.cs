@@ -1,11 +1,12 @@
 using SmetaNA.Core.Geometry;
 using SmetaNA.Formats.Obj;
 using SmetaNA.Formats.Stl;
+using SmetaNA.Formats.ThreeMf;
 
 namespace SmetaNA.Formats;
 
 /// <summary>
-/// Фасад обмена мешами (M8): авто-детект формата при чтении (binary/ASCII STL, OBJ),
+/// Фасад обмена мешами (M8): авто-детект формата при чтении (binary/ASCII STL, OBJ, 3MF),
 /// диспетчеризация записи с явным контролем единиц.
 /// </summary>
 public static class MeshFile
@@ -39,6 +40,7 @@ public static class MeshFile
         {
             MeshFileFormat.BinaryStl => StlImporter.Import(data, options),
             MeshFileFormat.AsciiStl => StlImporter.Import(data, options),
+            MeshFileFormat.ThreeMf => ThreeMfImporter.Import(data, options),
             _ => ObjImporter.Import(data, options),
         };
     }
@@ -73,6 +75,9 @@ public static class MeshFile
                 break;
             case MeshFileFormat.Obj:
                 ObjExporter.Export(mesh, stream, options);
+                break;
+            case MeshFileFormat.ThreeMf:
+                ThreeMfExporter.Export(mesh, stream, options);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(format), format, "Неизвестный формат экспорта.");
