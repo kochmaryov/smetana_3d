@@ -4,6 +4,7 @@
     <Project Path="src/SmetaNA.EditorUI/SmetaNA.EditorUI.csproj" />
     <Project Path="src/SmetaNA.Formats/SmetaNA.Formats.csproj" />
     <Project Path="src/SmetaNA.Licensing/SmetaNA.Licensing.csproj" />
+    <Project Path="src/SmetaNA.Manifold/SmetaNA.Manifold.csproj" />
     <Project Path="src/SmetaNA.Rendering/SmetaNA.Rendering.csproj" />
   </Folder>
   <Folder Name="/tests/">
@@ -11,6 +12,7 @@
     <Project Path="tests/SmetaNA.EditorUI.Tests/SmetaNA.EditorUI.Tests.csproj" />
     <Project Path="tests/SmetaNA.Formats.Tests/SmetaNA.Formats.Tests.csproj" />
     <Project Path="tests/SmetaNA.Licensing.Tests/SmetaNA.Licensing.Tests.csproj" />
+    <Project Path="tests/SmetaNA.Manifold.Tests/SmetaNA.Manifold.Tests.csproj" />
     <Project Path="tests/SmetaNA.Rendering.Tests/SmetaNA.Rendering.Tests.csproj" />
   </Folder>
 </Solution>
