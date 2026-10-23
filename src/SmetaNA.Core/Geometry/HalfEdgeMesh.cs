@@ -4,7 +4,7 @@ namespace SmetaNA.Core.Geometry;
 /// Топология меша в терминах полумногоугольников (mesh-first, спека §4).
 /// Контракт для фаз 1–2: построение граней и twin-пары; алгоритмы (нормали, батчинг) — задача 1.1.
 /// </summary>
-public sealed class HalfEdgeMesh
+public sealed partial class HalfEdgeMesh
 {
     private readonly List<MeshVertex> _vertices = [];
     private readonly List<MeshHalfEdge> _halfEdges = [];
@@ -15,8 +15,12 @@ public sealed class HalfEdgeMesh
     public IReadOnlyList<MeshHalfEdge> HalfEdges => _halfEdges;
     public IReadOnlyList<MeshFace> Faces => _faces;
 
-    /// <summary>Замкнутость (watertight): у каждого полуребра есть пара, границ нет.</summary>
-    public bool IsWatertight => _halfEdges.Count > 0 && _halfEdges.All(e => e.Twin is not null);
+    /// <summary>
+    /// Замкнутость (watertight): у каждого полуребра есть пара и своя грань,
+    /// границ и проволочных рёбер (см. <c>HalfEdgeMesh.Edit</c>) нет.
+    /// </summary>
+    public bool IsWatertight =>
+        _halfEdges.Count > 0 && _halfEdges.All(e => e.Twin is not null && e.Face is not null);
 
     public MeshVertex AddVertex(Vector3d position)
     {
