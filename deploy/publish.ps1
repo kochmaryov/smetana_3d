@@ -94,7 +94,8 @@ function Get-NativePlan {
         foreach ($f in @("manifoldc.dll", "manifold.dll")) { $plan += @{ File = $f; Source = (Join-Path $manifoldDir $f) } }
         $plan += @{ File = "lib3mf.dll"; Source = (Join-Path $lib3mfDir "lib3mf.dll") }
     } else {
-        foreach ($f in @("libmanifoldc.so", "libmanifold.so")) { $plan += @{ File = $f; Source = (Join-Path $manifoldDir $f) } }
+        # libmanifold.so.3 — файл с SONAME, который ищет загрузчик при загрузке libmanifoldc.so
+        foreach ($f in @("libmanifoldc.so", "libmanifold.so", "libmanifold.so.3")) { $plan += @{ File = $f; Source = (Join-Path $manifoldDir $f) } }
         $plan += @{ File = "lib3mf.so"; Source = (Join-Path $lib3mfDir "lib3mf.so") }
     }
     return $plan
