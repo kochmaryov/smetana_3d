@@ -4,6 +4,7 @@
         xmlns:views="using:SmetaNA.EditorUI.Views"
         xmlns:vcb="using:SmetaNA.EditorUI.Vcb"
         xmlns:printvolume="using:SmetaNA.EditorUI.PrintVolume"
+        xmlns:toolpalette="using:SmetaNA.EditorUI.ToolPalette"
         x:Class="SmetaNA.EditorUI.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="{Binding Strings.AppTitle}"
@@ -161,6 +162,50 @@
                    Margin="16,0,0,0"
                    TextTrimming="CharacterEllipsis" />
       </Grid>
+    </Border>
+
+    <!-- Палитра инструментов (волна 0 — каркас: группы и кнопки-заглушки с жестами;
+         иконки, вылеты и настройка — волна 1, треки A/B/C) -->
+    <Border DockPanel.Dock="Left"
+            Width="92"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            BorderThickness="0,0,1,0"
+            Padding="6">
+      <ScrollViewer>
+        <ItemsControl ItemsSource="{Binding PaletteGroups}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="toolpalette:PaletteGroupViewModel">
+              <StackPanel Spacing="4" Margin="0,0,0,8">
+                <TextBlock Text="{Binding Name}"
+                           FontSize="10"
+                           TextAlignment="Center"
+                           Opacity="0.7"
+                           TextWrapping="Wrap" />
+                <ItemsControl ItemsSource="{Binding Buttons}" Width="80">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ToolStubViewModel">
+                      <Button Width="38"
+                              Height="38"
+                              Margin="1"
+                              Command="{Binding ActivateCommand}"
+                              ToolTip.Tip="{Binding ToolTip}"
+                              Classes.highlighted="{Binding IsHighlighted}"
+                              Classes.active="{Binding IsActive}">
+                        <TextBlock Text="{Binding PaletteLabel}" FontSize="11" />
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
     </Border>
 
     <!-- Правая колонка: свойства, история, горячие клавиши -->

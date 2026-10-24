@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Вариант C — иконочный рейл и выдвижные панели · SmetaNA</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+<div class="wf">
+  <header>
+    <div class="wf-kicker">SmetaNA · дизайн интерфейса · вариант C</div>
+    <h1>Иконочный рейл с выдвижными группами (Blender / VS Code-тип)</h1>
+    <p class="wf-lead">
+      Узкий рейл слева (56 px) показывает группы: «Рисование», «Изменение», «Операции»,
+      «Размеры», «Вид». Клик по группе открывает выдвижную панель с иконочными кнопками
+      инструментов; панель можно закрепить (📌), тогда она остаётся открытой.
+      Настройка — режим редактирования интерфейса: drag&amp;drop иконок по группам,
+      создание своих групп, скрытие ненужных.
+    </p>
+    <div class="wf-tags">
+      <span class="tag ok">Кнопки-иконки ✓</span>
+      <span class="tag ok">Группы инструментов ✓</span>
+      <span class="tag ok">Настройка интерфейса ✓ (drag &amp; drop)</span>
+      <span class="tag">Прогрессивное раскрытие: группы → панели</span>
+      <span class="tag">Лучшая компактность</span>
+    </div>
+  </header>
+
+  <h2>Основное окно (открыта группа «Изменение», панель закреплена)</h2>
+  <div class="stage">
+    <div class="window">
+      <div class="titlebar">
+        <div class="app-dot"></div>
+        <span>SmetaNA — Корпус датчика.sna</span>
+        <div class="win-controls"><span>—</span><span>□</span><span>✕</span></div>
+      </div>
+      <div class="menubar">
+        <span>Файл</span><span>Правка</span><span>Вид</span><span>Справка</span>
+        <div class="right">
+          <span class="chip"><i data-ic="search"></i>Команды · Ctrl+K</span>
+          <span class="chip"><i data-ic="theme"></i>Тёмная</span>
+          <span class="chip"><i data-ic="globe"></i>Русский</span>
+        </div>
+      </div>
+
+      <div class="body-cols">
+        <!-- рейл групп -->
+        <div class="rail">
+          <button class="icon-btn" title="Выбор · Space"><i data-ic="select"></i></button>
+          <div class="rail-sep"></div>
+          <button class="icon-btn" title="Группа «Рисование»"><i data-ic="line"></i></button>
+          <button class="icon-btn active" title="Группа «Изменение»"><i data-ic="pushpull"></i></button>
+          <button class="icon-btn" title="Группа «Операции»"><i data-ic="cube"></i></button>
+          <button class="icon-btn" title="Группа «Размеры»"><i data-ic="dimension"></i></button>
+          <button class="icon-btn" title="Группа «Вид»"><i data-ic="eye"></i></button>
+          <div class="rail-sep"></div>
+          <button class="icon-btn" title="Зона печати"><i data-ic="printer"></i></button>
+          <button class="icon-btn" title="Настроить интерфейс"><i data-ic="gear"></i></button>
+        </div>
+
+        <div class="viewport">
+          <svg class="scene" viewBox="0 0 940 560" preserveAspectRatio="xMidYMid slice">
+            <g stroke="rgba(255,255,255,0.09)" stroke-width="1" fill="none">
+              <g transform="matrix(52,30,-52,30,470,380)">
+                <path d="M-5 -5H5 M-5 -4H5 M-5 -3H5 M-5 -2H5 M-5 -1H5 M-5 0H5 M-5 1H5 M-5 2H5 M-5 3H5 M-5 4H5 M-5 5H5
+                         M-5 -5V5 M-4 -5V5 M-3 -5V5 M-2 -5V5 M-1 -5V5 M0 -5V5 M1 -5V5 M2 -5V5 M3 -5V5 M4 -5V5 M5 -5V5"/>
+              </g>
+            </g>
+            <g stroke-width="2.4">
+              <line x1="240" y1="430" x2="360" y2="498" stroke="#e05c5c"/>
+              <line x1="240" y1="430" x2="120" y2="498" stroke="#5cb87a"/>
+              <line x1="240" y1="430" x2="240" y2="300" stroke="#5c8fe0"/>
+            </g>
+            <g font-family="Segoe UI, sans-serif" font-size="13" font-weight="600">
+              <text x="368" y="508" fill="#e05c5c">X</text>
+              <text x="104" y="508" fill="#5cb87a">Y</text>
+              <text x="246" y="294" fill="#5c8fe0">Z</text>
+            </g>
+            <polygon points="310,225 470,300 470,410 310,335" fill="#4a5262" stroke="#8b93a3" stroke-width="1.4"/>
+            <polygon points="630,225 470,300 470,410 630,335" fill="rgba(47,111,219,0.38)" stroke="#7fb0ff" stroke-width="1.8"/>
+            <polygon points="470,150 630,225 470,300 310,225" fill="#596172" stroke="#8b93a3" stroke-width="1.4"/>
+            <polygon points="470,182 562,225 470,268 378,225" fill="#39404e" stroke="#8b93a3" stroke-width="1.2"/>
+            <g stroke="#ffd479" stroke-width="1.6">
+              <line x1="300" y1="352" x2="462" y2="428"/>
+              <line x1="294" y1="345" x2="306" y2="359"/>
+              <line x1="456" y1="421" x2="468" y2="435"/>
+              <line x1="648" y1="225" x2="648" y2="335"/>
+              <line x1="641" y1="225" x2="655" y2="225"/>
+              <line x1="641" y1="335" x2="655" y2="335"/>
+            </g>
+            <g font-family="Segoe UI, sans-serif" font-size="14" fill="#ffd479">
+              <text x="342" y="405" transform="rotate(36 342 405)">120 мм</text>
+              <text x="662" y="286">45 мм</text>
+            </g>
+            <g stroke="#7fe08a" stroke-width="2" fill="none">
+              <rect x="304" y="219" width="12" height="12"/>
+            </g>
+            <line x1="470" y1="286" x2="470" y2="314" stroke="#ffffff" stroke-width="1.2"/>
+            <line x1="456" y1="300" x2="484" y2="300" stroke="#ffffff" stroke-width="1.2"/>
+          </svg>
+          <div class="vp-badge">Перспектива · Тени · Сетка 10 мм</div>
+          <div class="vp-chip" style="left:246px;top:196px">Конец</div>
+          <div class="vp-chip" style="left:432px;top:318px">Отрезок · 120 мм</div>
+
+          <!-- выдвижная панель группы «Изменение» -->
+          <div class="flyout-panel" style="left:8px;top:10px">
+            <div class="flyout-head">
+              <i data-ic="pushpull"></i>Изменение
+              <span class="pin" title="Закрепить панель"><i data-ic="pin"></i></span>
+            </div>
+            <div class="fly-row"><i data-ic="pushpull"></i>Толкание/Вытягивание<span class="kb">P</span></div>
+            <div class="fly-row"><i data-ic="offset"></i>Смещение<span class="kb">O</span></div>
+            <div class="fly-row"><i data-ic="move"></i>Перемещение<span class="kb">M</span></div>
+            <div class="fly-row"><i data-ic="rotate"></i>Поворот<span class="kb">Q</span></div>
+            <div class="fly-row"><i data-ic="scale"></i>Масштаб<span class="kb">S</span></div>
+            <div class="fly-row"><i data-ic="eraser"></i>Ластик<span class="kb">E</span></div>
+            <div class="fly-row"><i data-ic="soften"></i>Сглаживание рёбер<span class="kb">H</span></div>
+            <div class="fly-row"><i data-ic="paint"></i>Заливка<span class="kb">B</span></div>
+          </div>
+        </div>
+
+        <div class="right-panel">
+          <div class="panel-card">
+            <h4>Свойства</h4>
+            <div class="kv"><span>Выбрано</span><b>Группа «Корпус»</b></div>
+            <div class="kv"><span>Материал</span><b>PLA, серый</b></div>
+            <div class="kv"><span>Габариты</span><b>120 × 80 × 45 мм</b></div>
+            <div class="kv"><span>Объём</span><b>218 см³</b></div>
+            <div class="kv"><span>Печать</span><span class="badge ok">замкнута</span></div>
+          </div>
+          <div class="panel-card">
+            <h4>История</h4>
+            <div class="hist-row"><span class="badge acc">P</span><span>Толкание/Вытягивание — 45 мм</span></div>
+            <div class="hist-row"><span class="badge">R</span><span>Прямоугольник — 120 × 80</span></div>
+            <div class="hist-row"><span class="badge">D</span><span>Размер — 120 мм</span></div>
+            <div class="hist-row"><span class="badge">L</span><span>Линия — 12 рёбер</span></div>
+          </div>
+          <div class="panel-card">
+            <h4>Зона печати</h4>
+            <div class="kv"><span>Принтер</span><b>Prusa MK4</b></div>
+            <div class="kv"><span>Область</span><b>250 × 210 × 220 мм</b></div>
+            <div class="kv"><span>Заполнение</span><b>68%</b></div>
+            <div class="progress"><i></i></div>
+          </div>
+          <div class="panel-card">
+            <h4>Урок · шаг 2 из 5</h4>
+            <div style="font-size:12.5px">Вытяните верхнюю грань вверх на 45 мм — инструмент «Толкание/Вытягивание» (P).</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vcb-bar">
+        <div class="vcb-input"><span>Длина</span><b>120</b><span class="unit">мм</span></div>
+        <div class="status-bar">
+          <span>Линия · щёлкните по точке начала</span>
+          <span>Модель: мм</span>
+          <span>Готово</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><b>Рейл</b> — группы инструментов, 56 px</span>
+    <span><b>Выдвижная панель</b> — иконка + имя + горячая клавиша; 📌 закрепляет</span>
+    <span><b>Синяя иконка рейла</b> — активная группа</span>
+    <span><b>Шестерня</b> — режим настройки интерфейса</span>
+  </div>
+
+  <h2>Настройка интерфейса — режим редактирования (drag &amp; drop)</h2>
+  <div class="dialog">
+    <div class="dlg-head">
+      <i data-ic="sliders"></i>
+      Настройка интерфейса
+      <span class="sub">перетащите инструменты в группы; всё видно «как в жизни»</span>
+      <span class="x">✕</span>
+    </div>
+    <div class="dlg-body">
+      <div class="dlg-col">
+        <h5>Каталог инструментов</h5>
+        <div class="hint-line">Перетащите в группу справа</div>
+        <div class="row group-row"><i data-ic="chevron"></i>Операции<span class="kb">7</span></div>
+        <div class="row child"><span class="grip">⠿</span><i data-ic="arrayLinear"></i>Линейный массив<span class="kb">Alt+M</span></div>
+        <div class="row child sel"><span class="grip">⠿</span><i data-ic="arrayPolar"></i>Круговой массив<span class="kb">Alt+Shift+M</span></div>
+        <div class="row child"><span class="grip">⠿</span><i data-ic="mirror"></i>Зеркало по оси<span class="kb">Alt+X</span></div>
+        <div class="row child"><span class="grip">⠿</span><i data-ic="followme"></i>Выдавливание по траектории<span class="kb">Alt+W</span></div>
+        <div class="row group-row"><i data-ic="chevron"></i>Размеры<span class="kb">2</span></div>
+        <div class="row child"><span class="grip">⠿</span><i data-ic="dimension"></i>Размер<span class="kb">D</span></div>
+        <div class="row child"><span class="grip">⠿</span><i data-ic="scaleDim"></i>Масштаб по размеру<span class="kb">Shift+D</span></div>
+      </div>
+
+      <div class="dlg-col">
+        <h5>Рейл и группы (как в окне)</h5>
+        <div class="hint-line">Серая зона — «скрыто»; кнопка + создаёт новую группу</div>
+        <div class="row group-row"><span class="grip">⠿</span><i data-ic="line"></i>Рисование<span class="kb">7 · закреплена</span></div>
+        <div class="row group-row"><span class="grip">⠿</span><i data-ic="pushpull"></i>Изменение<span class="kb">8 · закреплена</span></div>
+        <div class="row group-row sel"><span class="grip">⠿</span><i data-ic="cube"></i>Операции<span class="kb">6 · сворачивается</span></div>
+        <div class="row child"><span class="grip">⠿</span><i data-ic="arrayLinear"></i>Линейный массив<span class="kb">Alt+M</span></div>
+        <div class="row child"><span class="grip">⠿</span><i data-ic="mirror"></i>Зеркало (3 варианта)<span class="kb">Alt+X</span></div>
+        <div class="row" style="border-style:dashed;justify-content:center;color:var(--muted)">
+          <i data-ic="plus"></i>Перетащите сюда, чтобы создать группу
+        </div>
+        <div class="row group-row" style="opacity:.55"><span class="grip">⠿</span><i data-ic="eye"></i>Вид<span class="kb">скрыта</span></div>
+      </div>
+
+      <div class="dlg-col fixed">
+        <h5>Поведение панелей</h5>
+        <div class="row"><span class="cb on"></span>Закреплять панели по умолчанию</div>
+        <div class="row"><span class="cb on"></span>Показывать имена в панели</div>
+        <div class="row"><span class="cb on"></span>Показывать горячие клавиши</div>
+        <div class="row"><span class="cb"></span>Закрывать панель после выбора инструмента</div>
+        <h5 style="margin-top:16px">Режим «Новичок»</h5>
+        <div class="row"><span class="cb on"></span>Всегда закреплять «Рисование» и «Изменение»</div>
+        <div class="row"><span class="cb on"></span>Показывать подсказки к инструментам</div>
+        <h5 style="margin-top:16px">Сброс</h5>
+        <button class="btn">Вернуть исходную раскладку</button>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn ghost">Открыть режим настройки прямо в окне</button>
+      <div class="right">
+        <button class="btn">Отмена</button>
+        <button class="btn primary">Готово</button>
+      </div>
+    </div>
+  </div>
+
+  <h2>Оценка варианта</h2>
+  <div class="notes">
+    <div class="note plus">
+      <h3>Плюсы</h3>
+      <ul>
+        <li>Максимальная компактность: 56 px вместо 92 px палитры или 72 px ленты.</li>
+        <li>Масштабируется на любое число групп — путь к 40+ инструментам и модулям M7/M11.</li>
+        <li>Настройка drag &amp; drop «на живом интерфейсе» — нагляднее чекбокс-диалога.</li>
+        <li>Закреплённые панели дают и скорость профи (один клик), и компактность новичка.</li>
+      </ul>
+    </div>
+    <div class="note minus">
+      <h3>Минусы</h3>
+      <ul>
+        <li>До инструмента — два действия (группа → кнопка) без закрепления; это спорит с «лёгким входом» (S1).</li>
+        <li>Инструменты вне закреплённых панелей невидимы — новичок не видит «возможности продукта».</li>
+        <li>Сложнее состояние UI (открытая/закреплённая панель, режим настройки) — больше тестов.</li>
+      </ul>
+    </div>
+    <div class="note impl">
+      <h3>Реализация и адаптивность</h3>
+      <ul>
+        <li>Объём: <b>средний</b> — flyout-панели, pin-состояние, drag &amp; drop в режиме настройки; тестов больше, чем в A/B.</li>
+        <li>Хорошо живёт на 768 px и zoom 125%; на широких экранах (≥ 1600 px) группы можно держать раскрытыми.</li>
+        <li>Режим «Новичок» обязателен: две базовые группы закреплены изначально.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<script src="icons.js"></script>
+</body>
+</html>

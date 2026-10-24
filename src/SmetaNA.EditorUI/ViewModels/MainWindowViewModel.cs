@@ -7,6 +7,7 @@ using SmetaNA.EditorUI.Commands;
 using SmetaNA.EditorUI.Localization;
 using SmetaNA.EditorUI.Sessions;
 using SmetaNA.EditorUI.Themes;
+using SmetaNA.EditorUI.ToolPalette;
 using SmetaNA.EditorUI.Tools;
 using SmetaNA.EditorUI.Tools.Drawing;
 using SmetaNA.EditorUI.Tools.Editing;
@@ -122,6 +123,7 @@ public sealed class MainWindowViewModel : ViewModelBase
 
         PrimaryTools = new ObservableCollection<ToolStubViewModel>(CreateTools(PrimaryToolDefinitions));
         AdvancedTools = new ObservableCollection<ToolStubViewModel>(CreateTools(AdvancedToolDefinitions));
+        PaletteGroups = new ObservableCollection<PaletteGroupViewModel>(CreatePaletteGroups());
 
         Tutorial = new TutorialViewModel(localization, GlassTutorialLesson.Create());
         Tutorial.StateChanged += OnTutorialStateChanged;
@@ -166,6 +168,9 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     public ObservableCollection<ToolStubViewModel> PrimaryTools { get; }
     public ObservableCollection<ToolStubViewModel> AdvancedTools { get; }
+
+    /// <summary>Группы палитры инструментов (волна 0: каркас; иконки/вылеты — волна 1).</summary>
+    public ObservableCollection<PaletteGroupViewModel> PaletteGroups { get; }
     public ObservableCollection<LanguageOption> Languages { get; }
     public ObservableCollection<ProjectTabViewModel> Projects { get; }
     public ObservableCollection<ShortcutRowViewModel> ShortcutRows { get; }
@@ -193,6 +198,11 @@ public sealed class MainWindowViewModel : ViewModelBase
             if (!SetField(ref _activeTool, value))
             {
                 return;
+            }
+
+            foreach (ToolStubViewModel tool in AllTools)
+            {
+                tool.IsActive = ReferenceEquals(tool, value);
             }
 
             OnPropertyChanged(nameof(ActiveToolName));
@@ -575,16 +585,47 @@ public sealed class MainWindowViewModel : ViewModelBase
     }
 
     private IEnumerable<ToolStubViewModel> CreateTools(IEnumerable<ToolDefinition> definitions) =>
+        CreateTools(definitions, ActivateTool);
+
+    private IEnumerable<ToolStubViewModel> CreateTools(
+        IEnumerable<ToolDefinition> definitions,
+        Action<ToolStubViewModel> activate) =>
         definitions.Select(definition =>
             new ToolStubViewModel(
                 _localization,
                 _session.Shortcuts,
                 definition,
-                ActivateTool,
+                activate,
                 () => _isNoviceMode));
 
-    /// <summary>Все кнопки инструментов ленты.</summary>
-    public IEnumerable<ToolStubViewModel> AllTools => PrimaryTools.Concat(AdvancedTools);
+    /// <summary>Группы палитры из реестра (кнопки-заглушки: подпись = жест).</summary>
+    private IEnumerable<PaletteGroupViewModel> CreatePaletteGroups() =>
+        ToolGroupRegistry.DefaultGroups.Select(group =>
+            new PaletteGroupViewModel(
+                _localization,
+                group,
+                CreateTools(group.Buttons.Select(button => button.Definition), ActivatePaletteItem)));
+
+    /// <summary>Активация кнопки палитры: служебные команды — свои, инструменты — как с ленты.</summary>
+    private void ActivatePaletteItem(ToolStubViewModel tool)
+    {
+        switch (tool.CommandId)
+        {
+            case ToolPaletteCommandIds.PrintVolume:
+                StatusText = tool.Name;
+                break;
+            case ToolPaletteCommandIds.Tutorial:
+                Tutorial.StartCommand.Execute(null);
+                break;
+            default:
+                ActivateTool(tool);
+                break;
+        }
+    }
+
+    /// <summary>Все кнопки инструментов ленты и палитры.</summary>
+    public IEnumerable<ToolStubViewModel> AllTools =>
+        PrimaryTools.Concat(AdvancedTools).Concat(PaletteGroups.SelectMany(group => group.Buttons));
 
     private void RefreshToolTips()
     {

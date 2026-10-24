@@ -10,5 +10,11 @@
       <Setter Property="BorderThickness" Value="2" />
       <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
+    <!-- Активная кнопка инструмента в палитре (волна 0 палитры tool-palette) -->
+    <Style Selector="Button.active">
+      <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight1}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
   </Application.Styles>
 </Application>

@@ -17,6 +17,8 @@ public sealed class LocalizationService : ILocalizationService
     static LocalizationService()
     {
         RegisterModuleStrings(SmetaNA.EditorUI.Tools.M6.M6ToolStrings.Get);
+        RegisterModuleStrings(SmetaNA.EditorUI.ToolPalette.ToolGroupStrings.Get);
+        RegisterModuleStrings(SmetaNA.EditorUI.ToolPalette.ToolPaletteStrings.Get);
     }
 
     /// <summary>

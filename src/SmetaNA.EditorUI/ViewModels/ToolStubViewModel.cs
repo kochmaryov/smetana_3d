@@ -25,6 +25,7 @@ public sealed class ToolStubViewModel : ViewModelBase
     private readonly ShortcutMap _shortcuts;
     private readonly Func<bool> _showHints;
     private bool _isHighlighted;
+    private bool _isActive;
 
     public ToolStubViewModel(
         ILocalizationService localization,
@@ -84,8 +85,18 @@ public sealed class ToolStubViewModel : ViewModelBase
         set => SetField(ref _isHighlighted, value);
     }
 
+    /// <summary>Активная кнопка (текущий инструмент) — выделение в палитре.</summary>
+    public bool IsActive
+    {
+        get => _isActive;
+        set => SetField(ref _isActive, value);
+    }
+
     /// <summary>Текущая комбинация клавиш команды.</summary>
     public string Gesture => _shortcuts.Find(CommandId)?.ToString() ?? string.Empty;
+
+    /// <summary>Подпись кнопки-заглушки палитры (волна 0): жест или «·» без него.</summary>
+    public string PaletteLabel => Gesture.Length > 0 ? Gesture : "·";
 
     /// <summary>Пересчитать подсказку (смена режима или языка).</summary>
     public void Refresh() => OnPropertyChanged(nameof(ToolTip));
