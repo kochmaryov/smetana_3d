@@ -1,0 +1,32 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:Class="SmetaNA.EditorUI.Icons.ToolIconResources">
+  <!-- Глифы палитры инструментов (спека tool-palette §4 «Иконки», T1/T6).
+       Path mini-language, поле 24×24, stroke-стиль без заливки; отрисовка —
+       контрол ToolIcon (перекраска через currentColor). Стиль глифов — макет
+       data/temp/tool_ui_variants/variant_a_palette.html (icons.js). -->
+  <x:String x:Key="ToolIcon.Select">M5 3l13.2 8.3-6 .8-2.3 6.4z</x:String>
+  <x:String x:Key="ToolIcon.Line">M4 20L20 4M3.2 20.8a1.2 1.2 0 102.4 0 1.2 1.2 0 10-2.4 0M18.4 3.2a1.2 1.2 0 102.4 0 1.2 1.2 0 10-2.4 0</x:String>
+  <x:String x:Key="ToolIcon.Rect">M4 6h16v12H4z</x:String>
+  <x:String x:Key="ToolIcon.Circle">M12 4a8 8 0 100 16 8 8 0 100-16</x:String>
+  <x:String x:Key="ToolIcon.Polygon">M12 3l8 4.5v9L12 21l-8-4.5v-9z</x:String>
+  <x:String x:Key="ToolIcon.Arc">M4 18Q12 3 20 18M3 18h.01M21 18h.01</x:String>
+  <x:String x:Key="ToolIcon.Freehand">M4 15c2-5 4 2 6-3s4 3 6-2 3 1 4 0</x:String>
+  <x:String x:Key="ToolIcon.PushPull">M4 13h12v7H4zM10 10V3M6.5 6.5L10 3l3.5 3.5</x:String>
+  <x:String x:Key="ToolIcon.Offset">M4 4h16v16H4zM8 8h8v8H8z</x:String>
+  <x:String x:Key="ToolIcon.Move">M12 3v18M3 12h18M12 3l-2.5 2.6M12 3l2.5 2.6M12 21l-2.5-2.6M12 21l2.5-2.6M3 12l2.6-2.5M3 12l2.6 2.5M21 12l-2.6-2.5M21 12l-2.6 2.5</x:String>
+  <x:String x:Key="ToolIcon.Rotate">M20 12a8 8 0 11-2.4-5.7M20 3.5v4h-4</x:String>
+  <x:String x:Key="ToolIcon.Scale">M5 5h8v8H5zM13 13l6 6M15 19h4v-4M5 19h2</x:String>
+  <x:String x:Key="ToolIcon.Eraser">M7 20l-3.2-3.2 9-9L19 14l-6 6zM10 8l6 6M7 20h13</x:String>
+  <x:String x:Key="ToolIcon.Soften">M4 16l3-5 3 3 4-7 6 6M4 20h16</x:String>
+  <x:String x:Key="ToolIcon.Paint">M5 10l6-6 7 6-6 6zM12 16v2.5a2 2 0 104 0V16</x:String>
+  <x:String x:Key="ToolIcon.ArrayLinear">M3 6h5v5H3zM10 6h5v5h-5zM17 6h5v5h-5zM3 14h5v5H3zM10 14h5v5h-5zM17 14h5v5h-5z</x:String>
+  <x:String x:Key="ToolIcon.ArrayPolar">M12 3a9 9 0 100 18 9 9 0 100-18M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 100-7M12 3v5.4M12 15.6V21M3 12h5.4M15.6 12H21</x:String>
+  <x:String x:Key="ToolIcon.Mirror">M12 2v20M9.5 6.5L4 12l5.5 5.5zM14.5 6.5L20 12l-5.5 5.5z</x:String>
+  <x:String x:Key="ToolIcon.FollowMe">M4 5h6v6H4zM10 8c6 0 4 11 10 11M20 19l-2.6-1.6M20 19l-1.2 2.8</x:String>
+  <x:String x:Key="ToolIcon.Revolve">M5 3v18M8 6h4.5v6H8zM12.5 8c5 1 7 4.5 7 8.5M19.5 16.5l-2.3-1.4M19.5 16.5l-1 2.6</x:String>
+  <x:String x:Key="ToolIcon.Dimension">M4 5.5v13M20 5.5v13M4 12h16M7 9l-3 3 3 3M17 9l3 3-3 3</x:String>
+  <x:String x:Key="ToolIcon.ScaleDim">M5 5h6v6H5zM11 11l5 5M13 19h6M16 16v6M4 19v-3M4 19h3</x:String>
+  <x:String x:Key="ToolIcon.Printer">M7 8V4h10v4M7 17H5a1 1 0 01-1-1v-6h16v6a1 1 0 01-1 1h-2M7 14h10v6H7z</x:String>
+  <x:String x:Key="ToolIcon.Book">M4 5a2 2 0 012-2h12v18H6a2 2 0 01-2-2zM8 7.5h8M8 11.5h8</x:String>
+</ResourceDictionary>
