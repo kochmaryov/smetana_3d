@@ -1,0 +1,215 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tp="using:SmetaNA.EditorUI.ToolPalette"
+             x:Class="SmetaNA.EditorUI.ToolPalette.ToolPaletteControl"
+             x:DataType="tp:ToolPaletteViewModel">
+  <!-- Палитра инструментов (макет variant_a): кнопки 38×38, группы-разделы,
+       вылеты по треугольнику в углу; адаптив 2 колонки / 1 колонка / рейл. -->
+  <UserControl.Styles>
+    <Style Selector="Button.tool">
+      <Setter Property="Width" Value="38" />
+      <Setter Property="Height" Value="38" />
+      <Setter Property="Margin" Value="1" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.flyoutCorner">
+      <Setter Property="Width" Value="13" />
+      <Setter Property="Height" Value="13" />
+      <Setter Property="Margin" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Right" />
+      <Setter Property="VerticalAlignment" Value="Bottom" />
+      <Setter Property="ZIndex" Value="1" />
+    </Style>
+    <Style Selector="Button.groupHeader">
+      <Setter Property="Padding" Value="2" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.railGroup">
+      <Setter Property="Width" Value="44" />
+      <Setter Property="Height" Value="38" />
+      <Setter Property="Margin" Value="1" />
+      <Setter Property="Padding" Value="2" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.flyRow">
+      <Setter Property="Padding" Value="8,4" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="Path.chevron">
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+      <Setter Property="RenderTransform">
+        <RotateTransform Angle="-90" />
+      </Setter>
+    </Style>
+    <Style Selector="Path.chevron.expanded">
+      <Setter Property="RenderTransform">
+        <RotateTransform Angle="0" />
+      </Setter>
+    </Style>
+  </UserControl.Styles>
+
+  <Border Width="{Binding PaletteWidth}"
+          BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+          BorderThickness="0,0,1,0"
+          Padding="6">
+    <Panel>
+      <!-- Обычный и компактный режимы: 2 колонки → 1 колонка (≤ 960 px) -->
+      <ScrollViewer x:Name="PaletteScroll"
+                    IsVisible="{Binding !IsRailMode}"
+                    HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl ItemsSource="{Binding Groups}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="tp:ToolPaletteGroupViewModel">
+              <StackPanel Spacing="4" Margin="0,0,0,8">
+                <Button Classes="groupHeader"
+                        Classes.expanded="{Binding IsExpanded}"
+                        Command="{Binding ToggleExpandedCommand}"
+                        ToolTip.Tip="{Binding Name}">
+                  <StackPanel Orientation="Horizontal" Spacing="4">
+                    <Path Classes="chevron"
+                          Classes.expanded="{Binding IsExpanded}"
+                          Data="M 0,0 L 4,4 L 8,0"
+                          Stroke="{Binding $parent[Button].Foreground}"
+                          StrokeThickness="1.5" />
+                    <TextBlock Text="{Binding Name}"
+                               FontSize="10"
+                               TextAlignment="Center"
+                               Opacity="0.7"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center" />
+                  </StackPanel>
+                </Button>
+                <ItemsControl ItemsSource="{Binding Buttons}"
+                              IsVisible="{Binding IsExpanded}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel ItemWidth="40" ItemHeight="40" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="tp:ToolPaletteButtonViewModel">
+                      <Grid Width="38" Height="38" Margin="1">
+                        <Button Classes="tool"
+                                Command="{Binding ActivateCommand}"
+                                ToolTip.Tip="{Binding ToolTip}"
+                                Classes.active="{Binding IsActive}"
+                                Classes.highlighted="{Binding IsHighlighted}">
+                          <!-- Заглушка до глифов трека A (ToolIconId) -->
+                          <TextBlock Text="{Binding PaletteLabel}" FontSize="11" />
+                        </Button>
+                        <Button Classes="flyoutCorner"
+                                IsVisible="{Binding HasFlyout}"
+                                Command="{Binding OpenFlyoutCommand}"
+                                ToolTip.Tip="{Binding ToolTip}">
+                          <Path Data="M 0,0 L 6,0 L 3,4 Z"
+                                Fill="{Binding $parent[Button].Foreground}"
+                                VerticalAlignment="Bottom" />
+                        </Button>
+                        <Popup IsOpen="{Binding IsFlyoutOpen, Mode=TwoWay}"
+                               Placement="RightEdgeAlignedTop"
+                               IsLightDismissEnabled="True">
+                          <FlyoutPresenter Padding="4">
+                            <ItemsControl ItemsSource="{Binding FlyoutItems}" MinWidth="180">
+                              <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="tp:ToolPaletteButtonViewModel">
+                                  <Button Classes="flyRow"
+                                          Command="{Binding ActivateCommand}"
+                                          ToolTip.Tip="{Binding ToolTip}"
+                                          Classes.active="{Binding IsActive}"
+                                          Classes.highlighted="{Binding IsHighlighted}">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                      <TextBlock Text="{Binding Name}"
+                                                 FontSize="12"
+                                                 VerticalAlignment="Center" />
+                                      <TextBlock Grid.Column="1"
+                                                 Text="{Binding Gesture}"
+                                                 FontSize="11"
+                                                 Opacity="0.55"
+                                                 Margin="12,0,0,0"
+                                                 VerticalAlignment="Center" />
+                                    </Grid>
+                                  </Button>
+                                </DataTemplate>
+                              </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                          </FlyoutPresenter>
+                        </Popup>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+
+      <!-- Режим рейла (≤ 768 px): группы-кнопки с вылетами инструментов -->
+      <ScrollViewer IsVisible="{Binding IsRailMode}"
+                    HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl ItemsSource="{Binding Groups}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel ItemWidth="46" ItemHeight="40" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="tp:ToolPaletteGroupViewModel">
+              <Grid Width="44" Height="38" Margin="1">
+                <Button Classes="railGroup"
+                        Command="{Binding OpenFlyoutCommand}"
+                        ToolTip.Tip="{Binding Name}">
+                  <TextBlock Text="{Binding Name}"
+                             FontSize="9"
+                             TextAlignment="Center"
+                             TextWrapping="Wrap" />
+                </Button>
+                <Popup IsOpen="{Binding IsFlyoutOpen, Mode=TwoWay}"
+                       Placement="RightEdgeAlignedTop"
+                       IsLightDismissEnabled="True">
+                  <FlyoutPresenter Padding="6">
+                    <StackPanel MinWidth="190" Spacing="2">
+                      <TextBlock Text="{Binding Name}"
+                                 FontSize="10"
+                                 Opacity="0.7"
+                                 Margin="4,2" />
+                      <ItemsControl ItemsSource="{Binding RailItems}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="tp:ToolPaletteButtonViewModel">
+                            <Button Classes="flyRow"
+                                    Command="{Binding ActivateCommand}"
+                                    ToolTip.Tip="{Binding ToolTip}"
+                                    Classes.active="{Binding IsActive}"
+                                    Classes.highlighted="{Binding IsHighlighted}">
+                              <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{Binding Name}"
+                                           FontSize="12"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding Gesture}"
+                                           FontSize="11"
+                                           Opacity="0.55"
+                                           Margin="12,0,0,0"
+                                           VerticalAlignment="Center" />
+                              </Grid>
+                            </Button>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                  </FlyoutPresenter>
+                </Popup>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Panel>
+  </Border>
+</UserControl>
