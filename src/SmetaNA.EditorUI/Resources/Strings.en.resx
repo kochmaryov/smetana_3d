@@ -76,10 +76,10 @@
     <value>Paint Bucket</value>
   </data>
   <data name="Tool.StubStatus" xml:space="preserve">
-    <value>"{0}" — stub: the tool arrives in phase 2</value>
+    <value>"{0}" — tool activated</value>
   </data>
   <data name="Tool.StubToolTip" xml:space="preserve">
-    <value>{0} — stub (phase 2)</value>
+    <value>{0} — tool</value>
   </data>
   <data name="Tool.None" xml:space="preserve">
     <value>None</value>
@@ -106,7 +106,7 @@
     <value>current state</value>
   </data>
   <data name="History.StubCommand" xml:space="preserve">
-    <value>Value entry "{0}" (stub)</value>
+    <value>Value entry "{0}"</value>
   </data>
   <data name="Properties.Title" xml:space="preserve">
     <value>Properties</value>
@@ -130,7 +130,7 @@
     <value>Objects</value>
   </data>
   <data name="Properties.StubNote" xml:space="preserve">
-    <value>Modeling tools arrive in phase 2</value>
+    <value>Exact values are entered in the VCB; Esc cancels the tool action</value>
   </data>
   <data name="Viewport.Title" xml:space="preserve">
     <value>3D viewport</value>

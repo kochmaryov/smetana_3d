@@ -80,6 +80,14 @@ public sealed class SnapFace
         }
 
         Centroid = sum * (1.0 / ring.Count);
+
+        double radiusSquared = 0;
+        for (int i = 0; i < _ring.Length; i++)
+        {
+            radiusSquared = Math.Max(radiusSquared, (_ring[i] - Centroid).LengthSquared());
+        }
+
+        BoundingRadius = Math.Sqrt(radiusSquared);
     }
 
     public IReadOnlyList<Vector3d> Ring => _ring;
@@ -89,6 +97,12 @@ public sealed class SnapFace
 
     /// <summary>Центроид вершин кольца.</summary>
     public Vector3d Centroid { get; }
+
+    /// <summary>
+    /// Радиус описанной сферы контура вокруг центроида: точка вне сферы заведомо
+    /// не принадлежит грани — дешёвый отсев перед дорогой проверкой принадлежности.
+    /// </summary>
+    public double BoundingRadius { get; }
 
     /// <summary>
     /// Точка пересечения луча с плоскостью грани; <c>false</c> — луч

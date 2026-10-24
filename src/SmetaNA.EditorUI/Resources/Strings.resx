@@ -76,10 +76,10 @@
     <value>Заливка</value>
   </data>
   <data name="Tool.StubStatus" xml:space="preserve">
-    <value>«{0}» — заглушка: инструмент появится в фазе 2</value>
+    <value>«{0}» — инструмент активирован</value>
   </data>
   <data name="Tool.StubToolTip" xml:space="preserve">
-    <value>{0} — заглушка (фаза 2)</value>
+    <value>{0} — инструмент</value>
   </data>
   <data name="Tool.None" xml:space="preserve">
     <value>Нет</value>
@@ -106,7 +106,7 @@
     <value>текущее состояние</value>
   </data>
   <data name="History.StubCommand" xml:space="preserve">
-    <value>Ввод значения «{0}» (заглушка)</value>
+    <value>Ввод значения «{0}»</value>
   </data>
   <data name="Properties.Title" xml:space="preserve">
     <value>Свойства</value>
@@ -130,7 +130,7 @@
     <value>Объектов</value>
   </data>
   <data name="Properties.StubNote" xml:space="preserve">
-    <value>Инструменты моделирования появятся в фазе 2</value>
+    <value>Точный ввод значений — в строке VCB; Esc отменяет действие инструмента</value>
   </data>
   <data name="Viewport.Title" xml:space="preserve">
     <value>3D-вьюпорт</value>

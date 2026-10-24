@@ -11,12 +11,16 @@ namespace SmetaNA.Core.Tools;
 /// </summary>
 public sealed class ToolContext
 {
+    private InferenceScene? _inferenceScene;
+    private InferenceScene? _inferenceSceneWithHidden;
+
     public ToolContext(Scene scene, UndoStack undoStack)
     {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(undoStack);
         Scene = scene;
         UndoStack = undoStack;
+        UndoStack.Changed += InvalidateInferenceCache;
     }
 
     public Scene Scene { get; }
@@ -48,9 +52,27 @@ public sealed class ToolContext
         return (SnapSolver ?? InferenceEngine.Solve)(request);
     }
 
-    /// <summary>Снимок сцены для запросов привязок.</summary>
+    /// <summary>
+    /// Снимок сцены для запросов привязок. Кэшируется: построение снимка — O(числа
+    /// рёбер/граней) с аллокациями, а инструменты запрашивают его на каждое событие
+    /// указателя. Кэш сбрасывается на любую правку через <see cref="UndoStack.Changed"/>.
+    /// </summary>
     public InferenceScene BuildInferenceScene(bool includeHidden = false)
-        => InferenceSceneBuilder.FromScene(Scene, includeHidden);
+    {
+        if (includeHidden)
+        {
+            return _inferenceSceneWithHidden ??= InferenceSceneBuilder.FromScene(Scene, includeHidden: true);
+        }
+
+        return _inferenceScene ??= InferenceSceneBuilder.FromScene(Scene);
+    }
+
+    /// <summary>Сбросить кэш снимка сцены (для внешних правок мимо команд).</summary>
+    public void InvalidateInferenceCache()
+    {
+        _inferenceScene = null;
+        _inferenceSceneWithHidden = null;
+    }
 
     /// <summary>Выбрать грань под курсором (пиксели вьюпорта).</summary>
     public bool TryPickFace(Vector2d cursorPx, out ToolFaceHit hit)
@@ -68,6 +90,7 @@ public sealed class ToolContext
     public void Execute(IEditCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
+        InvalidateInferenceCache();
         UndoStack.Push(command);
         SceneEdited?.Invoke();
     }

@@ -11,7 +11,9 @@ using SmetaNA.Core.Geometry;
 using SmetaNA.Core.Inference;
 using SmetaNA.Core.Model;
 using SmetaNA.Core.Tools;
+using SmetaNA.Core.Tools.Drawing;
 using SmetaNA.EditorUI.Tools;
+using SmetaNA.EditorUI.Tools.Drawing;
 using SmetaNA.EditorUI.ViewModels;
 using SmetaNA.Rendering;
 
@@ -51,6 +53,60 @@ public partial class ViewportView : UserControl
 
     /// <summary>Снимок статистики вьюпорта (для смоук-прогона).</summary>
     internal ViewportStats GetStats() => Viewport.GetStats();
+
+    /// <summary>
+    /// Смоук-проверка рисования: два клика и Enter идут тем же путём, что и ввод
+    /// мыши (лучи камеры → маршрут указателя → инструмент), и должны добавить узел
+    /// в сцену. Ловит разрывы между активацией инструмента и вводом из вьюпорта.
+    /// </summary>
+    internal bool RunToolDrawingSmoke()
+    {
+        if (_viewModel is not { } viewModel || _tools is not { } tools)
+        {
+            Console.WriteLine("[DRAWING] view=unwired result=FAIL");
+            return false;
+        }
+
+        if (!RegisterDrawingTools.TryActivate(tools, LineTool.ToolId))
+        {
+            Console.WriteLine("[DRAWING] activate=FAIL result=FAIL");
+            return false;
+        }
+
+        int nodesBefore = viewModel.Scene.EnumerateNodes().Count();
+        long verticesBefore = VerticesInScene(viewModel);
+        UpdateToolViewport();
+
+        double width = Math.Max(1.0, Bounds.Width);
+        double height = Math.Max(1.0, Bounds.Height);
+
+        Stopwatch clock = Stopwatch.StartNew();
+        Stopwatch step = Stopwatch.StartNew();
+        bool pressed = tools.RoutePointer(PointerInputFactory.Create(
+            width * 0.4, height * 0.55, PointerEventKind.Press, PointerButton.Left, false, false, false));
+        long firstPressMs = step.ElapsedMilliseconds;
+        step.Restart();
+        pressed = pressed && tools.RoutePointer(PointerInputFactory.Create(
+            width * 0.6, height * 0.55, PointerEventKind.Press, PointerButton.Left, false, false, false));
+        long secondPressMs = step.ElapsedMilliseconds;
+        step.Restart();
+        bool committed = pressed
+            && tools.RouteKey(PointerInputFactory.Key(ToolKey.Enter, false, false, false));
+        long commitMs = step.ElapsedMilliseconds;
+
+        int nodesAfter = viewModel.Scene.EnumerateNodes().Count();
+        long verticesAfter = VerticesInScene(viewModel);
+        tools.Deactivate();
+        bool ok = committed && verticesAfter > verticesBefore;
+        Console.WriteLine(
+            $"[DRAWING] pressed={pressed} committed={committed} pressMs={firstPressMs}/{secondPressMs} commitMs={commitMs} totalMs={clock.ElapsedMilliseconds} nodes={nodesBefore}->{nodesAfter} vertices={verticesBefore}->{verticesAfter} result={(ok ? "PASS" : "FAIL")}");
+        return ok;
+    }
+
+    /// <summary>Сумма вершин всех мешей сцены (рисование пополняет меш или добавляет узел).</summary>
+    private static long VerticesInScene(ProjectTabViewModel viewModel)
+        => viewModel.Scene.EnumerateNodes()
+            .Sum(node => node is SmetaNA.Core.Model.MeshNode meshNode ? meshNode.Mesh.Vertices.Count : 0);
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {

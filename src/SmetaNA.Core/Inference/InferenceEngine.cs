@@ -40,17 +40,37 @@ public static class InferenceEngine
 
     private sealed class Solver
     {
+        /// <summary>Потолок направлений для ограничения «параллельно».</summary>
+        private const int MaxReferenceDirections = 64;
+
+        /// <summary>
+        /// Потолок сегментов для перебора пар пересечений: вблизи курсора на плотных
+        /// мешах их тысячи, а пары — квадратичный перебор. Сверх бюджета пересечения
+        /// не ищутся (прочие привязки работают).
+        /// </summary>
+        private const int MaxIntersectionSegments = 256;
+
+        /// <summary>
+        /// Запас радиуса отсева: луч курсора не совпадает с Forward, а тест —
+        /// консервативное супермножество точного экранного фильтра.
+        /// </summary>
+        private const double SnapRadiusMargin = 2.0;
+
         private readonly SnapRequest _request;
         private readonly InferenceViewport _viewport;
         private readonly Vector2d _cursor;
         private readonly double _tolerancePx;
         private readonly Ray3d _ray;
+        private readonly Vector3d _rayDirection;
         private readonly Vector3d? _anchor;
         private readonly bool _pointsAllowed;
         private readonly HashSet<SnapType> _allowedLinear;
+        private readonly double _snapRadiusPerDepth;
+        private readonly double _snapRadiusWorld;
 
         private readonly List<SnapCandidate> _pointCandidates = [];
         private readonly List<SnapCandidate> _linearCandidates = [];
+        private IReadOnlyList<Vector3d>? _referenceDirections;
 
         public Solver(SnapRequest request)
         {
@@ -59,18 +79,34 @@ public static class InferenceEngine
             _cursor = request.CursorPx;
             _tolerancePx = request.TolerancePx;
             _ray = request.Ray;
+            _rayDirection = request.Ray.Direction.Normalized();
             _anchor = request.Anchor;
             ResolveModifiers(request.Modifiers, out _pointsAllowed, out _allowedLinear);
+
+            // радиус толеранса линеен по глубине (перспектива) или постоянен (орто):
+            // коэффициент считается один раз, чтобы не делить на каждый кандидат
+            if (_viewport.Projection == InferenceProjection.Perspective)
+            {
+                Vector3d probe = _ray.Origin + _rayDirection;
+                double depth = Math.Abs(_viewport.DepthOf(probe));
+                _snapRadiusPerDepth = depth > 0
+                    ? _viewport.WorldRadiusAt(probe, _tolerancePx) * SnapRadiusMargin / depth
+                    : 0;
+            }
+            else
+            {
+                _snapRadiusWorld = _viewport.WorldRadiusAt(_ray.Origin, _tolerancePx) * SnapRadiusMargin;
+            }
         }
 
         public SnapResult Solve()
         {
-            if (_pointsAllowed)
+            if (_pointsAllowed && (_request.Filter & SnapFilter.Points) != 0)
             {
                 CollectPointCandidates();
             }
 
-            if (_allowedLinear.Count > 0)
+            if (_allowedLinear.Count > 0 && (_request.Filter & SnapFilter.Linear) != 0)
             {
                 CollectLinearCandidates();
                 CollectOnFaceAlongDirections();
@@ -152,7 +188,20 @@ public static class InferenceEngine
             {
                 foreach (SnapFace face in scene.Faces)
                 {
-                    if (face.TryIntersect(_ray, out Vector3d hit) && face.Contains(hit, WorldTolerance(hit)))
+                    if (!face.TryIntersect(_ray, out Vector3d hit))
+                    {
+                        continue;
+                    }
+
+                    // точка вне описанной сферы контура заведомо не на грани;
+                    // без отсева дорогая проверка принадлежности бежит по всем граням
+                    Vector3d fromCentroid = hit - face.Centroid;
+                    if (fromCentroid.LengthSquared() > face.BoundingRadius * face.BoundingRadius)
+                    {
+                        continue;
+                    }
+
+                    if (face.Contains(hit, WorldTolerance(hit)))
                     {
                         TryAddPoint(SnapType.OnFace, hit);
                     }
@@ -162,7 +211,23 @@ public static class InferenceEngine
 
         private void CollectIntersections()
         {
-            IReadOnlyList<SnapSegment> segments = _request.Scene.Segments;
+            // Кандидат-пересечение принимается только в пределах толеранса от курсора,
+            // а проекция сохраняет прямые: пересечение двух сегментов может быть принято
+            // лишь если оба сегмента проходят рядом с курсором. Без отсечки перебор пар
+            // O(n²) над сценой с сотнями тысяч рёбер намертво вешает UI.
+            List<SnapSegment> segments = new();
+            foreach (SnapSegment segment in _request.Scene.Segments)
+            {
+                if (IsProjectedSegmentNearCursor(segment))
+                {
+                    segments.Add(segment);
+                    if (segments.Count >= MaxIntersectionSegments)
+                    {
+                        break;
+                    }
+                }
+            }
+
             IReadOnlyList<SnapGuide> guides = _request.Guides;
 
             for (int i = 0; i < segments.Count; i++)
@@ -236,7 +301,7 @@ public static class InferenceEngine
 
             if (_allowedLinear.Contains(SnapType.Parallel))
             {
-                foreach (Vector3d direction in EnumerateReferenceDirections())
+                foreach (Vector3d direction in ReferenceDirections)
                 {
                     TryAddLinear(SnapType.Parallel, anchor, direction);
                 }
@@ -278,9 +343,21 @@ public static class InferenceEngine
                 return;
             }
 
+            // Точка ограничения лежит на грани, поэтому её проекция попадает в экранный
+            // bbox грани: дальше рассматриваются только грани вблизи курсора — перебор
+            // «направление × все грани» недопустим для сцен с сотнями тысяч треугольников.
+            List<SnapFace> faces = new();
+            foreach (SnapFace face in _request.Scene.Faces)
+            {
+                if (IsProjectedFaceNearCursor(face))
+                {
+                    faces.Add(face);
+                }
+            }
+
             foreach ((SnapType type, Vector3d direction) in EnumerateConstraintDirections())
             {
-                foreach (SnapFace face in _request.Scene.Faces)
+                foreach (SnapFace face in faces)
                 {
                     double denominator = Vector3d.Dot(direction, face.Normal);
                     if (Math.Abs(denominator) <= 1e-12)
@@ -295,7 +372,13 @@ public static class InferenceEngine
                         continue;
                     }
 
-                    if (!face.Contains(point, WorldTolerance(point)))
+                    Vector3d fromCentroid = point - face.Centroid;
+                    if (fromCentroid.LengthSquared() > face.BoundingRadius * face.BoundingRadius)
+                    {
+                        continue;
+                    }
+
+                    if (!IsWithinSnapRadius(point) || !face.Contains(point, WorldTolerance(point)))
                     {
                         continue;
                     }
@@ -350,6 +433,21 @@ public static class InferenceEngine
 
         private bool AreCoincident(Vector3d a, Vector3d b)
         {
+            // дешёвый мировой предфильтр: совпадающие по экрану точки заведомо близки
+            // в мире (радиус толеранса на глубине точки)
+            if (_viewport.Projection == InferenceProjection.Perspective && _viewport.DepthOf(a) <= 0)
+            {
+                return (a - b).LengthSquared() <= 0;
+            }
+
+            double radius = (_viewport.Projection == InferenceProjection.Perspective
+                ? _snapRadiusPerDepth * _viewport.DepthOf(a)
+                : _snapRadiusWorld) + 1.0;
+            if ((a - b).LengthSquared() > radius * radius)
+            {
+                return false;
+            }
+
             Vector2d? projectedA = _viewport.TryProject(a);
             Vector2d? projectedB = _viewport.TryProject(b);
             if (projectedA is null || projectedB is null)
@@ -472,26 +570,62 @@ public static class InferenceEngine
             });
         }
 
-        /// <summary>Направления для параллельных ограничений: уникальные направления рёбер и направляющих.</summary>
-        private IEnumerable<Vector3d> EnumerateReferenceDirections()
+        /// <summary>
+        /// Направления для параллельных ограничений (кэшируются на запрос): уникальные
+        /// направления рёбер и направляющих. Их количество ограничено: на плотных мешах
+        /// уникальных направлений сотни тысяч, а ограничение «параллельно» строится по
+        /// каждому. Сначала берутся направления геометрии у курсора (как в SketchUp),
+        /// остальные — по порядку снимка.
+        /// </summary>
+        private IReadOnlyList<Vector3d> ReferenceDirections
+            => _referenceDirections ??= CollectReferenceDirections();
+
+        private List<Vector3d> CollectReferenceDirections()
         {
             var seen = new HashSet<(long X, long Y, long Z)>();
-            foreach (SnapSegment segment in _request.Scene.Segments)
-            {
-                Vector3d direction = segment.Direction;
-                if (seen.Add(DirectionKey(direction)))
-                {
-                    yield return direction;
-                }
-            }
+            List<Vector3d> ordered = new(MaxReferenceDirections + _request.Guides.Count);
+            List<Vector3d> others = new();
 
             foreach (SnapGuide guide in _request.Guides)
             {
                 if (seen.Add(DirectionKey(guide.Direction)))
                 {
-                    yield return guide.Direction;
+                    ordered.Add(guide.Direction);
                 }
             }
+
+            foreach (SnapSegment segment in _request.Scene.Segments)
+            {
+                Vector3d direction = segment.Direction;
+                if (!seen.Add(DirectionKey(direction)))
+                {
+                    continue;
+                }
+
+                if (IsWithinSnapRadius(segment.Midpoint))
+                {
+                    if (ordered.Count < MaxReferenceDirections)
+                    {
+                        ordered.Add(direction);
+                    }
+                }
+                else
+                {
+                    others.Add(direction);
+                }
+            }
+
+            foreach (Vector3d direction in others)
+            {
+                if (ordered.Count >= MaxReferenceDirections)
+                {
+                    break;
+                }
+
+                ordered.Add(direction);
+            }
+
+            return ordered;
         }
 
         /// <summary>Все направления линейных ограничений (оси и параллели) для комбинирования с гранями.</summary>
@@ -517,15 +651,37 @@ public static class InferenceEngine
                 yield break;
             }
 
-            foreach (Vector3d direction in EnumerateReferenceDirections())
+            foreach (Vector3d direction in ReferenceDirections)
             {
                 yield return (SnapType.Parallel, direction);
             }
         }
 
+        /// <summary>
+        /// Экранный сегмент проходит в пределах толеранса от курсора. Проекция
+        /// сохраняет прямые, поэтому сегмент, чья проекция не подходит курсору,
+        /// не может содержать принимаемую точку пересечения. Отсев — конусный, с
+        /// запасом половины длины сегмента (супермножество точного экранного теста).
+        /// </summary>
+        private bool IsProjectedSegmentNearCursor(SnapSegment segment)
+            => IsWithinSnapRadius(segment.Midpoint, segment.Length * 0.5);
+
+        /// <summary>
+        /// Грань подходит курсору: точка, принадлежащая грани, лежит в пределах
+        /// описанной сферы контура, поэтому грань, чья сфера не пересекает конус
+        /// толеранса луча, не может дать принимаемого кандидата.
+        /// </summary>
+        private bool IsProjectedFaceNearCursor(SnapFace face)
+            => IsWithinSnapRadius(face.Centroid, face.BoundingRadius);
+
         private bool TryMeasure(Vector3d point, out double screenDistance)
         {
             screenDistance = 0;
+            if (!IsWithinSnapRadius(point))
+            {
+                return false;
+            }
+
             Vector2d? projected = _viewport.TryProject(point);
             if (projected is null)
             {
@@ -534,6 +690,43 @@ public static class InferenceEngine
 
             screenDistance = Vector2d.Distance(projected.Value, _cursor);
             return screenDistance <= _tolerancePx;
+        }
+
+        /// <summary>
+        /// Дешёвый предварительный фильтр толеранса в мировых единицах: точка вне
+        /// радиуса толеранса вокруг луча курсора не может пройти экранную проверку
+        /// (масштаб мир/пиксель одинаков по обеим осям), поэтому отсекается до дорогих
+        /// проекций с делениями — иначе каждое событие указателя стоит секунды на
+        /// сценах с сотнями тысяч рёбер. <paramref name="extraMargin"/> — запас для
+        /// протяжённых объектов (полдлины сегмента, радиус грани).
+        /// </summary>
+        private bool IsWithinSnapRadius(Vector3d point, double extraMargin = 0)
+        {
+            double radius;
+            if (_viewport.Projection == InferenceProjection.Perspective)
+            {
+                double depth = _viewport.DepthOf(point);
+                if (depth <= 0)
+                {
+                    return false;
+                }
+
+                radius = (_snapRadiusPerDepth * depth) + extraMargin;
+            }
+            else
+            {
+                radius = _snapRadiusWorld + extraMargin;
+            }
+
+            Vector3d offset = point - _ray.Origin;
+            double along = Vector3d.Dot(offset, _rayDirection);
+            double perpendicularSquared = offset.LengthSquared() - (along * along);
+            if (perpendicularSquared < 0)
+            {
+                perpendicularSquared = 0;
+            }
+
+            return perpendicularSquared <= radius * radius;
         }
 
         private double Confidence(double screenDistance)

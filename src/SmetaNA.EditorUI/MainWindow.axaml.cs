@@ -130,20 +130,22 @@ public partial class MainWindow : Window
         bool undoRedoWired = ViewModel.RedoCommand.CanExecute(null);
 
         bool viewportWired = ReportViewportStats();
+        bool drawingWired = ReportToolDrawing();
         bool noviceWired = ReportNoviceMode();
         bool licenseWired = ReportLicenseStatus();
 
         bool passed = opened && themeChanged && languageChanged && vcbCommitted && historyWired && undoRedoWired
-            && viewportWired && noviceWired && licenseWired;
+            && drawingWired && viewportWired && noviceWired && licenseWired;
         string summary = string.Format(
             CultureInfo.InvariantCulture,
-            "[SMOKE] opened={0} themeChanged={1} languageChanged={2} vcbCommitted={3} historyWired={4} undoRedoWired={5} noviceWired={6} licenseWired={7} title='{8}' -> '{9}' status='{10}' result={11}",
+            "[SMOKE] opened={0} themeChanged={1} languageChanged={2} vcbCommitted={3} historyWired={4} undoRedoWired={5} drawingWired={6} noviceWired={7} licenseWired={8} title='{9}' -> '{10}' status='{11}' result={12}",
             opened,
             themeChanged,
             languageChanged,
             vcbCommitted,
             historyWired,
             undoRedoWired,
+            drawingWired,
             noviceWired,
             licenseWired,
             titleBefore,
@@ -207,6 +209,16 @@ public partial class MainWindow : Window
             Console.WriteLine($"[LICENSE] result=FAIL error={ex.Message}");
             return false;
         }
+    }
+
+    /// <summary>
+    /// Рисование мышью через путь ввода инструментов (два клика + Enter),
+    /// печатает строку [DRAWING] в stdout.
+    /// </summary>
+    private bool ReportToolDrawing()
+    {
+        ViewportView? view = this.GetVisualDescendants().OfType<ViewportView>().FirstOrDefault();
+        return view?.RunToolDrawingSmoke() == true;
     }
 
     /// <summary>
