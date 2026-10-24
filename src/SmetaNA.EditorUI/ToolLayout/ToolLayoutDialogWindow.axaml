@@ -1,0 +1,241 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SmetaNA.EditorUI.ToolLayout"
+        x:Class="SmetaNA.EditorUI.ToolLayout.ToolLayoutDialogWindow"
+        x:DataType="local:ToolLayoutDialogViewModel"
+        Title="{Binding Title}"
+        Width="1120"
+        Height="680"
+        MinWidth="920"
+        MinHeight="520"
+        WindowStartupLocation="CenterOwner">
+  <Window.Styles>
+    <!-- Выбранная строка диалога (дерево и панель) -->
+    <Style Selector="Border.row.selected">
+      <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight1}" />
+    </Style>
+    <!-- Скрытая группа показана приглушённо -->
+    <Style Selector="Border.row.dim">
+      <Setter Property="Opacity" Value="0.5" />
+    </Style>
+  </Window.Styles>
+
+  <DockPanel Margin="12">
+    <!-- Шапка: заголовок, подсказка и закрытие (макет variant_a) -->
+    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+      <Button DockPanel.Dock="Right"
+              Content="{Binding CloseText}"
+              Command="{Binding CancelCommand}" />
+      <StackPanel Spacing="2">
+        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding Subtitle}" Opacity="0.7" TextWrapping="Wrap" />
+      </StackPanel>
+    </DockPanel>
+
+    <!-- Подвал: сброс, отмена, применение -->
+    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+      <Button Content="{Binding ResetText}" Command="{Binding ResetCommand}" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+        <Button Content="{Binding CancelText}" Command="{Binding CancelCommand}" />
+        <Button Content="{Binding ApplyText}" Command="{Binding ApplyCommand}" />
+      </StackPanel>
+    </Grid>
+
+    <!-- Тело: дерево | переходы | панель | свойства кнопки -->
+    <Grid ColumnDefinitions="2*,Auto,3*,220">
+
+      <!-- Все инструменты: группы реестра, чекбоксы видимости -->
+      <DockPanel Grid.Column="0" Margin="0,0,8,0">
+        <TextBlock DockPanel.Dock="Top" Text="{Binding AllToolsTitle}" FontWeight="SemiBold" />
+        <TextBox DockPanel.Dock="Top"
+                 Margin="0,4,0,6"
+                 PlaceholderText="{Binding SearchHint}"
+                 Text="{Binding SearchText}" />
+        <ScrollViewer>
+          <ItemsControl ItemsSource="{Binding AllGroups}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="local:ToolLayoutAllGroupNode">
+                <StackPanel Margin="0,0,0,6">
+                  <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsMatch}">
+                    <TextBlock Text="{Binding DisplayText}" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding CountText}" Opacity="0.6" />
+                  </StackPanel>
+                  <ItemsControl ItemsSource="{Binding Items}" Margin="12,2,0,0">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="local:ToolLayoutToolNode">
+                        <StackPanel>
+                          <Border Tag="treeRow"
+                                  Classes.row="True"
+                                  Classes.selected="{Binding IsSelected}"
+                                  IsVisible="{Binding IsMatch}"
+                                  PointerPressed="OnToolRowPressed">
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="2">
+                              <CheckBox IsChecked="{Binding IsVisible}" VerticalAlignment="Center" />
+                              <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                              <TextBlock Text="{Binding Gesture}"
+                                         Opacity="0.6"
+                                         VerticalAlignment="Center" />
+                            </StackPanel>
+                          </Border>
+                          <!-- Под-инструменты вылета следуют за своей кнопкой -->
+                          <ItemsControl ItemsSource="{Binding FlyoutItems}" Margin="34,0,0,0">
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate x:DataType="local:ToolLayoutToolNode">
+                                <Border Tag="treeRow"
+                                        Classes.row="True"
+                                        Margin="0,2,0,0"
+                                        PointerPressed="OnToolRowPressed">
+                                  <StackPanel Orientation="Horizontal" Spacing="8" Margin="2">
+                                    <CheckBox IsChecked="{Binding FlyoutOwner.IsVisible}"
+                                              VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Name}"
+                                               Opacity="0.8"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Gesture}"
+                                               Opacity="0.6"
+                                               VerticalAlignment="Center" />
+                                  </StackPanel>
+                                </Border>
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </DockPanel>
+
+      <!-- Переходы и свои группы (макет: колонка со стрелками) -->
+      <StackPanel Grid.Column="1"
+                  Spacing="8"
+                  Margin="0,26,8,0"
+                  VerticalAlignment="Top">
+        <Button Content="{Binding ArrowRightText}" Command="{Binding AddToPanelCommand}" />
+        <Button Content="{Binding ArrowLeftText}" Command="{Binding RemoveFromPanelCommand}" />
+        <Button Content="{Binding NewGroupText}" Click="OnNewGroupClick" />
+        <Button Content="{Binding RenameGroupText}"
+                Click="OnRenameGroupClick"
+                IsEnabled="{Binding SelectedGroup.IsCustom}" />
+        <Button Content="{Binding DeleteGroupText}" Command="{Binding DeleteGroupCommand}" />
+      </StackPanel>
+
+      <!-- Панель (порядок и группы): drag&drop за «⠿», порядок кнопок -->
+      <DockPanel Grid.Column="2" Margin="0,0,8,0">
+        <TextBlock DockPanel.Dock="Top" Text="{Binding PaletteTitle}" FontWeight="SemiBold" />
+        <TextBlock DockPanel.Dock="Top"
+                   Text="{Binding DragHint}"
+                   Opacity="0.6"
+                   FontSize="11"
+                   Margin="0,2,0,6" />
+        <StackPanel DockPanel.Dock="Top"
+                    Orientation="Horizontal"
+                    Spacing="4"
+                    Margin="0,0,0,6">
+          <Button Content="{Binding MoveUpGlyph}"
+                  Command="{Binding MoveUpCommand}"
+                  ToolTip.Tip="{Binding MoveUpToolTip}" />
+          <Button Content="{Binding MoveDownGlyph}"
+                  Command="{Binding MoveDownCommand}"
+                  ToolTip.Tip="{Binding MoveDownToolTip}" />
+        </StackPanel>
+        <ScrollViewer>
+          <ItemsControl x:Name="PanelList"
+                        ItemsSource="{Binding PanelGroups}"
+                        PointerPressed="OnPanelPointerPressed"
+                        PointerMoved="OnPanelPointerMoved"
+                        PointerReleased="OnPanelPointerReleased">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="local:ToolLayoutPanelGroupNode">
+                <StackPanel Margin="0,0,0,4">
+                  <Border Tag="panelRow"
+                          Classes.row="True"
+                          Classes.selected="{Binding IsSelected}"
+                          Classes.dim="{Binding IsDimmed}"
+                          PointerPressed="OnGroupRowPressed">
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="2">
+                      <TextBlock Text="{Binding GripText}" Opacity="0.7" VerticalAlignment="Center" />
+                      <TextBlock Text="{Binding DisplayText}"
+                                 FontWeight="SemiBold"
+                                 VerticalAlignment="Center" />
+                      <TextBlock Text="{Binding CountText}"
+                                 Opacity="0.6"
+                                 VerticalAlignment="Center" />
+                      <CheckBox IsChecked="{Binding IsVisible}"
+                                ToolTip.Tip="{Binding GroupVisibleToolTip}"
+                                VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Border>
+                  <ItemsControl ItemsSource="{Binding Items}" Margin="18,0,0,0">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="local:ToolLayoutToolNode">
+                        <Border Tag="panelRow"
+                                Classes.row="True"
+                                Classes.selected="{Binding IsSelected}"
+                                IsVisible="{Binding IsVisible}"
+                                Margin="0,2,0,0"
+                                PointerPressed="OnToolRowPressed">
+                          <StackPanel Orientation="Horizontal" Spacing="8" Margin="2">
+                            <TextBlock Text="{Binding GripText}" Opacity="0.7" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Badge}"
+                                       Opacity="0.6"
+                                       VerticalAlignment="Center" />
+                          </StackPanel>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </DockPanel>
+
+      <!-- Свойства кнопки -->
+      <Border Grid.Column="3"
+              BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+              BorderThickness="1,0,0,0"
+              Padding="10,0,0,0">
+        <StackPanel Spacing="6">
+          <TextBlock Text="{Binding ButtonPropsTitle}" FontWeight="SemiBold" />
+          <StackPanel Spacing="6" IsVisible="{Binding HasSelectedTool}">
+            <TextBlock Text="{Binding SelectedTool.Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <Grid ColumnDefinitions="Auto,*">
+              <TextBlock Text="{Binding PropertyGroupText}" Opacity="0.7" />
+              <TextBlock Grid.Column="1"
+                         Text="{Binding SelectedTool.GroupName}"
+                         TextWrapping="Wrap"
+                         Margin="8,0,0,0" />
+            </Grid>
+            <Grid ColumnDefinitions="Auto,*">
+              <TextBlock Text="{Binding PropertyGestureText}" Opacity="0.7" />
+              <TextBlock Grid.Column="1"
+                         Text="{Binding SelectedTool.Gesture}"
+                         Margin="8,0,0,0" />
+            </Grid>
+            <Grid ColumnDefinitions="Auto,*">
+              <TextBlock Text="{Binding PropertyVcbText}" Opacity="0.7" />
+              <TextBlock Grid.Column="1"
+                         Text="{Binding SelectedTool.VcbText}"
+                         TextWrapping="Wrap"
+                         Margin="8,0,0,0" />
+            </Grid>
+            <CheckBox IsChecked="{Binding SelectedTool.ShowHint}" Content="{Binding ShowHintText}" Margin="0,6,0,0" />
+            <CheckBox IsChecked="{Binding SelectedTool.ShowGesture}" Content="{Binding ShowGestureText}" />
+            <CheckBox IsChecked="{Binding SelectedTool.HideCompact}" Content="{Binding HideCompactText}" />
+            <TextBlock Text="{Binding IconHintText}"
+                       Opacity="0.7"
+                       TextWrapping="Wrap"
+                       Margin="0,6,0,0" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </DockPanel>
+</Window>
