@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    SBOM и инвентаризация лицензий зависимостей SmetaNA (CycloneDX + политика лицензий).
+    SBOM и инвентаризация лицензий зависимостей smetana (CycloneDX + политика лицензий).
 
 .DESCRIPTION
     Собирает фактический состав зависимостей решения (NuGet, включая транзитивные),
@@ -179,7 +179,7 @@ $results |
 
 $mdPath = Join-Path $OutputDir "licenses.md"
 $md = New-Object System.Collections.Generic.List[string]
-$md.Add("# SBOM / инвентаризация лицензий SmetaNA")
+$md.Add("# SBOM / инвентаризация лицензий smetana")
 $md.Add("")
 $md.Add("Сгенерировано: $timestamp (deploy/new-sbom.ps1). Политика: только MIT/Apache-2.0/BSD/Boost (спека §4, R7).")
 $md.Add("")
@@ -234,8 +234,8 @@ $cdx = @{
     version = 1
     metadata = @{
         timestamp = $timestamp
-        tools = [object[]]@(@{ vendor = "SmetaNA"; name = "deploy/new-sbom.ps1" })
-        component = @{ type = "application"; name = "SmetaNA"; version = (Get-Content (Join-Path $repoRoot "Directory.Build.props") -Raw | Select-String -Pattern "<Version>([^<]+)</Version>").Matches[0].Groups[1].Value }
+        tools = [object[]]@(@{ vendor = "smetana"; name = "deploy/new-sbom.ps1" })
+        component = @{ type = "application"; name = "smetana"; version = (Get-Content (Join-Path $repoRoot "Directory.Build.props") -Raw | Select-String -Pattern "<Version>([^<]+)</Version>").Matches[0].Groups[1].Value }
     }
     components = [object[]]@($results | ForEach-Object { ConvertTo-CdxComponent $_ })
 }

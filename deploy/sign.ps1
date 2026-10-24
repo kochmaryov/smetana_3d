@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Код-сигнинг релизных артефактов SmetaNA (заготовка, Windows и Linux).
+    Код-сигнинг релизных артефактов smetana (заготовка, Windows и Linux).
 
 .DESCRIPTION
     Windows: подпись signtool (квалифицированный сертификат УЦ, входящий в программу

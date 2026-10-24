@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Аудит офлайн-режима SmetaNA: подтверждение отсутствия обязательных сетевых вызовов.
+    Аудит офлайн-режима smetana: подтверждение отсутствия обязательных сетевых вызовов.
 
 .DESCRIPTION
     Требования: спека §4 (офлайн-режим приложения), R4 (санкции — работа без сети),
@@ -64,7 +64,7 @@ function Remove-Comments {
 }
 
 $report = New-Object System.Collections.Generic.List[string]
-$report.Add("# Аудит офлайн-режима SmetaNA")
+$report.Add("# Аудит офлайн-режима smetana")
 $report.Add("")
 $report.Add("Сгенерировано: $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')) (deploy/verify-offline.ps1).")
 $report.Add("")
@@ -143,7 +143,7 @@ if ($PublishedDir -ne "") {
 $report.Add("## Вывод")
 $report.Add("")
 if ($findings.Count -eq 0) {
-    $report.Add("Аудит пройден: приложение SmetaNA не содержит сетевых вызовов; активация и лицензирование")
+    $report.Add("Аудит пройден: приложение smetana не содержит сетевых вызовов; активация и лицензирование")
     $report.Add("полностью офлайн (SmetaNA.Licensing: подписанные ключи/токены, node-lock, локальный леджер).")
 } else {
     $report.Add("Аудит НЕ пройден: устраните сетевые вызовы или задокументируйте их как необязательные")

@@ -1,4 +1,4 @@
-# SmetaNA Software License Agreement (EULA)
+# smetana Software License Agreement (EULA)
 
 > **DRAFT.** Prepared for the release mechanics (task 6.7). Requires legal review
 > before sales start: Licensor details, refund policy for digital goods, handling
@@ -10,7 +10,7 @@
 
 ## 1. Definitions
 
-1.1. **Software** — the "SmetaNA" desktop 3D editor for Windows and Linux, including updates and accompanying materials.
+1.1. **Software** — the "smetana" desktop 3D editor for Windows and Linux, including updates and accompanying materials.
 
 1.2. **Licensor** — the copyright holder of the Software (details are provided on the purchase page and in the fiscal receipt).
 

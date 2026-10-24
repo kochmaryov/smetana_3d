@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Сборка релизных дистрибутивов SmetaNA (win-x64 / linux-x64).
+    Сборка релизных дистрибутивов smetana (win-x64 / linux-x64).
 
 .DESCRIPTION
     Публикует SmetaNA.EditorUI self-contained (без предустановленного .NET —
@@ -68,7 +68,7 @@ $dotnet = if ($env:SMETANA_DOTNET) { $env:SMETANA_DOTNET } else {
 $targets = if ($Rid -eq "all") { @("win-x64", "linux-x64") } else { @($Rid) }
 $readyToRun = -not $NoReadyToRun
 
-Write-Host "SmetaNA publish: version=$Version configuration=$Configuration rids=$($targets -join ',') readyToRun=$readyToRun"
+Write-Host "smetana publish: version=$Version configuration=$Configuration rids=$($targets -join ',') readyToRun=$readyToRun"
 Write-Host "dotnet: $dotnet"
 
 function Invoke-Step {

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=SmetaNA
-Name[ru]=SmetaNA
+Name=smetana
+Name[ru]=smetana
 GenericName=3D model editor
 GenericName[ru]=3D-редактор
 Comment=3D modeling with precise dimensions and 3D-printing export

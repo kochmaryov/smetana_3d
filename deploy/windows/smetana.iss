@@ -1,5 +1,5 @@
 ; ============================================================================
-; SmetaNA — конфигурация установщика Windows (Inno Setup 6.3+)
+; smetana — конфигурация установщика Windows (Inno Setup 6.3+)
 ;
 ; Выбор Inno Setup обоснован в docs/release.md (раздел «Установщики»):
 ; пер-пользовательская установка без администратора (школьные ПК), RU/EN,
@@ -23,14 +23,14 @@
   #define PublishDir "..\..\artifacts\publish\win-x64"
 #endif
 
-#define AppName "SmetaNA"
+#define AppName "smetana"
 #define AppExeName "SmetaNA.EditorUI.exe"
 
 [Setup]
 AppId={{7E2B4C41-6D3A-4E2F-9B6C-5B1A9D2F3E41}
 AppName={#AppName}
 AppVersion={#AppVersion}
-AppPublisher=SmetaNA
+AppPublisher=smetana
 AppPublisherURL=https://smetana.example.ru
 AppSupportURL=https://smetana.example.ru/support
 AppUpdatesURL=https://smetana.example.ru/download

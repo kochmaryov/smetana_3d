@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# SmetaNA — сборка deb-пакета Linux x64 (Ubuntu 22.04+ и совместимые).
+# smetana — сборка deb-пакета Linux x64 (Ubuntu 22.04+ и совместимые).
 #
 # Выбор deb вместо AppImage обоснован в docs/release.md (раздел «Установщики»):
 # эталонный дистрибутив — Ubuntu 22.04+, установка через apt/dpkg без FUSE
@@ -25,7 +25,7 @@ OUTPUT_DIR="$REPO_ROOT/artifacts/installers"
 VERSION=""
 ARCH="amd64"
 DRY_RUN=0
-MAINTAINER="SmetaNA <support@smetana.example.ru>"
+MAINTAINER="smetana <support@smetana.example.ru>"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -50,7 +50,7 @@ PKG_VERSION="${VERSION}"
 PKG_FILE="$OUTPUT_DIR/${PKG_NAME}_${PKG_VERSION}_${ARCH}.deb"
 ROOT="$OUTPUT_DIR/deb-root"
 
-echo "SmetaNA deb: version=$PKG_VERSION arch=$ARCH"
+echo "smetana deb: version=$PKG_VERSION arch=$ARCH"
 echo "  publish-dir: $PUBLISH_DIR"
 echo "  результат:   $PKG_FILE"
 
@@ -111,7 +111,7 @@ if [[ -d "$REPO_ROOT/docs/legal" ]]; then
   cp -a "$REPO_ROOT/docs/legal/." "$ROOT/usr/share/doc/$PKG_NAME/legal/"
 fi
 cat > "$ROOT/usr/share/doc/$PKG_NAME/copyright" <<EOF
-SmetaNA — проприетарное ПО, лицензия: docs/legal/EULA.ru.md (EULA).
+smetana — проприетарное ПО, лицензия: docs/legal/EULA.ru.md (EULA).
 Third-party notices: docs/legal/third-party-licenses.md.
 EOF
 
