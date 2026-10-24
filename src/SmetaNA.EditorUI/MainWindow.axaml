@@ -29,6 +29,7 @@
       <MenuItem Header="{Binding Strings.MenuView}">
         <MenuItem Header="{Binding Strings.CommandToggleTheme}" Command="{Binding ThemeToggleCommand}" />
         <MenuItem Header="{Binding Strings.ModeLabel}" Command="{Binding ToggleModeCommand}" />
+        <MenuItem Header="{Binding ToolLayoutMenuLabel}" Command="{Binding OpenToolLayoutCommand}" />
       </MenuItem>
       <MenuItem Header="{Binding Strings.MenuHelp}">
         <MenuItem Header="{Binding Strings.TutorialStart}" Command="{Binding Tutorial.StartCommand}" />
@@ -36,112 +37,32 @@
       </MenuItem>
     </Menu>
 
-    <!-- Лента инструментов: минимум на виду, продвинутое — в раскрываемой строке -->
+    <!-- Быстрый доступ: файловые команды и переключатели (инструменты — в палитре слева) -->
     <Border DockPanel.Dock="Top"
             BorderBrush="{DynamicResource ThemeBorderMidBrush}"
             BorderThickness="0,0,0,1"
-            Padding="8">
-      <StackPanel Spacing="8">
-        <Grid ColumnDefinitions="*,Auto">
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <Button Content="{Binding Strings.ProjectNew}"
-                    Command="{Binding NewProjectCommand}" />
-            <Button Content="{Binding Strings.EditUndo}"
-                    Command="{Binding UndoCommand}"
-                    ToolTip.Tip="{Binding UndoHint}" />
-            <Button Content="{Binding Strings.EditRedo}"
-                    Command="{Binding RedoCommand}"
-                    ToolTip.Tip="{Binding RedoHint}" />
-            <TextBlock Text="{Binding Strings.ToolbarPrimary}"
-                       VerticalAlignment="Center"
-                       Opacity="0.7"
-                       Margin="12,0,0,0" />
-            <ItemsControl ItemsSource="{Binding PrimaryTools}">
-              <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                  <StackPanel Orientation="Horizontal" Spacing="4" />
-                </ItemsPanelTemplate>
-              </ItemsControl.ItemsPanel>
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:ToolStubViewModel">
-                  <Button Command="{Binding ActivateCommand}"
-                          ToolTip.Tip="{Binding ToolTip}"
-                          Classes.highlighted="{Binding IsHighlighted}">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                      <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-                      <TextBlock Text="{Binding Gesture}"
-                                 VerticalAlignment="Center"
-                                 FontSize="11"
-                                 Opacity="0.55" />
-                    </StackPanel>
-                  </Button>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <ToggleButton IsChecked="{Binding IsAdvancedVisible}"
-                          Content="{Binding Strings.ToolbarAdvancedToggle}"
-                          VerticalAlignment="Center" />
-          </StackPanel>
-          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-            <TextBlock Text="{Binding Strings.ModeLabel}"
-                       VerticalAlignment="Center"
-                       Opacity="0.7" />
-            <Button Content="{Binding ModeToggleLabel}"
-                    Command="{Binding ToggleModeCommand}"
-                    ToolTip.Tip="{Binding Strings.ModeNoviceHint}" />
-            <Button Content="{Binding Strings.TutorialStart}"
-                    Command="{Binding Tutorial.StartCommand}" />
-            <Button Content="{Binding Strings.LicenseOpen}"
-                    Command="{Binding OpenLicenseCommand}" />
-            <TextBlock Text="{Binding Strings.ThemeLabel}"
-                       VerticalAlignment="Center"
-                       Opacity="0.7" />
-            <Button Content="{Binding ThemeToggleLabel}"
-                    Command="{Binding ThemeToggleCommand}" />
-            <TextBlock Text="{Binding Strings.LanguageLabel}"
-                       VerticalAlignment="Center"
-                       Opacity="0.7" />
-            <ComboBox ItemsSource="{Binding Languages}"
-                      SelectedItem="{Binding SelectedLanguage}"
-                      Width="130">
-              <ComboBox.ItemTemplate>
-                <DataTemplate x:DataType="vm:LanguageOption">
-                  <TextBlock Text="{Binding Name}" />
-                </DataTemplate>
-              </ComboBox.ItemTemplate>
-            </ComboBox>
-          </StackPanel>
-        </Grid>
-        <Border IsVisible="{Binding IsAdvancedVisible}">
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <TextBlock Text="{Binding Strings.ToolbarAdvanced}"
-                       VerticalAlignment="Center"
-                       Opacity="0.7" />
-            <ItemsControl ItemsSource="{Binding AdvancedTools}">
-              <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                  <StackPanel Orientation="Horizontal" Spacing="4" />
-                </ItemsPanelTemplate>
-              </ItemsControl.ItemsPanel>
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:ToolStubViewModel">
-                  <Button Command="{Binding ActivateCommand}"
-                          ToolTip.Tip="{Binding ToolTip}"
-                          Classes.highlighted="{Binding IsHighlighted}">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                      <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-                      <TextBlock Text="{Binding Gesture}"
-                                 VerticalAlignment="Center"
-                                 FontSize="11"
-                                 Opacity="0.55" />
-                    </StackPanel>
-                  </Button>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </StackPanel>
-        </Border>
-      </StackPanel>
+            Padding="8,4">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Button Content="{Binding Strings.ProjectNew}"
+                  Command="{Binding NewProjectCommand}" />
+          <Button Content="{Binding Strings.EditUndo}"
+                  Command="{Binding UndoCommand}"
+                  ToolTip.Tip="{Binding UndoHint}" />
+          <Button Content="{Binding Strings.EditRedo}"
+                  Command="{Binding RedoCommand}"
+                  ToolTip.Tip="{Binding RedoHint}" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+          <Button Content="{Binding ModeToggleLabel}"
+                  Command="{Binding ToggleModeCommand}"
+                  ToolTip.Tip="{Binding Strings.ModeNoviceHint}" />
+          <Button Content="{Binding ThemeToggleLabel}"
+                  Command="{Binding ThemeToggleCommand}" />
+          <Button Content="{Binding Strings.CommandToggleLanguage}"
+                  Command="{Binding ToggleLanguageCommand}" />
+        </StackPanel>
+      </Grid>
     </Border>
 
     <!-- Строка значений (VCB) и статус -->
@@ -164,49 +85,9 @@
       </Grid>
     </Border>
 
-    <!-- Палитра инструментов (волна 0 — каркас: группы и кнопки-заглушки с жестами;
-         иконки, вылеты и настройка — волна 1, треки A/B/C) -->
-    <Border DockPanel.Dock="Left"
-            Width="92"
-            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-            BorderThickness="0,0,1,0"
-            Padding="6">
-      <ScrollViewer>
-        <ItemsControl ItemsSource="{Binding PaletteGroups}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="toolpalette:PaletteGroupViewModel">
-              <StackPanel Spacing="4" Margin="0,0,0,8">
-                <TextBlock Text="{Binding Name}"
-                           FontSize="10"
-                           TextAlignment="Center"
-                           Opacity="0.7"
-                           TextWrapping="Wrap" />
-                <ItemsControl ItemsSource="{Binding Buttons}" Width="80">
-                  <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                      <WrapPanel />
-                    </ItemsPanelTemplate>
-                  </ItemsControl.ItemsPanel>
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:ToolStubViewModel">
-                      <Button Width="38"
-                              Height="38"
-                              Margin="1"
-                              Command="{Binding ActivateCommand}"
-                              ToolTip.Tip="{Binding ToolTip}"
-                              Classes.highlighted="{Binding IsHighlighted}"
-                              Classes.active="{Binding IsActive}">
-                        <TextBlock Text="{Binding PaletteLabel}" FontSize="11" />
-                      </Button>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
-              </StackPanel>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </ScrollViewer>
-    </Border>
+    <!-- Палитра инструментов (волна 2: контрол трека B поверх реестра и раскладки трека C) -->
+    <toolpalette:ToolPaletteControl DockPanel.Dock="Left"
+                                    DataContext="{Binding ToolPalette}" />
 
     <!-- Правая колонка: свойства, история, горячие клавиши -->
     <Border DockPanel.Dock="Right"

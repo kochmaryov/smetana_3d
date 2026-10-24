@@ -1,8 +1,8 @@
 # SmetaNA — палитра инструментов и настройка интерфейса — черновик спеки
 
-- **Статус:** черновик (макет утверждён 2026-10-24 — вариант A «палитра слева»)
+- **Статус:** черновик спеки; реализована 2026-10-24 (волны 0–2 плана): контракты — `d154d47`, треки A/B/C и интеграция — см. план; DoD §5 закрыт, смоук PASS
 - **Дата:** 2026-10-24
-- **Следующий шаг:** план работ — черновик [tool-palette.plan.md](../plans/tool-palette.plan.md) (согласование → реализация делегированными чатами)
+- **План работ:** [tool-palette.plan.md](../plans/tool-palette.plan.md) (исполнен 2026-10-24)
 - **Уточняет:** [3d-editor.spec.md](./3d-editor.spec.md), модуль **M10** («минималистичная лента инструментов» → палитра иконочных кнопок слева)
 - **Макеты (design_storming):** [variant_a_palette.html](../../data/temp/tool_ui_variants/variant_a_palette.html) · [PNG](../../data/temp/tool_ui_variants/variant_a_palette.png); альтернативы: [B — лента](../../data/temp/tool_ui_variants/variant_b_ribbon.html), [C — рейл](../../data/temp/tool_ui_variants/variant_c_rail.html), [D — минимализм](../../data/temp/tool_ui_variants/variant_d_minimal.html)
 

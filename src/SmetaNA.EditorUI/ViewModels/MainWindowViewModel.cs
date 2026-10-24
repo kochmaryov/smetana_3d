@@ -7,6 +7,7 @@ using SmetaNA.EditorUI.Commands;
 using SmetaNA.EditorUI.Localization;
 using SmetaNA.EditorUI.Sessions;
 using SmetaNA.EditorUI.Themes;
+using SmetaNA.EditorUI.ToolLayout;
 using SmetaNA.EditorUI.ToolPalette;
 using SmetaNA.EditorUI.Tools;
 using SmetaNA.EditorUI.Tools.Drawing;
@@ -98,6 +99,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly ILocalizationService _localization;
     private readonly ThemeService _theme;
     private readonly EditorSession _session;
+    private readonly ToolLayoutService _toolLayout;
 
     private ToolStubViewModel? _activeTool;
     private string _statusText;
@@ -121,9 +123,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         Strings = new LocalizedStrings(localization);
         _statusText = Strings.StatusReady;
 
-        PrimaryTools = new ObservableCollection<ToolStubViewModel>(CreateTools(PrimaryToolDefinitions));
-        AdvancedTools = new ObservableCollection<ToolStubViewModel>(CreateTools(AdvancedToolDefinitions));
-        PaletteGroups = new ObservableCollection<PaletteGroupViewModel>(CreatePaletteGroups());
+        _toolLayout = new ToolLayoutService(_localization, _session.Shortcuts);
+        _toolLayout.LayoutChanged += OnPaletteLayoutChanged;
+        ToolPalette = CreateToolPalette();
 
         Tutorial = new TutorialViewModel(localization, GlassTutorialLesson.Create());
         Tutorial.StateChanged += OnTutorialStateChanged;
@@ -148,7 +150,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         NewProjectCommand = new RelayCommand(AddProject);
         ThemeToggleCommand = new RelayCommand(ToggleTheme);
         ToggleModeCommand = new RelayCommand(ToggleMode);
+        ToggleLanguageCommand = new RelayCommand(_ => ToggleLanguage());
         OpenLicenseCommand = new RelayCommand(_ => LicenseRequested?.Invoke(this, EventArgs.Empty));
+        OpenToolLayoutCommand = new RelayCommand(_ => ToolLayoutSettingsRequested?.Invoke(this, EventArgs.Empty));
         ApplyGestureCommand = new RelayCommand(ApplyGesture);
         ResetGestureCommand = new RelayCommand(ResetGesture);
         ResetAllGesturesCommand = new RelayCommand(ResetAllGestures);
@@ -156,6 +160,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         _session.History.Changed += OnHistoryChanged;
         _localization.CultureChanged += OnCultureChanged;
         _theme.Changed += OnThemeChanged;
+        _localization.CultureChanged += () => OnPropertyChanged(nameof(ToolLayoutMenuLabel));
     }
 
     public LocalizedStrings Strings { get; }
@@ -166,11 +171,14 @@ public sealed class MainWindowViewModel : ViewModelBase
     /// <summary>Интерактивный урок S1 (режим «Новичок»).</summary>
     public TutorialViewModel Tutorial { get; }
 
-    public ObservableCollection<ToolStubViewModel> PrimaryTools { get; }
-    public ObservableCollection<ToolStubViewModel> AdvancedTools { get; }
+    /// <summary>Палитра инструментов: группы, вылеты, адаптив (контрол слева в окне).</summary>
+    public ToolPaletteViewModel ToolPalette { get; private set; }
 
-    /// <summary>Группы палитры инструментов (волна 0: каркас; иконки/вылеты — волна 1).</summary>
-    public ObservableCollection<PaletteGroupViewModel> PaletteGroups { get; }
+    /// <summary>Сервис раскладки палитры: хранение и диалог настройки.</summary>
+    public ToolLayoutService ToolLayout => _toolLayout;
+
+    /// <summary>Заголовок пункта меню «Настройка панели инструментов…».</summary>
+    public string ToolLayoutMenuLabel => _localization.Get(ToolPaletteStrings.DialogTitle);
     public ObservableCollection<LanguageOption> Languages { get; }
     public ObservableCollection<ProjectTabViewModel> Projects { get; }
     public ObservableCollection<ShortcutRowViewModel> ShortcutRows { get; }
@@ -178,6 +186,9 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     public RelayCommand UndoCommand { get; }
     public RelayCommand RedoCommand { get; }
+
+    /// <summary>Переключение языка интерфейса RU/EN (точка входа — кнопка быстрого доступа).</summary>
+    public RelayCommand ToggleLanguageCommand { get; }
     public RelayCommand NewProjectCommand { get; }
     public RelayCommand ThemeToggleCommand { get; }
     public RelayCommand ToggleModeCommand { get; }
@@ -188,6 +199,12 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     /// <summary>Запрос открытия экрана лицензии (обрабатывается окном).</summary>
     public event EventHandler? LicenseRequested;
+
+    /// <summary>Запрос открытия диалога «Настройка панели инструментов» (обрабатывает окно).</summary>
+    public event EventHandler? ToolLayoutSettingsRequested;
+
+    /// <summary>Команда меню «Настройка панели инструментов…».</summary>
+    public RelayCommand OpenToolLayoutCommand { get; }
 
     /// <summary>Активный инструмент (заглушка) или <c>null</c> — нет.</summary>
     public ToolStubViewModel? ActiveTool
@@ -200,11 +217,7 @@ public sealed class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            foreach (ToolStubViewModel tool in AllTools)
-            {
-                tool.IsActive = ReferenceEquals(tool, value);
-            }
-
+            ToolPalette.ActiveCommandId = value?.CommandId;
             OnPropertyChanged(nameof(ActiveToolName));
             OnPropertyChanged(nameof(ActiveToolHint));
             OnPropertyChanged(nameof(ActiveToolGesture));
@@ -346,7 +359,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     /// <summary>Инструмент-заглушка по идентификатору команды.</summary>
     public void ActivateToolById(string commandId)
     {
-        ToolStubViewModel? tool = PrimaryTools.Concat(AdvancedTools)
+        ToolStubViewModel? tool = AllTools
             .FirstOrDefault(candidate => candidate.CommandId == commandId);
         if (tool is null)
         {
@@ -354,7 +367,7 @@ public sealed class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        ActivateTool(tool);
+        ActivatePaletteItem(tool);
     }
 
     /// <summary>Выполнить команду по её идентификатору (используется горячими клавишами).</summary>
@@ -584,27 +597,24 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private IEnumerable<ToolStubViewModel> CreateTools(IEnumerable<ToolDefinition> definitions) =>
-        CreateTools(definitions, ActivateTool);
+    /// <summary>Палитра по текущей раскладке (пересобирается при её изменении).</summary>
+    private ToolPaletteViewModel CreateToolPalette() =>
+        new(
+            _localization,
+            _session.Shortcuts,
+            ActivatePaletteItem,
+            () => _isNoviceMode,
+            _toolLayout.ResolvePaletteGroups());
 
-    private IEnumerable<ToolStubViewModel> CreateTools(
-        IEnumerable<ToolDefinition> definitions,
-        Action<ToolStubViewModel> activate) =>
-        definitions.Select(definition =>
-            new ToolStubViewModel(
-                _localization,
-                _session.Shortcuts,
-                definition,
-                activate,
-                () => _isNoviceMode));
-
-    /// <summary>Группы палитры из реестра (кнопки-заглушки: подпись = жест).</summary>
-    private IEnumerable<PaletteGroupViewModel> CreatePaletteGroups() =>
-        ToolGroupRegistry.DefaultGroups.Select(group =>
-            new PaletteGroupViewModel(
-                _localization,
-                group,
-                CreateTools(group.Buttons.Select(button => button.Definition), ActivatePaletteItem)));
+    /// <summary>Раскладка применена в диалоге настройки — пересобрать палитру.</summary>
+    private void OnPaletteLayoutChanged()
+    {
+        string? active = ActiveTool?.CommandId;
+        ToolPalette = CreateToolPalette();
+        ToolPalette.ActiveCommandId = active;
+        ToolPalette.HighlightedCommandId = Tutorial.HighlightedCommandId;
+        OnPropertyChanged(nameof(ToolPalette));
+    }
 
     /// <summary>Активация кнопки палитры: служебные команды — свои, инструменты — как с ленты.</summary>
     private void ActivatePaletteItem(ToolStubViewModel tool)
@@ -623,25 +633,18 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Все кнопки инструментов ленты и палитры.</summary>
+    /// <summary>Все кнопки инструментов палитры (включая под-инструменты вылетов).</summary>
     public IEnumerable<ToolStubViewModel> AllTools =>
-        PrimaryTools.Concat(AdvancedTools).Concat(PaletteGroups.SelectMany(group => group.Buttons));
+        ToolPalette.AllButtons.Select(button => button.Tool);
 
     private void RefreshToolTips()
     {
-        foreach (ToolStubViewModel tool in AllTools)
-        {
-            tool.Refresh();
-        }
+        ToolPalette.RefreshToolTips();
     }
 
     private void OnTutorialStateChanged()
     {
-        string? highlight = Tutorial.HighlightedCommandId;
-        foreach (ToolStubViewModel tool in AllTools)
-        {
-            tool.IsHighlighted = highlight is not null && tool.CommandId == highlight;
-        }
+        ToolPalette.HighlightedCommandId = Tutorial.HighlightedCommandId;
 
         if (Tutorial.IsActive)
         {

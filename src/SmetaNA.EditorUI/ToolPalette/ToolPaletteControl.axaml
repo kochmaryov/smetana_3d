@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:tp="using:SmetaNA.EditorUI.ToolPalette"
+             xmlns:icons="using:SmetaNA.EditorUI.Icons"
              x:Class="SmetaNA.EditorUI.ToolPalette.ToolPaletteControl"
              x:DataType="tp:ToolPaletteViewModel">
   <!-- Палитра инструментов (макет variant_a): кнопки 38×38, группы-разделы,
@@ -100,8 +101,10 @@
                                 ToolTip.Tip="{Binding ToolTip}"
                                 Classes.active="{Binding IsActive}"
                                 Classes.highlighted="{Binding IsHighlighted}">
-                          <!-- Заглушка до глифов трека A (ToolIconId) -->
-                          <TextBlock Text="{Binding PaletteLabel}" FontSize="11" />
+                          <!-- Глиф набора иконок (трек A, ToolIconId) -->
+                          <icons:ToolIcon IconId="{Binding IconId}"
+                                          Width="20"
+                                          Height="20" />
                         </Button>
                         <Button Classes="flyoutCorner"
                                 IsVisible="{Binding HasFlyout}"
@@ -123,11 +126,17 @@
                                           ToolTip.Tip="{Binding ToolTip}"
                                           Classes.active="{Binding IsActive}"
                                           Classes.highlighted="{Binding IsHighlighted}">
-                                    <Grid ColumnDefinitions="*,Auto">
-                                      <TextBlock Text="{Binding Name}"
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                      <icons:ToolIcon IconId="{Binding IconId}"
+                                                      Width="16"
+                                                      Height="16"
+                                                      Margin="0,0,8,0"
+                                                      VerticalAlignment="Center" />
+                                      <TextBlock Grid.Column="1"
+                                                 Text="{Binding Name}"
                                                  FontSize="12"
                                                  VerticalAlignment="Center" />
-                                      <TextBlock Grid.Column="1"
+                                      <TextBlock Grid.Column="2"
                                                  Text="{Binding Gesture}"
                                                  FontSize="11"
                                                  Opacity="0.55"
@@ -187,11 +196,17 @@
                                     ToolTip.Tip="{Binding ToolTip}"
                                     Classes.active="{Binding IsActive}"
                                     Classes.highlighted="{Binding IsHighlighted}">
-                              <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Text="{Binding Name}"
+                              <Grid ColumnDefinitions="Auto,*,Auto">
+                                <icons:ToolIcon IconId="{Binding IconId}"
+                                                Width="16"
+                                                Height="16"
+                                                Margin="0,0,8,0"
+                                                VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding Name}"
                                            FontSize="12"
                                            VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1"
+                                <TextBlock Grid.Column="2"
                                            Text="{Binding Gesture}"
                                            FontSize="11"
                                            Opacity="0.55"

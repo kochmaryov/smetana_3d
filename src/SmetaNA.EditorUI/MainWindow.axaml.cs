@@ -25,6 +25,8 @@ public partial class MainWindow : Window
         ViewModel = new MainWindowViewModel(EditorServices.Localization, EditorServices.Theme, new EditorSession());
         DataContext = ViewModel;
         ViewModel.LicenseRequested += (_, _) => OpenLicenseWindow();
+        ViewModel.ToolLayoutSettingsRequested += async (_, _) =>
+            await ViewModel.ToolLayout.OpenDialogAsync(this);
         Opened += OnFirstOpened;
     }
 
