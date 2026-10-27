@@ -26,7 +26,7 @@
 
 Main Toolbar (12 базовых): Select, Eraser, Paint Bucket, Pencil/Line, Rectangle, Push/Pull, Move, Rotate, Scale, Tape Measure, Orbit, Pan. Expanded Toolset: Lasso, Sample Material, Circle, Polygon, 2-/3-Point Arc, Arc, Pie, Freehand, Rotated Rectangle, 3D Text, Offset, Follow Me, Flip, Dimension, Protractor, Axes, Text Label, Create Section, Tag, Zoom/Zoom Extents/Zoom Window, Position Camera, Look Around, Walk, AI Render; панель кастомизируется (слоты, разделители).
 
-**Solid Tools**: Outer Shell, Intersect, Union, Subtract, Trim, Split (в Web Free — только Outer Shell). **Точность**: Tape Measure/Protractor создают направляющие (guides), Measurements box (VCB) — числовой ввод «почти с любым инструментом». **Прочее**: Soften/Smooth/Hide geometry, Section Planes (активный разрез на контекст, Section Fill, «Create Group from Slice», экспорт среза в DWG), аннотации — Text, Labels, Dimensions, 3D Text; группы и Outliner-иерархия; секущие планы, стили, сцены.
+**Solid Tools**: Outer Shell, Intersect, Union, Subtract, Trim, Split (в Web Free — только Outer Shell). **Точность**: Tape Measure/Protractor создают направляющие (guides), Measurements box (VCB) — числовой ввод «почти с любым инструментом». **Прочее**: Soften/Smooth/Hide geometry, Section Planes (активный разрез на контекст, Section Fill, «Create Group from Slice», экспорт среза в DWG), аннотации — Text, Labels, Dimensions, 3D Text; группы и Outliner-иерархия; секущие планы, стили, сцены. Полный реестр команд 2026.1 (184 шт.), включая Grid Snapping, Weld Edges, Divide, Search SketchUp, Add Comment, Ambient Occlusion — см. §5.2.
 
 ### 1.3 Система inference/привязок
 
@@ -44,10 +44,11 @@ SketchUp «отображает несколько типов inference: point, 
 
 - **SKP** — нативный; **DWG/DXF** — импорт (arcs, faces, layers/tags, polylines, nested blocks, splines, hatches и др.; настройки тесселяции: Angular Deviation, Chordal Tolerance, Max Edge Length; «файлы >15MB могут тормозить»; типичные проблемы: «lines may not connect to form faces», потеря масштаба) и экспорт 2D/3D с выбором версии AutoCAD;
 - **IFC** — импорт/экспорт IFC2x3 и IFC4 (Tessellation/Body, CRS); «некоторые SketchUp-сущности могут не экспортироваться»;
-- **STL** — импорт/экспорт для 3D-печати (Binary/ASCII, единицы мм по умолчанию, Swap YZ, экспорт только выделенного);
+- **STL** — импорт/экспорт для 3D-печати (Binary/ASCII, выбор единиц, Swap YZ, экспорт только выделенного);
 - **OBJ** — только у Pro (+.mtl, «flat hierarchy» вместо дерева, только полигоны, без NURBS);
 - **glTF/GLB** — импорт/экспорт с PBR-картами; **USD/USDZ** — все типы USD, round-trip (камеры↔Scenes, HDR/EXR-окружения, гео-координаты);
 - легаси и прочее: **3DS, DAE (Collada), KMZ, FBX, XSI, VRML** (отдельные статьи справки); в образовательной версии экспорт: 3ds, usdz (iPad-only), dae (web-only), dwg/dxf, fbx (web-only), kmz (web-only), obj, pdf, stl;
+- **3MF — отсутствует полностью** (подтверждено по дистрибутиву 26.1.256: нет модулей, строк и команд 3MF) — формат остаётся нашим дифференциатором; экспорт анимации сцен — **MP4 (H.264)**;
 - **изображения**: импорт JPEG/PNG/TIFF/BMP/PSD/PDF, экспорт тех же + EPS; PDF-вывод через LayOut («printing/exporting your document»); PNG из Web Free — с водяным знаком.
 
 ### 1.7 Экосистема и большие модели
@@ -88,8 +89,8 @@ SketchUp «отображает несколько типов inference: point, 
 ### Слабые стороны (W)
 
 1. **Нет истории/параметрики.** Параметрика — только через Dynamic Components («одна из самых сложных задач») или плагины (форум: пользователи дорабатывают «parametric.rb» от Trimble, ищут «SU Draw Parametric Shapes»). Нет feature-tree → правки «взад» дороги.
-2. **Нет нормальных филлетов/шелла.** Поток жалоб «fillet»: «tried several techniques and all failed», вопросы про филлет отверстий, сложных стыков — всё через дуги/сторонние расширения.
-3. **Хрупкие boolean/солиды.** Пользователи: «Solid Inspector says the component is 'shiny clean', yet Entity Info does not show it as a solid and solid tools indicate it isn't»; «sketchup says the larger object isnt a solid even though solid inspector says its perfect». Официальный гайд по 3D-печати требует «solid group» и рекомендует **сторонний** Solid Inspector 2 для починки — фактическое признание проблемы.
+2. **Нет нормальных филлетов/шелла.** Поток жалоб «fillet»: «tried several techniques and all failed», вопросы про филлет отверстий, сложных стыков — всё через дуги/сторонние расширения. **Уточнение (2026-10-27, см. §5):** в дистрибутиве 2026.1 найдены строки интерфейса «&Fillet», «&Chamfer», «Select fillet radius or enter value.» — базовые скругления/фаски в SketchUp 2026 есть; тезис верен для версий, которыми пользовались авторы жалоб, и для качества филлетов на твёрдых телах (не проверялось).
+3. **Хрупкие boolean/солиды.** Пользователи: «Solid Inspector says the component is 'shiny clean', yet Entity Info does not show it as a solid and solid tools indicate it isn't»; «sketchup says the larger object isnt a solid even though solid inspector says its perfect». Официальный гайд по 3D-печати требует «solid group» и рекомендует **сторонний** Solid Inspector 2 для починки — фактическое признание проблемы. **Уточнение (2026-10-27, см. §5):** в 2026.1 Solid Inspector встроен в приложение (строки «Solid Inspector fixes your reversed faces…», анализ вложенных групп) — часть диагностики перенесена в ядро, но сами жалобы на «не solid без объяснений» из этого не снимаются.
 4. **Качество STL-экспорта, непечатные модели.** Треды форума: ошибки в слайсере после экспорта, «missing faces on my stl file», «bottom opens up and the openings become solids», «messed up» в Meshmixer; лечится ручной чисткой internal faces.
 5. **Точность и обмен с CAD.** После импорта DWG «size or scale may be inconsistent», «lines may not connect to form faces»; OBJ — плоская иерархия и только полигоны; IFC — «некоторые сущности могут не экспортироваться».
 6. **Производительность на больших моделях.** Треды 2023–2024: «significant performance issues… slow rendering and frequent crashes», «very slow orbiting ultimately with a locked viewport» после обновления до 2024; официальный ответ — «keep the model light», т.е. ограничения архитектуры (всё рисуется в реальном времени).
@@ -150,14 +151,14 @@ SketchUp «отображает несколько типов inference: point, 
 | Боль SketchUp | Наше решение |
 |---|---|
 | Нет истории/параметрики | Feature tree/параметрические размеры и ограничения из коробки |
-| Нет филлетов/шелла | Родные Fillet/Chamfer/Shell как операции (не плагины) |
-| Хрупкие solids, «не solid» без объяснений | Гарантия manifold + встроенный диагности/авто-repair + честные boolean |
+| Нет филлетов/шелла | Родные Fillet/Chamfer/Shell как операции (не плагины); качество на solids — см. уточнение W2 (в SketchUp 2026 базовые Fillet/Chamfer появились) |
+| Хрупкие solids, «не solid» без объяснений | Гарантия manifold + встроенный диагности/авто-repair + честные boolean (в SketchUp 2026 Solid Inspector встроен — см. W3) |
 | STL «рвётся», непечатные модели | «3D-print ready» пайплайн: валидация толщин/нормалей/пересечений перед экспортом |
 | Тормоза на больших моделях | Instancing/LOD, многопоточный рендер, честные лимиты |
 | CAD-обмен теряет масштаб/геометрию | Импорт/экспорт с отчётом о потерях и контролем единиц |
 | Подписка, санкции, нет Linux | Разовая/учебная лицензия, оплата из РФ, официальный Linux (Win+Linux — наш таргет) |
 
-**Позиционирование для школьников/студентов:** бесплатный или разово-платный десктопный оффлайн-редактор с простотой SketchUp, но с гарантией «модель напечатается» — ниша, которую SketchUp фактически отдаёт плагинам (Solid Inspector) и сторонним слайсерам. SketchUp for Schools (бесплатно для K-12) — главный конкурент по цене; ответить можно офлайном, Linux, отсутствием привязки к Google/Microsoft-аккаунтам и более строгим CAD-ядром.
+**Позиционирование для школьников/студентов:** бесплатный или разово-платный десктопный оффлайн-редактор с простотой SketchUp, но с гарантией «модель напечатается» — ниша, которую SketchUp оставляет сторонним слайсерам (диагностика solids с 2026 встроена, но watertight-валидация с гарантией manifold — нет; см. уточнение W3). SketchUp for Schools (бесплатно для K-12) — главный конкурент по цене; ответить можно офлайном, Linux, отсутствием привязки к Google/Microsoft-аккаунтам и более строгим CAD-ядром.
 
 **Источники (раздел 4):** синтез источников разделов 1–3; ключевые: https://help.sketchup.com/en/sketchup/3d-printing-model, https://help.sketchup.com/en/sketchup/making-dynamic-component, https://forums.sketchup.com/search?q=Solid%20Inspector, https://sketchup.trimble.com/ru-ru/plans-and-pricing, https://forums.sketchup.com/t/200196.
 
@@ -165,3 +166,37 @@ SketchUp «отображает несколько типов inference: point, 
 - **Непроверено:** ежемесячные тарифы, цены 2024–2025 в ретроспективе (страницы истории цен недоступны), актуальность ситуации с покупкой из РФ на 2026 год (данные по санкциям — 2022 г.), количество моделей в 3D Warehouse, поддержка PDF-экспорта напрямую из десктопа (подтверждён PDF в LayOut и в edu-списке).
 - **Недоступные источники** (403/412): G2, Capterra, TrustRadius, PCMag, All3DP, AlternativeTo, Softonic — обзоры агрегаторов не сверены; выводы о «хвальбе/раздражении» опираются на официальные документы, форум SketchUp Community и RU-обзор vc.ru.
 - **Поисковики** (DuckDuckGo, Mojeek, searx, Bing) блокировались или отдавали мусор; основной метод — прямые fetch по известным URL и sitemap help.sketchup.com (771 статья).
+
+---
+
+## 5. Верификация по дистрибутиву SketchUp 2026 (26.1.256)
+
+**Дата:** 2026-10-27. **Объект:** установленный дистрибутив `C:\Program Files\SketchUp\SketchUp 2026` (Windows x64). **Метод:** статический разбор артефактов без запуска приложения: PE-ресурсы и инвентаризация артефактов (REA, `inspect-pe-resources` / `inspect-artifact`), инвентаризация файлов/строк дистрибутива оболочкой. Всё, что получено оболочкой, помечено «shell-наблюдение»; REA-выводы — с Evidence ID.
+
+### 5.1 Идентичность и состав (наблюдения)
+
+- **Версия:** SketchUp.exe, `FileVersion/ProductVersion 26.1.256`, ProductName «SketchUp Application», CompanyName «Trimble, Inc.»; SketchUpAPI.dll — 26.1.256 (shell-наблюдение VersionInfo). REA: SketchUp.exe — PE x86_64, sha256 `d8a46fea…060e6` ([ev_d3e30ef1…](#), PE-ресурсы: шейдеры `*.CSO`, версия, манифест); SketchUpAPI.dll — PE, 24 140 496 байт, sha256 `ed803b66…ac8cc0` (ev_9a509e2a… / ev_b8944316…, инвентаризация; ev_4d94ec0e…, PE-ресурсы).
+- **Экспортеры** (`Exporters/`, shell-наблюдение): skp23ds (3DS), skp2acad (DWG/DXF), skp2dae (Collada), skp2fbx (FBX), skp2ifc + SkpIfcExport (IFC), skp2kmz (KMZ), skp2obj (OBJ), skp2stl (STL), skp2vrml (VRML), skp2xsi (XSI), SimLabGLTFWriter (glTF/GLB), SimLab-модули USD/USDZ. REA PE-ресурсы skp2stl.dll подтверждают модуль экспорта STL (sha256 `ebd0e4be…fa99a65`, ev_ced21286…).
+- **Импортеры** (`Importers/`): 3ds, dae, DEM (рельеф), dwg, glb, ifc (+IfcToTrimBimConverter), kmz, stl, usdz, trb (TrimBIM), Solids, а также полный стек OpenCASCADE 7.8 (`TK*-780.dll`, включая TKDESTEP/TKDEIGES/TKDEGLTF/TKDEOBJ/TKDEPLY/TKDESTL/TKDEVRML). **Вывод (ограниченный):** OCCT-модули обмена присутствуют в поставке, но UI-фильтров STEP/IGES в строках диалогов не найдено; назначение модулей (внутренняя конвертация IFC/солидов vs пользовательский импорт STEP) — **неизвестно**.
+- **3MF:** в инвентаризованных модулях `Exporters/` и `Importers/` и в строках ресурсов не найден (shell-наблюдение, граница покрытия — перечисленные каталоги и таблицы строк) — подтверждает 3MF как пробел SketchUp и наш дифференциатор (M8).
+- **Ruby API:** `Tools/` — embedded Ruby 3.2 (`x64-ucrt-ruby320.dll`, `gems/3.2.0`, `RubyStdLib`, `sketchup.rb`, `extensions.rb`) — подтверждает §1.7.
+- **Штатные расширения** (`ShippedExtensions/`): Sandbox, Dynamic Components, Diffusion (AI), Assistant, Site Context, Extension Migrator.
+
+### 5.2 Реестр команд (наблюдение, `resources/en-US/commands.json`, 184 команды)
+
+Полный список инструментов `tools/*` подтверждает §1.2: select, line, rectangle, circle, polygon, arc, 2/3 point arc, freehand, pie, rotated rectangle, push/pull, offset, move, rotate, scale, erase, paint bucket, sample material, lasso, tape measure, protractor, axes, dimension, text, tag, section plane, follow me, **solid tools** (union, subtract, trim, split, intersect, outer shell), 3d text, flip, soften/smooth, explode, divide, weld edges. Дополнительно, не отражённые в §1.2: **Grid Snapping** (привязка к сетке), **Search SketchUp** (поиск и активация команд — аналог палитры команд), **Add Comment** (комментарии к объектам, Trimble Connect), Ambient Occlusion, Two-Point Perspective, Download SKP, Purge Unused, фильтры тегов/стили рёбер. Экспорт-команды: 3ds, dae, dwg/dxf (2D/3D), fbx, kmz, obj, png, stl, vrml, xsi — **без 3MF и без glTF-команды в реестре** (glTF/USD идут через SimLab-модули/отдельные статьи справки).
+
+### 5.3 Строки локализации (наблюдение, `resources/ru/Localizable.strings`, `*.strings`)
+
+- **STL-экспорт** подтверждает §1.6: формат Ascii/Binary, единицы (Model units/Inches/Feet/Meters/Millimeters/Centimeters), «Swap YZ coordinates (Y is up)», «Export only current selection», Scale. Уточнение: «мм по умолчанию» строками не подтверждается — есть выбор единиц, включая мм.
+- **OBJ-экспорт:** Export edges, Export texture maps, Export two-sided faces, Export only current selection, единицы (включая Yards/Miles/Kilometers) — детальнее, чем в §1.6.
+- **Fillet/Chamfer:** строки «&Fillet», «&Chamfer», «Select fillet radius or enter value.» (shell-наблюдение) — **вывод:** в интерфейсе 2026.1 есть операции скругления/фаски; команда в `commands.json` не найдена, точная семантика (меню/контекст, 2D-дуги vs 3D-кромки) — **неизвестно** (см. уточнение W2).
+- **Solid Inspector:** строки «Solid Inspector fixes your reversed faces…», анализ вложенных групп — **вывод:** диагностика/починка solids встроена в приложение (не стороннее расширение); глубина покрытия — **неизвестно** (см. уточнение W3).
+- **Snaps:** «Add Snap», «%d Snaps», «Connected with Snaps» — подтверждает §1.3.
+- **Импорт/экспорт файлов (фильтры диалогов):** 3DS, DWG/DXF, DAE, DEM, FBX, GLB, KMZ, IFC, OBJ, STL, USDZ, TRB; изображения bmp/jpg/png/psd/tif/tga; PDF-фильтр присутствует (назначение — вероятно, импорт PDF-изображений/вывод; **не уточнено**); экспорт анимации — **MP4 (H.264)**; среды — HDR/EXR. Фильтров STEP/IGES/3MF нет.
+
+### 5.4 Ограничения верификации
+
+- Статический разбор не наблюдает выполнение: поведение филлетов/солидов, фактические форматы «по кнопке» и дефолты диалогов требуют запуска/UI-сценария (REA runtime-наблюдение) — вынесено в неизвестные.
+- Глубокая дизассембляция (Hopper/Ghidra) не выполнялась: анализаторы не установлены (`rea doctor` — `missing_analysis_engine`); выводы опираются на PE-ресурсы, инвентаризацию и строки ресурсов.
+- Полный Evidence сохранён в сессии: ev_d3e30ef1… (PE SketchUp.exe), ev_9a509e2a…/ev_b8944316… (инвентаризация SketchUpAPI.dll), ev_4d94ec0e… (PE SketchUpAPI.dll), ev_ced21286… (PE skp2stl.dll).
