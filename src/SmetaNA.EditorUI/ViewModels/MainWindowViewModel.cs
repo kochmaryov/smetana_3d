@@ -118,7 +118,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         _localization = localization;
         _theme = theme;
         _session = session;
-        SeedDemoScene(session);
+        SeedStartScene(session);
 
         Strings = new LocalizedStrings(localization);
         _statusText = Strings.StatusReady;
@@ -526,13 +526,26 @@ public sealed class MainWindowViewModel : ViewModelBase
     /// Демо-сцена ~500 000 треугольников для замеров производительности (задача 1.6):
     /// настоящая иерархия сцены, поэтому работает пиккинг и пообъектное выделение.
     /// </summary>
-    private static void SeedDemoScene(EditorSession session)
+    /// <summary>
+    /// Стартовая сцена (задача 6.0): лёгкая эталонная (плита + корпус + цилиндр)
+    /// по умолчанию; демо-рельеф ~500 000 треугольников для замеров (задача 1.6,
+    /// DoD §5.6) сеется только с флагом <c>--demo-terrain</c>.
+    /// </summary>
+    private static void SeedStartScene(EditorSession session)
     {
-        Stopwatch clock = Stopwatch.StartNew();
-        IReadOnlyList<MeshNode> chunks = DemoSceneFactory.AddTerrainToScene(session.Scene);
-        int triangles = chunks.Sum(chunk => chunk.Mesh.Faces.Count * 2); // квады → 2 треугольника
-        Console.WriteLine(
-            $"[DEMO] terrain: {chunks.Count} chunks, {triangles} triangles, {clock.ElapsedMilliseconds} ms");
+        if (EditorOptions.DemoTerrain)
+        {
+            Stopwatch clock = Stopwatch.StartNew();
+            IReadOnlyList<MeshNode> chunks = DemoSceneFactory.AddTerrainToScene(session.Scene);
+            int triangles = chunks.Sum(chunk => chunk.Mesh.Faces.Count * 2); // квады → 2 треугольника
+            Console.WriteLine(
+                $"[DEMO] terrain: {chunks.Count} chunks, {triangles} triangles, {clock.ElapsedMilliseconds} ms");
+            return;
+        }
+
+        IReadOnlyList<MeshNode> nodes = ReferenceSceneFactory.AddToScene(session.Scene);
+        long vertices = nodes.Sum(node => node.Mesh.Vertices.Count);
+        Console.WriteLine($"[SCENE] reference: {nodes.Count} nodes, {vertices} vertices");
     }
 
     private void ApplyGesture()

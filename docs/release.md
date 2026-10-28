@@ -167,7 +167,7 @@ SBOM публикуется вместе с релизом (CycloneDX 1.5, `sbom
 
 | Что | Статус / митигация |
 |---|---|
-| **Смоук `--smoke` не проходит проверку undo/redo** (на 2026-10-23: `historyWired=False`, `undoRedoWired=False` при `vcbCommitted=True`) | Состояние разработки приложения (связка «VCB → история → undo/redo», волна undo/redo), а не упаковки: publish/установка работают, GL-вьюпорт зелёный (500k треугольников, ≥ 58 FPS в смоуке). Блокирует п. 1 релизного чек-листа до закрытия задачи undo/redo |
+| **Смоук `--smoke` не проходит проверку undo/redo** (на 2026-10-23: `historyWired=False`, `undoRedoWired=False` при `vcbCommitted=True`) | **Снята 2026-10-27:** смоук проходит полностью (`result=PASS`, `historyWired=True`, `undoRedoWired=True`) — см. [dod-measurements.md](dod-measurements.md) §8 |
 | Иконка приложения (`smetana.ico` / `.png`) | **Заготовка:** перед релизом добавить `deploy/windows/assets/smetana.ico` и раскомментировать `SetupIconFile`; для Linux — `usr/share/icons/...` в `build-deb.sh` (в скрипте место под копирование иконки описано) |
 | Отсутствие нативных библиотек в срезе | `publish.ps1` предупреждает и в `-RequireNatives` падает; чек-лист §10 п.3–4 |
 | Ложные срабатывания антивирусов на свежих подписанных сборках | код-сигнинг + timestamp; заявка на белый список (Microsoft, Kaspersky) при первых срабатываниях |

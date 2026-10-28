@@ -29,10 +29,14 @@ public partial class ViewportView : UserControl
 {
     private static readonly long ToolHoverIntervalTicks = Stopwatch.Frequency / 25;
 
+    /// <summary>Допуск «клика» правой кнопкой (пикселей) — дальше это орбита.</summary>
+    private const double ToolClickTolerancePx = 4.0;
+
     private DispatcherTimer? _hudTimer;
     private ProjectTabViewModel? _viewModel;
     private ToolController? _tools;
     private long _lastToolHoverTicks;
+    private Point? _toolRightPress;
 
     public ViewportView()
     {
@@ -179,6 +183,13 @@ public partial class ViewportView : UserControl
         PointerPoint point = e.GetCurrentPoint(Viewport);
         if (!point.Properties.IsLeftButtonPressed)
         {
+            // Правый клик (без перетаскивания) завершает фигуру инструмента;
+            // перетаскивание правой кнопкой — орбита камеры, см. OnToolPointerReleased.
+            if (point.Properties.IsRightButtonPressed)
+            {
+                _toolRightPress = point.Position;
+            }
+
             return;
         }
 
@@ -206,12 +217,18 @@ public partial class ViewportView : UserControl
 
     private void OnToolPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
+        Point position = e.GetPosition(Viewport);
+        if (e.InitialPressMouseButton == MouseButton.Right)
+        {
+            RouteToolRightClick(position);
+            return;
+        }
+
         if (_tools is not { IsActive: true } tools || e.InitialPressMouseButton != MouseButton.Left)
         {
             return;
         }
 
-        Point position = e.GetPosition(Viewport);
         UpdateToolViewport();
         bool handled = tools.RoutePointer(PointerInputFactory.Create(
             position.X,
@@ -226,6 +243,44 @@ public partial class ViewportView : UserControl
             e.Pointer.Capture(null);
             e.Handled = true;
         }
+    }
+
+    /// <summary>
+    /// Правый клик (без перетаскивания) завершает фигуру инструмента — как
+    /// задокументировано в инструментах рисования («правый клик завершает»).
+    /// Правое перетаскивание остаётся орбитой камеры: клик и драг различаются
+    /// по смещению курсора. Событие намеренно не помечается завершённым — камера
+    /// должна отпустить захват указателя своим обработчиком.
+    /// </summary>
+    private void RouteToolRightClick(Point position)
+    {
+        if (_toolRightPress is not { } press)
+        {
+            return;
+        }
+
+        _toolRightPress = null;
+        if (_tools is not { IsActive: true } tools)
+        {
+            return;
+        }
+
+        double dx = position.X - press.X;
+        double dy = position.Y - press.Y;
+        if ((dx * dx) + (dy * dy) > ToolClickTolerancePx * ToolClickTolerancePx)
+        {
+            return;
+        }
+
+        UpdateToolViewport();
+        tools.RoutePointer(PointerInputFactory.Create(
+            position.X,
+            position.Y,
+            PointerEventKind.Press,
+            PointerButton.Right,
+            false,
+            false,
+            false));
     }
 
     private void OnToolPointerMoved(object? sender, PointerEventArgs e)

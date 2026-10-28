@@ -3,7 +3,9 @@ namespace SmetaNA.EditorUI;
 /// <summary>
 /// Опции запуска редактора: <c>--smoke [сек]</c> (смоук-окно, см. Smoke),
 /// <c>--fps N</c> (лимит кадров вьюпорта, 0 — без лимита), <c>--wgl</c>
-/// (нативный Windows OpenGL вместо дефолтного ANGLE — для замеров).
+/// (нативный Windows OpenGL вместо дефолтного ANGLE — для замеров),
+/// <c>--demo-terrain</c> (демо-рельеф ~500k треугольников вместо лёгкой
+/// эталонной сцены — для замеров DoD §5.6).
 /// </summary>
 public static class EditorOptions
 {
@@ -12,6 +14,9 @@ public static class EditorOptions
 
     /// <summary>Форс WGL на Windows (игнорируется на других ОС).</summary>
     public static bool ForceWgl { get; private set; }
+
+    /// <summary>Сеять демо-рельеф ~500k треугольников вместо эталонной сцены.</summary>
+    public static bool DemoTerrain { get; private set; }
 
     public static string ModeLabel => ForceWgl ? "wgl" : "default(AngleEgl)";
 
@@ -30,6 +35,9 @@ public static class EditorOptions
                     break;
                 case "--wgl":
                     ForceWgl = true;
+                    break;
+                case "--demo-terrain":
+                    DemoTerrain = true;
                     break;
             }
         }

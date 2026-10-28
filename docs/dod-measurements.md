@@ -157,9 +157,11 @@ tests/SmetaNA.Formats.Tests/Fixtures/ReferenceModels/
 ## 6. FPS вьюпорта на демо-сцене 500k (DoD §5.6)
 
 Демо-сцена: `DemoSceneFactory` — 16 чанков рельефа, ровно **500 000
-треугольников** (504 000 рёбер), сцена построена при старте редактора.
+треугольников** (504 000 рёбер). С 2026-10-27 (задача 6.0) рельеф не сеется
+при старте — стартует лёгкая эталонная сцена; для замеров сцену 500k нужно
+включить флагом **`--demo-terrain`**.
 Замер — GUI-прогон с отключённым лимитом кадров (12 с, свой frame pacing
-выключен): `SmetaNA.EditorUI.exe --smoke 12 --fps 0 [--wgl]`, строка `[VIEWPORT]`.
+выключен): `SmetaNA.EditorUI.exe --smoke 12 --fps 0 --demo-terrain [--wgl]`, строка `[VIEWPORT]`.
 
 | Режим GL | Средний FPS | Мин. FPS | мс/кадр | Примечание |
 |---|---|---|---|---|
@@ -184,8 +186,8 @@ tests/SmetaNA.Formats.Tests/Fixtures/ReferenceModels/
 dotnet test tests/SmetaNA.Core.Tests --filter "FullyQualifiedName~S1CupScenario"
 dotnet test tests/SmetaNA.Core.Tests --filter "FullyQualifiedName~PushPullLatency"
 dotnet test tests/SmetaNA.Rendering.Tests --filter "FullyQualifiedName~ViewportBatchBenchmark"
-src/SmetaNA.EditorUI/bin/Debug/net10.0/SmetaNA.EditorUI.exe --smoke 12 --fps 0
-src/SmetaNA.EditorUI/bin/Debug/net10.0/SmetaNA.EditorUI.exe --smoke 12 --fps 0 --wgl
+src/SmetaNA.EditorUI/bin/Debug/net10.0/SmetaNA.EditorUI.exe --smoke 12 --fps 0 --demo-terrain
+src/SmetaNA.EditorUI/bin/Debug/net10.0/SmetaNA.EditorUI.exe --smoke 12 --fps 0 --demo-terrain --wgl
 ```
 
 (Путь к dotnet: `C:\Users\mnk\.dotnet\dotnet.exe`; имена тестов печатают
@@ -193,10 +195,9 @@ src/SmetaNA.EditorUI/bin/Debug/net10.0/SmetaNA.EditorUI.exe --smoke 12 --fps 0 -
 
 ## 8. Прочие наблюдения
 
-* Смоук-прогон окна (`--smoke`) стабильно отдаёт `result=FAIL` по пункту
-  `historyWired`: проверка ждёт запись истории от VCB-значения на свежем
-  инструменте «Линия», тогда как `LineTool.TryApplyValue` требует начатой
-  ломаной (`_chain.Count > 0`). Это **существующее** расхождение смоука и
-  семантики инструментов (не затрагивается зоной печати); исправление — в
-  волнах, владеющих Core/Smoke. Остальные пункты смоука (окно, тема, язык,
-  VCB, GL-вьюпорт) проходят.
+* Смоук-прогон окна (`--smoke`) на 2026-10-27 проходит полностью
+  (`result=PASS`, включая `historyWired`/`undoRedoWired`): VCB-значение на
+  свежем инструменте «Линия» не потребляется инструментом (`LineTool.TryApplyValue`
+  требует начатой ломаной) и фиксируется в истории командой-заглушкой
+  (`StubEditCommand`) — поэтому проверка записи истории срабатывает. Прежние
+  наблюдения (2026-10-23: `result=FAIL` по `historyWired`) устарели.
