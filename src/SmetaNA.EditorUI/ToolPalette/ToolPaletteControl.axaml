@@ -174,10 +174,9 @@
                 <Button Classes="railGroup"
                         Command="{Binding OpenFlyoutCommand}"
                         ToolTip.Tip="{Binding Name}">
-                  <TextBlock Text="{Binding Name}"
-                             FontSize="9"
-                             TextAlignment="Center"
-                             TextWrapping="Wrap" />
+                  <icons:ToolIcon IconId="{Binding LeadIconId}"
+                                   Width="20"
+                                   Height="20" />
                 </Button>
                 <Popup IsOpen="{Binding IsFlyoutOpen, Mode=TwoWay}"
                        Placement="RightEdgeAlignedTop"

@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:SmetaNA.EditorUI.ToolLayout"
+        xmlns:icons="using:SmetaNA.EditorUI.Icons"
         x:Class="SmetaNA.EditorUI.ToolLayout.ToolLayoutGroupNameWindow"
         x:DataType="local:ToolLayoutGroupNameViewModel"
         Title="{Binding Title}"
@@ -12,8 +13,16 @@
     <TextBlock Text="{Binding Label}" />
     <TextBox x:Name="NameBox" Text="{Binding Name}" />
     <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-      <Button Content="{Binding CancelText}" Command="{Binding CancelCommand}" />
-      <Button Content="{Binding OkText}" Command="{Binding OkCommand}" />
+      <Button Classes="icon"
+              Command="{Binding CancelCommand}"
+              ToolTip.Tip="{Binding CancelText}">
+        <icons:UiIcon IconId="Close" Width="18" Height="18" />
+      </Button>
+      <Button Classes="icon"
+              Command="{Binding OkCommand}"
+              ToolTip.Tip="{Binding OkText}">
+        <icons:UiIcon IconId="Check" Width="18" Height="18" />
+      </Button>
     </StackPanel>
   </StackPanel>
 </Window>

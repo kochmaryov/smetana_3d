@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:SmetaNA.EditorUI.ToolLayout"
+        xmlns:icons="using:SmetaNA.EditorUI.Icons"
         x:Class="SmetaNA.EditorUI.ToolLayout.ToolLayoutDialogWindow"
         x:DataType="local:ToolLayoutDialogViewModel"
         Title="{Binding Title}"
@@ -23,9 +24,12 @@
   <DockPanel Margin="12">
     <!-- Шапка: заголовок, подсказка и закрытие (макет variant_a) -->
     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
-      <Button DockPanel.Dock="Right"
-              Content="{Binding CloseText}"
-              Command="{Binding CancelCommand}" />
+      <Button Classes="icon"
+              DockPanel.Dock="Right"
+              Command="{Binding CancelCommand}"
+              ToolTip.Tip="{Binding CloseText}">
+        <icons:UiIcon IconId="Close" Width="18" Height="18" />
+      </Button>
       <StackPanel Spacing="2">
         <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" />
         <TextBlock Text="{Binding Subtitle}" Opacity="0.7" TextWrapping="Wrap" />
@@ -34,10 +38,22 @@
 
     <!-- Подвал: сброс, отмена, применение -->
     <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
-      <Button Content="{Binding ResetText}" Command="{Binding ResetCommand}" />
+      <Button Classes="icon"
+              Command="{Binding ResetCommand}"
+              ToolTip.Tip="{Binding ResetText}">
+        <icons:UiIcon IconId="Reset" Width="18" Height="18" />
+      </Button>
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-        <Button Content="{Binding CancelText}" Command="{Binding CancelCommand}" />
-        <Button Content="{Binding ApplyText}" Command="{Binding ApplyCommand}" />
+        <Button Classes="icon"
+                Command="{Binding CancelCommand}"
+                ToolTip.Tip="{Binding CancelText}">
+          <icons:UiIcon IconId="Close" Width="18" Height="18" />
+        </Button>
+        <Button Classes="icon"
+                Command="{Binding ApplyCommand}"
+                ToolTip.Tip="{Binding ApplyText}">
+          <icons:UiIcon IconId="Check" Width="18" Height="18" />
+        </Button>
       </StackPanel>
     </Grid>
 
@@ -115,13 +131,32 @@
                   Spacing="8"
                   Margin="0,26,8,0"
                   VerticalAlignment="Top">
-        <Button Content="{Binding ArrowRightText}" Command="{Binding AddToPanelCommand}" />
-        <Button Content="{Binding ArrowLeftText}" Command="{Binding RemoveFromPanelCommand}" />
-        <Button Content="{Binding NewGroupText}" Click="OnNewGroupClick" />
-        <Button Content="{Binding RenameGroupText}"
+        <Button Classes="icon"
+                Command="{Binding AddToPanelCommand}"
+                ToolTip.Tip="{Binding ArrowRightText}">
+          <icons:UiIcon IconId="ArrowRight" Width="18" Height="18" />
+        </Button>
+        <Button Classes="icon"
+                Command="{Binding RemoveFromPanelCommand}"
+                ToolTip.Tip="{Binding ArrowLeftText}">
+          <icons:UiIcon IconId="ArrowLeft" Width="18" Height="18" />
+        </Button>
+        <Button Classes="icon"
+                Click="OnNewGroupClick"
+                ToolTip.Tip="{Binding NewGroupText}">
+          <icons:UiIcon IconId="Plus" Width="18" Height="18" />
+        </Button>
+        <Button Classes="icon"
                 Click="OnRenameGroupClick"
-                IsEnabled="{Binding SelectedGroup.IsCustom}" />
-        <Button Content="{Binding DeleteGroupText}" Command="{Binding DeleteGroupCommand}" />
+                IsEnabled="{Binding SelectedGroup.IsCustom}"
+                ToolTip.Tip="{Binding RenameGroupText}">
+          <icons:UiIcon IconId="Pencil" Width="18" Height="18" />
+        </Button>
+        <Button Classes="icon"
+                Command="{Binding DeleteGroupCommand}"
+                ToolTip.Tip="{Binding DeleteGroupText}">
+          <icons:UiIcon IconId="Trash" Width="18" Height="18" />
+        </Button>
       </StackPanel>
 
       <!-- Панель (порядок и группы): drag&drop за «⠿», порядок кнопок -->
@@ -136,12 +171,16 @@
                     Orientation="Horizontal"
                     Spacing="4"
                     Margin="0,0,0,6">
-          <Button Content="{Binding MoveUpGlyph}"
+          <Button Classes="icon"
                   Command="{Binding MoveUpCommand}"
-                  ToolTip.Tip="{Binding MoveUpToolTip}" />
-          <Button Content="{Binding MoveDownGlyph}"
+                  ToolTip.Tip="{Binding MoveUpToolTip}">
+            <icons:UiIcon IconId="ChevronUp" Width="18" Height="18" />
+          </Button>
+          <Button Classes="icon"
                   Command="{Binding MoveDownCommand}"
-                  ToolTip.Tip="{Binding MoveDownToolTip}" />
+                  ToolTip.Tip="{Binding MoveDownToolTip}">
+            <icons:UiIcon IconId="ChevronDown" Width="18" Height="18" />
+          </Button>
         </StackPanel>
         <ScrollViewer>
           <ItemsControl x:Name="PanelList"

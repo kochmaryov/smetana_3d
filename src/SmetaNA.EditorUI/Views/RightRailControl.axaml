@@ -1,0 +1,83 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmetaNA.EditorUI.ViewModels"
+             xmlns:views="using:SmetaNA.EditorUI.Views"
+             xmlns:icons="using:SmetaNA.EditorUI.Icons"
+             xmlns:printvolume="using:SmetaNA.EditorUI.PrintVolume"
+             x:Class="SmetaNA.EditorUI.Views.RightRailControl"
+             x:DataType="vm:MainWindowViewModel">
+  <!-- Правая колонка (адаптив по образцу палитры): ≥ 960 px — колонка 320 px
+       со всеми панелями стеком; ≤ 960 px — иконочный рейл 44 px, каждая секция
+       открывается вылетом вправо. Содержимое панелей переиспользуется один раз
+       в обоих режимах (IsVisible), чтобы не дублировать контролы. -->
+  <UserControl.Styles>
+    <Style Selector="Button.rail">
+      <Setter Property="Width" Value="40" />
+      <Setter Property="Height" Value="36" />
+      <Setter Property="Margin" Value="2,1" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border Width="{Binding RightRail.PanelWidth}"
+          BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+          BorderThickness="1,0,0,0"
+          Padding="8">
+    <Panel>
+      <!-- Обычный режим: колонка 320 px, все панели стеком.
+           Горизонтальный скролл запрещён: панели не должны расширять колонку
+           (иначе на узких окнах появлялся горизонтальный скроллбар). -->
+      <ScrollViewer IsVisible="{Binding !RightRail.IsRailMode}"
+                    HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="8">
+          <views:TutorialPanel />
+          <views:PropertiesPanel />
+          <views:HistoryPanel />
+          <views:ShortcutPanel />
+          <printvolume:PrintVolumePanel />
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- Режим рейла (≤ 960 px): иконки секций + единый вылет вправо -->
+      <StackPanel IsVisible="{Binding RightRail.IsRailMode}" Spacing="2">
+        <ItemsControl ItemsSource="{Binding RightRail.Sections}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:RightRailSectionViewModel">
+              <Button Classes="rail"
+                      ToolTip.Tip="{Binding Title}"
+                      Tag="{Binding}"
+                      Click="OnSectionButtonClick">
+                <icons:UiIcon IconId="{Binding Icon}"
+                              Width="18"
+                              Height="18" />
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Popup x:Name="SectionPopup"
+               IsOpen="{Binding RightRail.OpenSection.IsFlyoutOpen, Mode=TwoWay}"
+               Placement="Right"
+               IsLightDismissEnabled="True">
+          <Border MaxWidth="340"
+                  MaxHeight="520"
+                  BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                  BorderThickness="1"
+                  CornerRadius="4"
+                  Padding="8"
+                  Background="{DynamicResource ThemeControlBackground}">
+            <Panel>
+              <views:TutorialPanel IsVisible="{Binding RightRail.ShowTutorial}" />
+              <views:PropertiesPanel IsVisible="{Binding RightRail.ShowProperties}" />
+              <views:HistoryPanel IsVisible="{Binding RightRail.ShowHistory}" />
+              <views:ShortcutPanel IsVisible="{Binding RightRail.ShowShortcuts}" />
+              <printvolume:PrintVolumePanel IsVisible="{Binding RightRail.ShowPrintVolume}" />
+            </Panel>
+          </Border>
+        </Popup>
+      </StackPanel>
+    </Panel>
+  </Border>
+</UserControl>

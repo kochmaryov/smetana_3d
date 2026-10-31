@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:SmetaNA.EditorUI.ViewModels"
+             xmlns:icons="using:SmetaNA.EditorUI.Icons"
              x:Class="SmetaNA.EditorUI.Views.TutorialPanel"
              x:DataType="vm:MainWindowViewModel">
   <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
@@ -17,22 +18,37 @@
                  FontWeight="SemiBold" />
       <TextBlock Text="{Binding Tutorial.CurrentStepText}"
                  TextWrapping="Wrap" />
-      <StackPanel Orientation="Horizontal" Spacing="6">
-        <Button Content="{Binding Strings.TutorialStart}"
+      <StackPanel Orientation="Horizontal" Spacing="4">
+        <Button Classes="icon"
                 Command="{Binding Tutorial.StartCommand}"
-                IsVisible="{Binding !Tutorial.IsActive}" />
-        <Button Content="{Binding Strings.TutorialBack}"
+                IsVisible="{Binding !Tutorial.IsActive}"
+                ToolTip.Tip="{Binding Strings.TutorialStart}">
+          <icons:UiIcon IconId="Play" Width="18" Height="18" />
+        </Button>
+        <Button Classes="icon"
                 Command="{Binding Tutorial.BackCommand}"
-                IsVisible="{Binding Tutorial.IsActive}" />
-        <Button Content="{Binding Strings.TutorialNext}"
+                IsVisible="{Binding Tutorial.IsActive}"
+                ToolTip.Tip="{Binding Strings.TutorialBack}">
+          <icons:UiIcon IconId="ChevronLeft" Width="18" Height="18" />
+        </Button>
+        <Button Classes="icon"
                 Command="{Binding Tutorial.NextCommand}"
-                IsVisible="{Binding Tutorial.IsActive}" />
-        <Button Content="{Binding Strings.TutorialRestart}"
+                IsVisible="{Binding Tutorial.IsActive}"
+                ToolTip.Tip="{Binding Strings.TutorialNext}">
+          <icons:UiIcon IconId="ChevronRight" Width="18" Height="18" />
+        </Button>
+        <Button Classes="icon"
                 Command="{Binding Tutorial.RestartCommand}"
-                IsVisible="{Binding Tutorial.IsActive}" />
-        <Button Content="{Binding Strings.TutorialClose}"
+                IsVisible="{Binding Tutorial.IsActive}"
+                ToolTip.Tip="{Binding Strings.TutorialRestart}">
+          <icons:UiIcon IconId="Restart" Width="18" Height="18" />
+        </Button>
+        <Button Classes="icon"
                 Command="{Binding Tutorial.CloseCommand}"
-                IsVisible="{Binding Tutorial.IsActive}" />
+                IsVisible="{Binding Tutorial.IsActive}"
+                ToolTip.Tip="{Binding Strings.TutorialClose}">
+          <icons:UiIcon IconId="Close" Width="18" Height="18" />
+        </Button>
       </StackPanel>
     </StackPanel>
   </Border>

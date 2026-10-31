@@ -3,6 +3,7 @@
         xmlns:vm="using:SmetaNA.EditorUI.ViewModels"
         xmlns:views="using:SmetaNA.EditorUI.Views"
         xmlns:vcb="using:SmetaNA.EditorUI.Vcb"
+        xmlns:icons="using:SmetaNA.EditorUI.Icons"
         xmlns:printvolume="using:SmetaNA.EditorUI.PrintVolume"
         xmlns:toolpalette="using:SmetaNA.EditorUI.ToolPalette"
         x:Class="SmetaNA.EditorUI.MainWindow"
@@ -10,20 +11,25 @@
         Title="{Binding Strings.AppTitle}"
         Width="1280"
         Height="800"
+        MinWidth="640"
+        MinHeight="480"
         KeyDown="OnWindowKeyDown">
   <DockPanel>
     <!-- Меню: быстрый доступ к основным командам (progressive disclosure) -->
     <Menu DockPanel.Dock="Top">
       <MenuItem Header="{Binding Strings.MenuFile}">
-        <MenuItem Header="{Binding Strings.ProjectNew}" Command="{Binding NewProjectCommand}" />
-        <MenuItem Header="{Binding Strings.LicenseOpen}" Command="{Binding OpenLicenseCommand}" />
+        <MenuItem Header="{Binding Strings.ProjectNew}"
+                  Command="{Binding NewProjectCommand}"
+                  InputGesture="Ctrl+N" />
       </MenuItem>
       <MenuItem Header="{Binding Strings.MenuEdit}">
         <MenuItem Header="{Binding Strings.EditUndo}"
                   Command="{Binding UndoCommand}"
+                  InputGesture="Ctrl+Z"
                   ToolTip.Tip="{Binding UndoHint}" />
         <MenuItem Header="{Binding Strings.EditRedo}"
                   Command="{Binding RedoCommand}"
+                  InputGesture="Ctrl+Y"
                   ToolTip.Tip="{Binding RedoHint}" />
       </MenuItem>
       <MenuItem Header="{Binding Strings.MenuView}">
@@ -44,23 +50,38 @@
             Padding="8,4">
       <Grid ColumnDefinitions="*,Auto">
         <StackPanel Orientation="Horizontal" Spacing="6">
-          <Button Content="{Binding Strings.ProjectNew}"
-                  Command="{Binding NewProjectCommand}" />
-          <Button Content="{Binding Strings.EditUndo}"
+          <Button Classes="icon"
+                  Command="{Binding NewProjectCommand}"
+                  ToolTip.Tip="{Binding Strings.ProjectNew}">
+            <icons:UiIcon IconId="New" Width="18" Height="18" />
+          </Button>
+          <Button Classes="icon"
                   Command="{Binding UndoCommand}"
-                  ToolTip.Tip="{Binding UndoHint}" />
-          <Button Content="{Binding Strings.EditRedo}"
+                  ToolTip.Tip="{Binding UndoHint}">
+            <icons:UiIcon IconId="Undo" Width="18" Height="18" />
+          </Button>
+          <Button Classes="icon"
                   Command="{Binding RedoCommand}"
-                  ToolTip.Tip="{Binding RedoHint}" />
+                  ToolTip.Tip="{Binding RedoHint}">
+            <icons:UiIcon IconId="Redo" Width="18" Height="18" />
+          </Button>
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-          <Button Content="{Binding ModeToggleLabel}"
+          <Button Classes="icon"
                   Command="{Binding ToggleModeCommand}"
-                  ToolTip.Tip="{Binding Strings.ModeNoviceHint}" />
-          <Button Content="{Binding ThemeToggleLabel}"
-                  Command="{Binding ThemeToggleCommand}" />
-          <Button Content="{Binding Strings.CommandToggleLanguage}"
-                  Command="{Binding ToggleLanguageCommand}" />
+                  ToolTip.Tip="{Binding ModeToggleLabel}">
+            <icons:UiIcon IconId="Mode" Width="18" Height="18" />
+          </Button>
+          <Button Classes="icon"
+                  Command="{Binding ThemeToggleCommand}"
+                  ToolTip.Tip="{Binding ThemeToggleLabel}">
+            <icons:UiIcon IconId="Theme" Width="18" Height="18" />
+          </Button>
+          <Button Classes="icon"
+                  Command="{Binding ToggleLanguageCommand}"
+                  ToolTip.Tip="{Binding Strings.CommandToggleLanguage}">
+            <icons:UiIcon IconId="Language" Width="18" Height="18" />
+          </Button>
         </StackPanel>
       </Grid>
     </Border>
@@ -70,7 +91,7 @@
             BorderBrush="{DynamicResource ThemeBorderMidBrush}"
             BorderThickness="0,1,0,0"
             Padding="8">
-      <Grid ColumnDefinitions="Auto,*">
+      <Grid ColumnDefinitions="Auto,*,Auto">
         <vcb:VcbControl Prompt="{Binding VcbPrompt}"
                         PlaceholderText="{Binding Strings.VcbWatermark}"
                         Kind="{Binding VcbKind}"
@@ -82,6 +103,16 @@
                    VerticalAlignment="Center"
                    Margin="16,0,0,0"
                    TextTrimming="CharacterEllipsis" />
+        <!-- Подсказка управления камерой (ранее была в вьюпорте и наезжала на
+             панель режимов на узких экранах); MaxWidth — чтобы строка статуса
+             не переполнялась по горизонтали на узких окнах -->
+        <TextBlock Grid.Column="2"
+                   Text="{Binding Strings.ViewportCameraHint}"
+                   VerticalAlignment="Center"
+                   Margin="16,0,0,0"
+                   MaxWidth="300"
+                   Opacity="0.6"
+                   TextTrimming="CharacterEllipsis" />
       </Grid>
     </Border>
 
@@ -89,22 +120,9 @@
     <toolpalette:ToolPaletteControl DockPanel.Dock="Left"
                                     DataContext="{Binding ToolPalette}" />
 
-    <!-- Правая колонка: свойства, история, горячие клавиши -->
-    <Border DockPanel.Dock="Right"
-            Width="320"
-            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-            BorderThickness="1,0,0,0"
-            Padding="8">
-      <ScrollViewer>
-        <StackPanel Spacing="8">
-          <views:TutorialPanel />
-          <views:PropertiesPanel />
-          <views:HistoryPanel />
-          <views:ShortcutPanel />
-          <printvolume:PrintVolumePanel />
-        </StackPanel>
-      </ScrollViewer>
-    </Border>
+    <!-- Правая колонка: свойства, история, горячие клавиши, обучение, печать.
+         Адаптив: колонка 320 px ↔ иконочный рейл 44 px при ≤ 960 px. -->
+    <views:RightRailControl DockPanel.Dock="Right" DataContext="{Binding}" />
 
     <!-- Вкладки проектов (заготовка) + место вьюпорта -->
     <TabControl ItemsSource="{Binding Projects}"

@@ -130,6 +130,20 @@ public sealed class MainWindowViewModel : ViewModelBase
         Tutorial = new TutorialViewModel(localization, GlassTutorialLesson.Create());
         Tutorial.StateChanged += OnTutorialStateChanged;
 
+        RightRail = new RightRailViewModel(
+        [
+            new RightRailSectionViewModel("tutorial", Icons.UiIconId.Book, Strings.TutorialTitle),
+            new RightRailSectionViewModel("properties", Icons.UiIconId.Info, Strings.PropertiesTitle),
+            new RightRailSectionViewModel("history", Icons.UiIconId.History, Strings.HistoryTitle),
+            new RightRailSectionViewModel("shortcuts", Icons.UiIconId.Keyboard, Strings.ShortcutsTitle),
+            new RightRailSectionViewModel(
+                "printVolume",
+                Icons.UiIconId.Printer,
+                PrintVolume.PrintVolumeStrings.Get(
+                    PrintVolume.PrintVolumeStrings.Title,
+                    localization.Culture)),
+        ]);
+
         Languages =
         [
             new LanguageOption(localization, EditorCulture.Russian),
@@ -173,6 +187,9 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     /// <summary>Палитра инструментов: группы, вылеты, адаптив (контрол слева в окне).</summary>
     public ToolPaletteViewModel ToolPalette { get; private set; }
+
+    /// <summary>Адаптив правой колонки: колонка 320 px ↔ иконочный рейл ≤ 960 px.</summary>
+    public RightRailViewModel RightRail { get; }
 
     /// <summary>Сервис раскладки палитры: хранение и диалог настройки.</summary>
     public ToolLayoutService ToolLayout => _toolLayout;

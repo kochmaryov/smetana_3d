@@ -35,6 +35,7 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
         Id = group.Id;
         NameKey = group.NameKey;
         Buttons = buttons;
+        LeadIconId = buttons.Count > 0 ? buttons[0].IconId : Icons.ToolIconId.None;
         RailItems =
         [
             .. buttons.SelectMany(button =>
@@ -54,6 +55,12 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
 
     /// <summary>Локализованное имя группы («Рисование», «Правка», …).</summary>
     public string Name => _localization.Get(NameKey);
+
+    /// <summary>
+    /// Ведущая иконка группы (глиф первой кнопки) — для кнопки группы в режиме
+    /// рейла: кнопка-иконка с тултипом-именем вместо текстовой подписи.
+    /// </summary>
+    public Icons.ToolIconId LeadIconId { get; }
 
     public IReadOnlyList<ToolPaletteButtonViewModel> Buttons { get; }
 

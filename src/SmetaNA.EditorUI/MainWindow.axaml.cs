@@ -27,7 +27,20 @@ public partial class MainWindow : Window
         ViewModel.LicenseRequested += (_, _) => OpenLicenseWindow();
         ViewModel.ToolLayoutSettingsRequested += async (_, _) =>
             await ViewModel.ToolLayout.OpenDialogAsync(this);
+        LayoutUpdated += OnLayoutUpdated;
         Opened += OnFirstOpened;
+    }
+
+    /// <summary>
+    /// Точка подключения адаптива правой колонки: ширина окна задаёт режим
+    /// (колонка ↔ рейл). Значения кэшируются в VM, частые вызовы безопасны.
+    /// </summary>
+    private void OnLayoutUpdated(object? sender, EventArgs e)
+    {
+        if (Bounds.Width > 0)
+        {
+            ViewModel.RightRail.ApplyWindowWidth(Bounds.Width);
+        }
     }
 
     internal MainWindowViewModel ViewModel { get; }

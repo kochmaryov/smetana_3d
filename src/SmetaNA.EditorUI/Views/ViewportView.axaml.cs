@@ -38,6 +38,9 @@ public partial class ViewportView : UserControl
     private long _lastToolHoverTicks;
     private Point? _toolRightPress;
 
+    /// <summary>Панель режимов раскрыта кнопкой «⚙» (<600 px).</summary>
+    private bool _isViewModePanelOpen;
+
     public ViewportView()
     {
         InitializeComponent();
@@ -150,17 +153,50 @@ public partial class ViewportView : UserControl
         _hudTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         _hudTimer.Tick += OnHudTick;
         _hudTimer.Start();
+        SizeChanged += OnViewportSizeChanged;
         UpdateHud();
+        ApplyViewModeLayout();
     }
 
     private void OnDetachedFromVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
     {
+        SizeChanged -= OnViewportSizeChanged;
         if (_hudTimer is not null)
         {
             _hudTimer.Stop();
             _hudTimer.Tick -= OnHudTick;
             _hudTimer = null;
         }
+    }
+
+    /// <summary>Ширина вьюпорта задаёт состояние оверлея режимов (адаптив).</summary>
+    private void OnViewportSizeChanged(object? sender, SizeChangedEventArgs e) => ApplyViewModeLayout();
+
+    /// <summary>
+    /// Применить состояние оверлея режимов: полное ≥760, компакт (без подписей,
+    /// только кнопки и поля) 600–760, «⚙» &lt;600 — панель свёрнута и раскрывается
+    /// кнопкой. Порог совпадает с началом наложения на HUD (~740 px).
+    /// </summary>
+    private void ApplyViewModeLayout()
+    {
+        double width = Bounds.Width;
+        bool collapsed = width < 600;
+        bool showLabels = width >= 760;
+
+        _isViewModePanelOpen = false;
+        ViewModeGearButton.IsVisible = collapsed;
+        ViewModePanel.IsVisible = !collapsed;
+
+        ModeLabel.IsVisible = showLabels;
+        ProjectionLabel.IsVisible = showLabels;
+        UnitLabel.IsVisible = showLabels;
+    }
+
+    /// <summary>«⚙» (&lt;600 px): раскрыть/прятать панель режимов.</summary>
+    private void OnViewModeGearClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        _isViewModePanelOpen = !_isViewModePanelOpen;
+        ViewModePanel.IsVisible = _isViewModePanelOpen;
     }
 
     private void OnHudTick(object? sender, EventArgs e) => UpdateHud();

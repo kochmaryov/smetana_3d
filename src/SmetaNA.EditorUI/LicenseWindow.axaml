@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:SmetaNA.EditorUI.ViewModels"
+        xmlns:icons="using:SmetaNA.EditorUI.Icons"
         x:Class="SmetaNA.EditorUI.LicenseWindow"
         x:DataType="vm:LicenseWindowViewModel"
         Title="{Binding Strings.LicenseTitle}"
@@ -15,9 +16,12 @@
                  IsVisible="{Binding IsDevKey}"
                  Opacity="0.85"
                  TextWrapping="Wrap" />
-      <Button Content="{Binding Strings.LicenseClose}"
+      <Button Classes="icon"
               HorizontalAlignment="Right"
-              Click="OnCloseClick" />
+              ToolTip.Tip="{Binding Strings.LicenseClose}"
+              Click="OnCloseClick">
+        <icons:UiIcon IconId="Close" Width="18" Height="18" />
+      </Button>
     </StackPanel>
 
     <ScrollViewer>
@@ -38,9 +42,12 @@
             <TextBlock Text="{Binding ValidUntilText}" TextWrapping="Wrap" />
             <TextBlock Text="{Binding Strings.LicenseTrialTitle}" FontWeight="SemiBold" Margin="0,6,0,0" />
             <TextBlock Text="{Binding TrialText}" TextWrapping="Wrap" />
-            <Button Content="{Binding Strings.LicenseTrialStart}"
+            <Button Classes="icon"
                     Command="{Binding StartTrialCommand}"
-                    HorizontalAlignment="Left" />
+                    HorizontalAlignment="Left"
+                    ToolTip.Tip="{Binding Strings.LicenseTrialStart}">
+              <icons:UiIcon IconId="Play" Width="18" Height="18" />
+            </Button>
             <Grid ColumnDefinitions="Auto,*" Margin="0,6,0,0">
               <TextBlock Text="{Binding Strings.LicenseDeviceLabel}" Opacity="0.7" />
               <TextBlock Grid.Column="1"
@@ -63,9 +70,12 @@
                      AcceptsReturn="True"
                      TextWrapping="Wrap"
                      MinHeight="56" />
-            <Button Content="{Binding Strings.LicenseKeyValidate}"
+            <Button Classes="icon"
                     Command="{Binding ValidateKeyCommand}"
-                    HorizontalAlignment="Left" />
+                    HorizontalAlignment="Left"
+                    ToolTip.Tip="{Binding Strings.LicenseKeyValidate}">
+              <icons:UiIcon IconId="Check" Width="18" Height="18" />
+            </Button>
             <TextBlock Text="{Binding FeedbackText}"
                        FontWeight="SemiBold"
                        TextWrapping="Wrap" />
@@ -97,9 +107,12 @@
                      AcceptsReturn="True"
                      TextWrapping="Wrap"
                      MinHeight="56" />
-            <Button Content="{Binding Strings.LicenseApplyToken}"
+            <Button Classes="icon"
                     Command="{Binding ApplyTokenCommand}"
-                    HorizontalAlignment="Left" />
+                    HorizontalAlignment="Left"
+                    ToolTip.Tip="{Binding Strings.LicenseApplyToken}">
+              <icons:UiIcon IconId="Import" Width="18" Height="18" />
+            </Button>
           </StackPanel>
         </Border>
 
@@ -109,9 +122,12 @@
                 CornerRadius="4"
                 Padding="12">
           <StackPanel Spacing="6">
-            <Button Content="{Binding Strings.LicenseDeactivate}"
+            <Button Classes="icon"
                     Command="{Binding DeactivateCommand}"
-                    HorizontalAlignment="Left" />
+                    HorizontalAlignment="Left"
+                    ToolTip.Tip="{Binding Strings.LicenseDeactivate}">
+              <icons:UiIcon IconId="Ban" Width="18" Height="18" />
+            </Button>
             <TextBlock Text="{Binding Strings.LicenseDeactivateReceiptHint}"
                        Opacity="0.7"
                        TextWrapping="Wrap"
