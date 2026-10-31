@@ -60,10 +60,13 @@
           BorderThickness="0,0,1,0"
           Padding="6">
     <Panel>
-      <!-- Обычный и компактный режимы: 2 колонки → 1 колонка (≤ 960 px) -->
+      <!-- Обычный и компактный режимы: 2 колонки → 1 колонка (≤ 960 px).
+           Вертикальный скроллбар скрыт: переполнение отрабатывает свёртка групп
+           (ApplyViewportHeight), а остаточный люфт не даёт полосе мелькать. -->
       <ScrollViewer x:Name="PaletteScroll"
                     IsVisible="{Binding !IsRailMode}"
-                    HorizontalScrollBarVisibility="Disabled">
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Hidden">
         <ItemsControl ItemsSource="{Binding Groups}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="tp:ToolPaletteGroupViewModel">
@@ -161,7 +164,8 @@
 
       <!-- Режим рейла (≤ 768 px): группы-кнопки с вылетами инструментов -->
       <ScrollViewer IsVisible="{Binding IsRailMode}"
-                    HorizontalScrollBarVisibility="Disabled">
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Hidden">
         <ItemsControl ItemsSource="{Binding Groups}">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>

@@ -21,6 +21,9 @@
         <MenuItem Header="{Binding Strings.ProjectNew}"
                   Command="{Binding NewProjectCommand}"
                   InputGesture="Ctrl+N" />
+        <MenuItem Header="{Binding Strings.ProjectOpen}"
+                  Command="{Binding OpenFileCommand}"
+                  InputGesture="Ctrl+O" />
       </MenuItem>
       <MenuItem Header="{Binding Strings.MenuEdit}">
         <MenuItem Header="{Binding Strings.EditUndo}"
@@ -34,7 +37,6 @@
       </MenuItem>
       <MenuItem Header="{Binding Strings.MenuView}">
         <MenuItem Header="{Binding Strings.CommandToggleTheme}" Command="{Binding ThemeToggleCommand}" />
-        <MenuItem Header="{Binding Strings.ModeLabel}" Command="{Binding ToggleModeCommand}" />
         <MenuItem Header="{Binding ToolLayoutMenuLabel}" Command="{Binding OpenToolLayoutCommand}" />
       </MenuItem>
       <MenuItem Header="{Binding Strings.MenuHelp}">
@@ -67,11 +69,6 @@
           </Button>
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-          <Button Classes="icon"
-                  Command="{Binding ToggleModeCommand}"
-                  ToolTip.Tip="{Binding ModeToggleLabel}">
-            <icons:UiIcon IconId="Mode" Width="18" Height="18" />
-          </Button>
           <Button Classes="icon"
                   Command="{Binding ThemeToggleCommand}"
                   ToolTip.Tip="{Binding ThemeToggleLabel}">
@@ -120,24 +117,27 @@
     <toolpalette:ToolPaletteControl DockPanel.Dock="Left"
                                     DataContext="{Binding ToolPalette}" />
 
-    <!-- Правая колонка: свойства, история, горячие клавиши, обучение, печать.
-         Адаптив: колонка 320 px ↔ иконочный рейл 44 px при ≤ 960 px. -->
+    <!-- Правый рейл: иконки секций, панели вылетом вправо -->
     <views:RightRailControl DockPanel.Dock="Right" DataContext="{Binding}" />
 
-    <!-- Вкладки проектов (заготовка) + место вьюпорта -->
-    <TabControl ItemsSource="{Binding Projects}"
-                SelectedItem="{Binding SelectedProject}"
-                Margin="8">
-      <TabControl.ItemTemplate>
-        <DataTemplate x:DataType="vm:ProjectTabViewModel">
-          <TextBlock Text="{Binding Title}" />
-        </DataTemplate>
-      </TabControl.ItemTemplate>
-      <TabControl.ContentTemplate>
-        <DataTemplate x:DataType="vm:ProjectTabViewModel">
-          <views:ViewportView />
-        </DataTemplate>
-      </TabControl.ContentTemplate>
-    </TabControl>
+    <!-- Вкладки проектов (заготовка) + место вьюпорта; пока проектов нет —
+         стартовый экран с созданием/открытием файла -->
+    <Panel Margin="8">
+      <TabControl ItemsSource="{Binding Projects}"
+                  SelectedItem="{Binding SelectedProject}"
+                  IsVisible="{Binding HasProjects}">
+        <TabControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:ProjectTabViewModel">
+            <TextBlock Text="{Binding Title}" />
+          </DataTemplate>
+        </TabControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+          <DataTemplate x:DataType="vm:ProjectTabViewModel">
+            <views:ViewportView />
+          </DataTemplate>
+        </TabControl.ContentTemplate>
+      </TabControl>
+      <views:WelcomeView IsVisible="{Binding !HasProjects}" />
+    </Panel>
   </DockPanel>
 </Window>

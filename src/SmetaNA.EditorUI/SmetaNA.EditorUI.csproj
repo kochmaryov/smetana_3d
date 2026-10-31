@@ -10,8 +10,9 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.4" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SmetaNA.Core\SmetaNA.Core.csproj" />
-    <ProjectReference Include="..\SmetaNA.Licensing\SmetaNA.Licensing.csproj" />
-    <ProjectReference Include="..\SmetaNA.Rendering\SmetaNA.Rendering.csproj" />
+    <ProjectReference Include="..\..\src\SmetaNA.Core\SmetaNA.Core.csproj" />
+    <ProjectReference Include="..\..\src\SmetaNA.Formats\SmetaNA.Formats.csproj" />
+    <ProjectReference Include="..\..\src\SmetaNA.Licensing\SmetaNA.Licensing.csproj" />
+    <ProjectReference Include="..\..\src\SmetaNA.Rendering\SmetaNA.Rendering.csproj" />
   </ItemGroup>
 </Project>

@@ -2,6 +2,8 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using SmetaNA.Core.Tools;
 using SmetaNA.EditorUI.Commands;
@@ -10,6 +12,7 @@ using SmetaNA.EditorUI.Smoke;
 using SmetaNA.EditorUI.ViewModels;
 using SmetaNA.EditorUI.Vcb;
 using SmetaNA.EditorUI.Views;
+using SmetaNA.Formats.ProjectFile;
 using SmetaNA.Rendering;
 
 namespace SmetaNA.EditorUI;
@@ -27,23 +30,35 @@ public partial class MainWindow : Window
         ViewModel.LicenseRequested += (_, _) => OpenLicenseWindow();
         ViewModel.ToolLayoutSettingsRequested += async (_, _) =>
             await ViewModel.ToolLayout.OpenDialogAsync(this);
-        LayoutUpdated += OnLayoutUpdated;
+        ViewModel.OpenFileRequested += async (_, _) => await OpenProjectFileAsync();
         Opened += OnFirstOpened;
     }
 
-    /// <summary>
-    /// Точка подключения адаптива правой колонки: ширина окна задаёт режим
-    /// (колонка ↔ рейл). Значения кэшируются в VM, частые вызовы безопасны.
-    /// </summary>
-    private void OnLayoutUpdated(object? sender, EventArgs e)
+    internal MainWindowViewModel ViewModel { get; }
+
+    /// <summary>Файловый диалог проекта (.sna) → открытие через view-модель.</summary>
+    private async Task OpenProjectFileAsync()
     {
-        if (Bounds.Width > 0)
+        IReadOnlyList<IStorageFile> files = await StorageProvider.OpenFilePickerAsync(
+            new FilePickerOpenOptions
+            {
+                Title = ViewModel.Strings.ProjectOpen,
+                AllowMultiple = false,
+                FileTypeFilter =
+                [
+                    new FilePickerFileType(ViewModel.Strings.ProjectFileType)
+                    {
+                        Patterns = [ProjectFileFormat.Extension],
+                    },
+                    FilePickerFileTypes.All,
+                ],
+            });
+
+        if (files.Count > 0 && files[0].TryGetLocalPath() is { } path)
         {
-            ViewModel.RightRail.ApplyWindowWidth(Bounds.Width);
+            ViewModel.OpenProjectFile(path);
         }
     }
-
-    internal MainWindowViewModel ViewModel { get; }
 
     /// <summary>Экран лицензии: показывается из меню и при старте, если лицензии нет.</summary>
     internal void OpenLicenseWindow()
@@ -144,14 +159,14 @@ public partial class MainWindow : Window
 
         bool viewportWired = ReportViewportStats();
         bool drawingWired = ReportToolDrawing();
-        bool noviceWired = ReportNoviceMode();
+        bool tutorialWired = ReportTutorial();
         bool licenseWired = ReportLicenseStatus();
 
         bool passed = opened && themeChanged && languageChanged && vcbCommitted && historyWired && undoRedoWired
-            && drawingWired && viewportWired && noviceWired && licenseWired;
+            && drawingWired && viewportWired && tutorialWired && licenseWired;
         string summary = string.Format(
             CultureInfo.InvariantCulture,
-            "[SMOKE] opened={0} themeChanged={1} languageChanged={2} vcbCommitted={3} historyWired={4} undoRedoWired={5} drawingWired={6} noviceWired={7} licenseWired={8} title='{9}' -> '{10}' status='{11}' result={12}",
+            "[SMOKE] opened={0} themeChanged={1} languageChanged={2} vcbCommitted={3} historyWired={4} undoRedoWired={5} drawingWired={6} tutorialWired={7} licenseWired={8} title='{9}' -> '{10}' status='{11}' result={12}",
             opened,
             themeChanged,
             languageChanged,
@@ -159,7 +174,7 @@ public partial class MainWindow : Window
             historyWired,
             undoRedoWired,
             drawingWired,
-            noviceWired,
+            tutorialWired,
             licenseWired,
             titleBefore,
             titleAfter,
@@ -169,15 +184,10 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Режим «Новичок» и урок S1: переключение режима, шаги с подсветкой кнопки.
+    /// Урок S1: шаги, подсветка кнопки палитры и закрытие урока.
     /// </summary>
-    private bool ReportNoviceMode()
+    private bool ReportTutorial()
     {
-        bool startsNovice = ViewModel.IsNoviceMode;
-        ViewModel.ToggleMode();
-        bool toggled = ViewModel.IsNoviceMode != startsNovice;
-        ViewModel.IsNoviceMode = true;
-
         ViewModel.Tutorial.Start();
         ViewModel.Tutorial.Next();
         bool stepsRun = ViewModel.Tutorial.IsActive
@@ -187,9 +197,9 @@ public partial class MainWindow : Window
         ViewModel.Tutorial.Close();
         bool closed = !ViewModel.Tutorial.IsActive;
 
-        bool passed = startsNovice && toggled && stepsRun && highlightWired && closed;
+        bool passed = stepsRun && highlightWired && closed;
         Console.WriteLine(
-            $"[NOVICE] mode={startsNovice} toggled={toggled} steps={stepsRun} highlight={highlightWired} closed={closed} result={(passed ? "PASS" : "FAIL")}");
+            $"[TUTORIAL] steps={stepsRun} highlight={highlightWired} closed={closed} result={(passed ? "PASS" : "FAIL")}");
         return passed;
     }
 

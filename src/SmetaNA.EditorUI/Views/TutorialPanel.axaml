@@ -7,8 +7,7 @@
   <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
           BorderThickness="1"
           CornerRadius="4"
-          Padding="12"
-          IsVisible="{Binding IsTutorialVisible}">
+          Padding="12">
     <StackPanel Spacing="8">
       <TextBlock Text="{Binding Tutorial.Title}" FontWeight="SemiBold" />
       <TextBlock Text="{Binding Tutorial.Intro}"

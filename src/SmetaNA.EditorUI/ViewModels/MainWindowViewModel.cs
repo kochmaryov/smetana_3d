@@ -15,6 +15,7 @@ using SmetaNA.EditorUI.Tools.Editing;
 using SmetaNA.EditorUI.Annotations;
 using SmetaNA.EditorUI.Tutorial;
 using SmetaNA.EditorUI.Vcb;
+using SmetaNA.Formats.ProjectFile;
 using SmetaNA.Rendering;
 
 namespace SmetaNA.EditorUI.ViewModels;
@@ -104,7 +105,6 @@ public sealed class MainWindowViewModel : ViewModelBase
     private ToolStubViewModel? _activeTool;
     private string _statusText;
     private bool _isAdvancedVisible;
-    private bool _isNoviceMode = true;
     private ProjectTabViewModel? _selectedProject;
     private ShortcutRowViewModel? _selectedShortcutRow;
     private string _gestureInput = string.Empty;
@@ -152,7 +152,19 @@ public sealed class MainWindowViewModel : ViewModelBase
         _selectedLanguage = Languages[0];
 
         Projects = [];
-        AddProject();
+        Projects.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasProjects));
+
+        // Смоук и демо-режим требуют вьюпорт сразу; обычный запуск
+        // показывает стартовый экран до первого проекта.
+        if (App.Smoke is not null || EditorOptions.DemoTerrain)
+        {
+            AddProject();
+        }
+
+        foreach (string path in RecentFilesStore.Load())
+        {
+            RecentFiles.Add(new RecentFileViewModel(path, OpenProjectFile));
+        }
 
         ShortcutRows = new ObservableCollection<ShortcutRowViewModel>(
             session.Shortcuts.CommandIds.Select(id => new ShortcutRowViewModel(localization, session.Shortcuts, id)));
@@ -162,8 +174,12 @@ public sealed class MainWindowViewModel : ViewModelBase
         UndoCommand = new RelayCommand(_ => _session.History.Undo(), _ => _session.History.CanUndo);
         RedoCommand = new RelayCommand(_ => _session.History.Redo(), _ => _session.History.CanRedo);
         NewProjectCommand = new RelayCommand(AddProject);
+        OpenFileCommand = new RelayCommand(() => OpenFileRequested?.Invoke(this, EventArgs.Empty));
+        ToggleRecentCommand = new RelayCommand(
+            _ => IsRecentListOpen = !IsRecentListOpen,
+            _ => HasRecentFiles);
+        CreateProjectWithUnitCommand = new RelayCommand(CreateProjectWithUnit);
         ThemeToggleCommand = new RelayCommand(ToggleTheme);
-        ToggleModeCommand = new RelayCommand(ToggleMode);
         ToggleLanguageCommand = new RelayCommand(_ => ToggleLanguage());
         OpenLicenseCommand = new RelayCommand(_ => LicenseRequested?.Invoke(this, EventArgs.Empty));
         OpenToolLayoutCommand = new RelayCommand(_ => ToolLayoutSettingsRequested?.Invoke(this, EventArgs.Empty));
@@ -208,7 +224,6 @@ public sealed class MainWindowViewModel : ViewModelBase
     public RelayCommand ToggleLanguageCommand { get; }
     public RelayCommand NewProjectCommand { get; }
     public RelayCommand ThemeToggleCommand { get; }
-    public RelayCommand ToggleModeCommand { get; }
     public RelayCommand OpenLicenseCommand { get; }
     public RelayCommand ApplyGestureCommand { get; }
     public RelayCommand ResetGestureCommand { get; }
@@ -220,8 +235,44 @@ public sealed class MainWindowViewModel : ViewModelBase
     /// <summary>Запрос открытия диалога «Настройка панели инструментов» (обрабатывает окно).</summary>
     public event EventHandler? ToolLayoutSettingsRequested;
 
+    /// <summary>Запрос выбора файла проекта (обрабатывает окно через StorageProvider).</summary>
+    public event EventHandler? OpenFileRequested;
+
     /// <summary>Команда меню «Настройка панели инструментов…».</summary>
     public RelayCommand OpenToolLayoutCommand { get; }
+
+    /// <summary>Команда «Открыть файл…» стартового экрана (событие → файловый диалог окна).</summary>
+    public RelayCommand OpenFileCommand { get; }
+
+    /// <summary>Команда раскрытия списка недавних файлов на стартовом экране.</summary>
+    public RelayCommand ToggleRecentCommand { get; }
+
+    /// <summary>Создать проект с единицами измерения из шаблона (параметр — имя <see cref="LengthUnit"/>).</summary>
+    public RelayCommand CreateProjectWithUnitCommand { get; }
+
+    /// <summary>Есть ли открытые проекты (иначе показывается стартовый экран).</summary>
+    public bool HasProjects => Projects.Count > 0;
+
+    /// <summary>Недавние файлы проекта для стартового экрана.</summary>
+    public ObservableCollection<RecentFileViewModel> RecentFiles { get; } = [];
+
+    /// <summary>Список недавних файлов раскрыт.</summary>
+    public bool IsRecentListOpen
+    {
+        get => _isRecentListOpen;
+        private set
+        {
+            if (SetField(ref _isRecentListOpen, value))
+            {
+                ToggleRecentCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    private bool _isRecentListOpen;
+
+    /// <summary>Недавние файлы есть (кнопка «Недавние» доступна).</summary>
+    public bool HasRecentFiles => RecentFiles.Count > 0;
 
     /// <summary>Активный инструмент (заглушка) или <c>null</c> — нет.</summary>
     public ToolStubViewModel? ActiveTool
@@ -236,7 +287,6 @@ public sealed class MainWindowViewModel : ViewModelBase
 
             ToolPalette.ActiveCommandId = value?.CommandId;
             OnPropertyChanged(nameof(ActiveToolName));
-            OnPropertyChanged(nameof(ActiveToolHint));
             OnPropertyChanged(nameof(ActiveToolGesture));
             OnPropertyChanged(nameof(ActiveToolInputName));
             OnPropertyChanged(nameof(HasVcb));
@@ -247,10 +297,6 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     public string ActiveToolName => ActiveTool?.Name ?? Strings.ToolNone;
 
-    /// <summary>Контекстная подсказка активного инструмента (режим «Новичок»).</summary>
-    public string ActiveToolHint =>
-        IsNoviceMode ? ActiveTool?.Hint ?? string.Empty : string.Empty;
-
     /// <summary>Горячая клавиша активного инструмента.</summary>
     public string ActiveToolGesture => ActiveTool?.Gesture ?? string.Empty;
 
@@ -259,31 +305,6 @@ public sealed class MainWindowViewModel : ViewModelBase
         ActiveTool?.VcbKind is { } kind
             ? _localization.Get(LocalizationKeys.ForVcbPrompt(kind))
             : Strings.ToolNone;
-
-    /// <summary>Режим «Новичок»: подсказки к инструментам и урок.</summary>
-    public bool IsNoviceMode
-    {
-        get => _isNoviceMode;
-        set
-        {
-            if (!SetField(ref _isNoviceMode, value))
-            {
-                return;
-            }
-
-            RefreshToolTips();
-            OnPropertyChanged(nameof(ActiveToolHint));
-            OnPropertyChanged(nameof(ModeToggleLabel));
-            OnPropertyChanged(nameof(IsTutorialVisible));
-        }
-    }
-
-    /// <summary>Подпись переключателя режима: режим, в который произойдёт переключение.</summary>
-    public string ModeToggleLabel =>
-        _isNoviceMode ? Strings.ModeExpert : Strings.ModeNovice;
-
-    /// <summary>Панель урока видна в режиме «Новичок».</summary>
-    public bool IsTutorialVisible => _isNoviceMode;
 
     public bool IsAdvancedVisible
     {
@@ -395,6 +416,9 @@ public sealed class MainWindowViewModel : ViewModelBase
             case ShortcutCatalog.ProjectNew:
                 AddProject();
                 break;
+            case ShortcutCatalog.ProjectOpen:
+                OpenFileRequested?.Invoke(this, EventArgs.Empty);
+                break;
             case ShortcutCatalog.EditUndo:
                 _session.History.Undo();
                 break;
@@ -416,15 +440,6 @@ public sealed class MainWindowViewModel : ViewModelBase
     public void ToggleTheme()
     {
         _theme.Toggle();
-    }
-
-    /// <summary>Переключить режим «Новичок»/«Профи».</summary>
-    public void ToggleMode()
-    {
-        IsNoviceMode = !IsNoviceMode;
-        StatusText = string.Format(
-            Strings.ModeSwitched,
-            IsNoviceMode ? Strings.ModeNovice : Strings.ModeExpert);
     }
 
     public void ToggleLanguage() =>
@@ -539,6 +554,70 @@ public sealed class MainWindowViewModel : ViewModelBase
         SelectedProject = project;
     }
 
+    /// <summary>Создать проект с заданными единицами измерения (шаблоны стартового экрана).</summary>
+    private void CreateProjectWithUnit(object? parameter)
+    {
+        if (parameter is string name && Enum.TryParse<LengthUnit>(name, out LengthUnit unit))
+        {
+            _session.Scene.Unit = unit;
+            OnPropertyChanged(nameof(SceneUnit));
+            OnPropertyChanged(nameof(SceneUnitName));
+        }
+
+        AddProject();
+    }
+
+    /// <summary>
+    /// Открыть файл проекта (.sna): содержимое сцены заменяется, история сбрасывается,
+    /// файл попадает в список недавних. Ошибка показывается в строке статуса.
+    /// </summary>
+    public void OpenProjectFile(string path)
+    {
+        try
+        {
+            ProjectLoadResult loaded = ProjectFileStore.Load(path);
+            _session.LoadDocument(loaded.Document);
+            RecentFilesStore.Add(path);
+            RefreshRecentFiles();
+            if (Projects.Count == 0)
+            {
+                AddProject();
+            }
+            else
+            {
+                OnPropertyChanged(nameof(SceneUnit));
+                OnPropertyChanged(nameof(SceneUnitName));
+            }
+
+            StatusText = string.Format(
+                _localization.Get(LocalizationKeys.ProjectOpened),
+                System.IO.Path.GetFileName(path));
+        }
+        catch (Exception ex) when (
+            ex is ProjectFileException
+            or System.IO.IOException
+            or UnauthorizedAccessException
+            or NotSupportedException)
+        {
+            StatusText = string.Format(
+                _localization.Get(LocalizationKeys.ProjectOpenError),
+                ex.Message);
+        }
+    }
+
+    /// <summary>Перечитать список недавних файлов из хранилища.</summary>
+    private void RefreshRecentFiles()
+    {
+        RecentFiles.Clear();
+        foreach (string path in RecentFilesStore.Load())
+        {
+            RecentFiles.Add(new RecentFileViewModel(path, OpenProjectFile));
+        }
+
+        OnPropertyChanged(nameof(HasRecentFiles));
+        ToggleRecentCommand.RaiseCanExecuteChanged();
+    }
+
     /// <summary>
     /// Демо-сцена ~500 000 треугольников для замеров производительности (задача 1.6):
     /// настоящая иерархия сцены, поэтому работает пиккинг и пообъектное выделение.
@@ -641,8 +720,8 @@ public sealed class MainWindowViewModel : ViewModelBase
             _localization,
             _session.Shortcuts,
             ActivatePaletteItem,
-            () => _isNoviceMode,
-            _toolLayout.ResolvePaletteGroups());
+            showHints: null,
+            groups: _toolLayout.ResolvePaletteGroups());
 
     /// <summary>Раскладка применена в диалоге настройки — пересобрать палитру.</summary>
     private void OnPaletteLayoutChanged()
@@ -688,8 +767,6 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             StatusText = Tutorial.CurrentStepText;
         }
-
-        OnPropertyChanged(nameof(IsTutorialVisible));
     }
 
     private void ActivateTool(ToolStubViewModel tool)
@@ -759,13 +836,11 @@ public sealed class MainWindowViewModel : ViewModelBase
         OnHistoryChanged();
         RefreshToolTips();
         OnPropertyChanged(nameof(ActiveToolName));
-        OnPropertyChanged(nameof(ActiveToolHint));
         OnPropertyChanged(nameof(ActiveToolGesture));
         OnPropertyChanged(nameof(ActiveToolInputName));
         OnPropertyChanged(nameof(VcbPrompt));
         OnPropertyChanged(nameof(SceneUnitName));
         OnPropertyChanged(nameof(ThemeToggleLabel));
-        OnPropertyChanged(nameof(ModeToggleLabel));
         OnPropertyChanged(nameof(UndoHint));
         OnPropertyChanged(nameof(RedoHint));
         StatusText = string.Format(

@@ -27,6 +27,30 @@
   <data name="Project.New" xml:space="preserve">
     <value>Новый проект</value>
   </data>
+  <data name="Project.Open" xml:space="preserve">
+    <value>Открыть файл…</value>
+  </data>
+  <data name="Project.Opened" xml:space="preserve">
+    <value>Открыт файл: {0}</value>
+  </data>
+  <data name="Project.OpenError" xml:space="preserve">
+    <value>Не удалось открыть файл: {0}</value>
+  </data>
+  <data name="Project.FileType" xml:space="preserve">
+    <value>Проекты SmetaNA (*.sna)</value>
+  </data>
+  <data name="Welcome.Subtitle" xml:space="preserve">
+    <value>Чертите, моделируйте и считайте сметы</value>
+  </data>
+  <data name="Welcome.Recent" xml:space="preserve">
+    <value>Недавние</value>
+  </data>
+  <data name="Welcome.RecentEmpty" xml:space="preserve">
+    <value>Пока нет недавних файлов</value>
+  </data>
+  <data name="Welcome.Templates" xml:space="preserve">
+    <value>Шаблоны</value>
+  </data>
   <data name="Project.Name" xml:space="preserve">
     <value>Проект {0}</value>
   </data>
@@ -128,9 +152,6 @@
   </data>
   <data name="Properties.SceneNodes" xml:space="preserve">
     <value>Объектов</value>
-  </data>
-  <data name="Properties.StubNote" xml:space="preserve">
-    <value>Точный ввод значений — в строке VCB; Esc отменяет действие инструмента</value>
   </data>
   <data name="Viewport.Title" xml:space="preserve">
     <value>3D-вьюпорт</value>
@@ -393,29 +414,11 @@
   <data name="Tool.Hint.ScaleToDimension" xml:space="preserve">
     <value>Масштабирует модель так, чтобы отрезок стал заданного размера</value>
   </data>
-  <data name="Properties.ToolHint" xml:space="preserve">
-    <value>Подсказка</value>
-  </data>
   <data name="Properties.ToolShortcut" xml:space="preserve">
     <value>Клавиша</value>
   </data>
   <data name="Properties.ToolInput" xml:space="preserve">
     <value>Ввод</value>
-  </data>
-  <data name="Mode.Label" xml:space="preserve">
-    <value>Режим</value>
-  </data>
-  <data name="Mode.Novice" xml:space="preserve">
-    <value>Новичок</value>
-  </data>
-  <data name="Mode.Expert" xml:space="preserve">
-    <value>Профи</value>
-  </data>
-  <data name="Mode.Switched" xml:space="preserve">
-    <value>Режим: {0}</value>
-  </data>
-  <data name="Mode.NoviceHint" xml:space="preserve">
-    <value>Режим «Новичок»: подсказки к инструментам и пошаговый урок</value>
   </data>
   <data name="Tutorial.Title" xml:space="preserve">
     <value>Урок: стакан за 15 минут</value>

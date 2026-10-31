@@ -2,9 +2,8 @@ namespace SmetaNA.EditorUI.ViewModels;
 
 /// <summary>
 /// Секция правого рейла (свойства/история/…): иконка, заголовок и состояние вылета.
-/// В обычном режиме (≥ 960 px) секция показывается стеком в колонке 320 px;
-/// в рейле (≤ 960 px) — кнопка-иконка (<see cref="Icons.UiIconId"/>), по клику
-/// вылетает содержимое секции.
+/// Рейл постоянный (44 px): кнопка-иконка (<see cref="Icons.UiIconId"/>), по клику
+/// вылетает содержимое секции вправо.
 /// </summary>
 public sealed class RightRailSectionViewModel : ViewModelBase
 {
@@ -43,54 +42,28 @@ public sealed class RightRailSectionViewModel : ViewModelBase
 }
 
 /// <summary>
-/// Адаптив правой колонки (по образцу палитры инструментов): при ширине окна
-/// ≤ 960 px колонка 320 px сворачивается в иконочный рейл 44 px с вылетами
-/// секций, чтобы не сжимать вьюпорт на узких экранах.
+/// Правый рейл главного окна: постоянный иконочный рейл 44 px — секции
+/// (свойства/история/…) открываются вылетом вправо по клику на иконку,
+/// чтобы не сжимать вьюпорт и не заливать экран текстом подсказок.
 /// </summary>
 public sealed class RightRailViewModel : ViewModelBase
 {
-    /// <summary>Окно ≤ 960 px — колонка превращается в рейл.</summary>
-    public const double RailMaxWindowWidth = 960;
-
-    /// <summary>Ширина развёрнутой колонки (обычный режим).</summary>
-    public const double ExpandedWidth = 320;
-
-    /// <summary>Ширина свёрнутого рейла (≤ 960 px).</summary>
+    /// <summary>Ширина рейла с кнопками-иконками секций.</summary>
     public const double RailWidth = 44;
-
-    private bool _isRailMode;
 
     public RightRailViewModel(IEnumerable<RightRailSectionViewModel> sections)
     {
         ArgumentNullException.ThrowIfNull(sections);
         Sections = [.. sections];
-        _isRailMode = false;
     }
 
     /// <summary>Секции правой колонки в порядке отображения.</summary>
     public IReadOnlyList<RightRailSectionViewModel> Sections { get; }
 
-    /// <summary>Режим рейла (≤ 960 px): иконки + вылеты вместо колонки.</summary>
-    public bool IsRailMode
-    {
-        get => _isRailMode;
-        private set
-        {
-            if (SetField(ref _isRailMode, value))
-            {
-                OnPropertyChanged(nameof(PanelWidth));
-                if (value)
-                {
-                    CloseAllFlyouts();
-                }
-            }
-        }
-    }
+    /// <summary>Ширина панели: постоянный рейл 44 px.</summary>
+    public double PanelWidth => RailWidth;
 
-    /// <summary>Текущая ширина панели: 320 px (обычно) или 44 px (рейл).</summary>
-    public double PanelWidth => IsRailMode ? RailWidth : ExpandedWidth;
-
-    /// <summary>Открытая в рейле секция (управляет единым вылетом).</summary>
+    /// <summary>Открытая секция (управляет единым вылетом).</summary>
     public RightRailSectionViewModel? OpenSection
     {
         get => _openSection;
@@ -110,13 +83,6 @@ public sealed class RightRailViewModel : ViewModelBase
     public bool ShowHistory => OpenSection?.Id == "history";
     public bool ShowShortcuts => OpenSection?.Id == "shortcuts";
     public bool ShowPrintVolume => OpenSection?.Id == "printVolume";
-
-    /// <summary>
-    /// Переключить режим по ширине окна (точка подключения адаптива из
-    /// LayoutUpdated контрола). Вызывается часто — значение кэшируется.
-    /// </summary>
-    public void ApplyWindowWidth(double windowWidth) =>
-        IsRailMode = windowWidth > 0 && windowWidth <= RailMaxWindowWidth;
 
     /// <summary>
     /// Открыть/закрыть вылет секции по клику на её иконку в рейле.
@@ -154,7 +120,7 @@ public sealed class RightRailViewModel : ViewModelBase
         OnPropertyChanged(nameof(ShowPrintVolume));
     }
 
-    /// <summary>Закрыть все вылеты (при входе в режим рейла).</summary>
+    /// <summary>Закрыть все вылеты рейла.</summary>
     public void CloseAllFlyouts()
     {
         foreach (RightRailSectionViewModel section in Sections)

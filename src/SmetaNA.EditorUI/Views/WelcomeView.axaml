@@ -1,0 +1,139 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmetaNA.EditorUI.ViewModels"
+             xmlns:icons="using:SmetaNA.EditorUI.Icons"
+             x:Class="SmetaNA.EditorUI.Views.WelcomeView"
+             x:DataType="vm:MainWindowViewModel">
+  <!-- Стартовый экран: карточки действий, шаблоны единиц и недавние файлы.
+       Все строки — привязки к каталогу локализации (аудит DoD §5.7). -->
+  <UserControl.Styles>
+    <Style Selector="Button.card">
+      <Setter Property="Width" Value="176" />
+      <Setter Property="Height" Value="96" />
+      <Setter Property="Padding" Value="12" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.card:pointerover">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+    </Style>
+    <Style Selector="Button.unit">
+      <Setter Property="Padding" Value="12,6" />
+      <Setter Property="Margin" Value="4,0" />
+    </Style>
+    <Style Selector="Button.recent">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Padding" Value="10,6" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border Background="{DynamicResource ThemeBackgroundBrush}">
+    <StackPanel VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Spacing="24"
+                Margin="0,0,0,48">
+      <StackPanel Spacing="6" HorizontalAlignment="Center">
+        <TextBlock Text="{Binding Strings.AppTitle}"
+                   FontSize="30"
+                   FontWeight="SemiBold"
+                   HorizontalAlignment="Center" />
+        <TextBlock Text="{Binding Strings.WelcomeSubtitle}"
+                   Opacity="0.7"
+                   HorizontalAlignment="Center" />
+      </StackPanel>
+
+      <!-- Карточки действий -->
+      <StackPanel Orientation="Horizontal"
+                  Spacing="16"
+                  HorizontalAlignment="Center">
+        <Button Classes="card"
+                Command="{Binding NewProjectCommand}">
+          <StackPanel Spacing="8">
+            <icons:UiIcon IconId="New" Width="28" Height="28" HorizontalAlignment="Center" />
+            <TextBlock Text="{Binding Strings.ProjectNew}"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <Button Classes="card"
+                Command="{Binding OpenFileCommand}">
+          <StackPanel Spacing="8">
+            <icons:UiIcon IconId="Import" Width="28" Height="28" HorizontalAlignment="Center" />
+            <TextBlock Text="{Binding Strings.ProjectOpen}"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <Button Classes="card"
+                Command="{Binding ToggleRecentCommand}"
+                IsEnabled="{Binding HasRecentFiles}"
+                ToolTip.Tip="{Binding Strings.WelcomeRecentEmpty}">
+          <StackPanel Spacing="8">
+            <icons:UiIcon IconId="History" Width="28" Height="28" HorizontalAlignment="Center" />
+            <TextBlock Text="{Binding Strings.WelcomeRecent}"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center" />
+          </StackPanel>
+        </Button>
+      </StackPanel>
+
+      <!-- Недавние файлы (раскрывающийся список) -->
+      <StackPanel Spacing="6"
+                  IsVisible="{Binding IsRecentListOpen}"
+                  Width="420">
+        <Button Classes="recent"
+                IsVisible="{Binding !HasRecentFiles}"
+                IsEnabled="False">
+          <TextBlock Text="{Binding Strings.WelcomeRecentEmpty}"
+                     Opacity="0.6" />
+        </Button>
+        <ItemsControl ItemsSource="{Binding RecentFiles}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:RecentFileViewModel">
+              <Button Classes="recent"
+                      Command="{Binding OpenCommand}"
+                      ToolTip.Tip="{Binding FullPath}">
+                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+
+      <!-- Шаблоны: единицы измерения нового проекта -->
+      <StackPanel Spacing="8" HorizontalAlignment="Center">
+        <TextBlock Text="{Binding Strings.WelcomeTemplates}"
+                   Opacity="0.7"
+                   HorizontalAlignment="Center" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+          <Button Classes="unit"
+                  Command="{Binding CreateProjectWithUnitCommand}"
+                  CommandParameter="Millimeter">
+            <TextBlock Text="{Binding Strings.UnitMillimeter}" />
+          </Button>
+          <Button Classes="unit"
+                  Command="{Binding CreateProjectWithUnitCommand}"
+                  CommandParameter="Centimeter">
+            <TextBlock Text="{Binding Strings.UnitCentimeter}" />
+          </Button>
+          <Button Classes="unit"
+                  Command="{Binding CreateProjectWithUnitCommand}"
+                  CommandParameter="Meter">
+            <TextBlock Text="{Binding Strings.UnitMeter}" />
+          </Button>
+          <Button Classes="unit"
+                  Command="{Binding CreateProjectWithUnitCommand}"
+                  CommandParameter="Inch">
+            <TextBlock Text="{Binding Strings.UnitInch}" />
+          </Button>
+        </StackPanel>
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</UserControl>

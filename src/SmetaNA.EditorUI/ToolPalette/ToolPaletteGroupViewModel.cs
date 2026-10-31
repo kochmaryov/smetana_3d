@@ -13,6 +13,9 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
     /// <summary>Высота шапки группы (кнопка-заголовок).</summary>
     public const double HeaderHeight = 20;
 
+    /// <summary>Отступ StackPanel между шапкой и сеткой кнопок (Spacing в разметке).</summary>
+    public const double HeaderSpacing = 4;
+
     /// <summary>Высота ячейки кнопки 38×38 с отступом.</summary>
     public const double ButtonCellHeight = 40;
 
@@ -88,12 +91,19 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
 
     public RelayCommand OpenFlyoutCommand { get; }
 
-    /// <summary>Оценка высоты группы при заданном числе колонок (свёртка, R2).</summary>
+    /// <summary>
+    /// Оценка высоты группы при заданном числе колонок (свёртка, R2):
+    /// шапка + отступ StackPanel + строки кнопок + нижний отступ группы.
+    /// Занижение оценки давало ложное «всё влезло» → появлялся вертикальный
+    /// скроллбар палитры, поэтому отступы считаются явно.
+    /// </summary>
     public double EstimateHeight(int columns)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(columns, 1);
         double rows = Math.Ceiling(Buttons.Count / (double)columns);
-        return HeaderHeight + (IsExpanded ? rows * ButtonCellHeight : 0) + GroupSpacing;
+        return HeaderHeight
+            + (IsExpanded ? HeaderSpacing + (rows * ButtonCellHeight) : 0)
+            + GroupSpacing;
     }
 
     private void OnCultureChanged() => OnPropertyChanged(nameof(Name));

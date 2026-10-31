@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using SmetaNA.Core.Geometry;
 using SmetaNA.Core.Inference;
 using SmetaNA.Core.Model;
@@ -211,7 +212,7 @@ public partial class ViewportView : UserControl
 
     private void OnToolPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (_tools is not { IsActive: true } tools)
+        if (_tools is not { IsActive: true } tools || !IsViewportSource(e))
         {
             return;
         }
@@ -248,7 +249,33 @@ public partial class ViewportView : UserControl
         {
             e.Pointer.Capture(Viewport);
             e.Handled = true;
+            // Инструмент потребил нажатие раньше GlViewportControl, поэтому тот
+            // не получит событие и не заберёт клавиатурный фокус себе; без фокуса
+            // вьюпорта Enter/Delete уходят в последнюю кнопку палитры, чья
+            // переактивация инструмента стирает незавершённую фигуру.
+            Viewport.Focus();
         }
+    }
+
+    /// <summary>
+    /// Событие указателя пришло из самой области GL-вьюпорта, а не из оверлеев
+    /// поверх него (панель режимов, «⚙», кнопки видов): оверлеи должны оставаться
+    /// кликабельными, пока активен инструмент.
+    /// </summary>
+    private bool IsViewportSource(PointerEventArgs e)
+    {
+        Visual? current = e.Source as Visual;
+        while (current is not null)
+        {
+            if (ReferenceEquals(current, Viewport))
+            {
+                return true;
+            }
+
+            current = current.GetVisualParent();
+        }
+
+        return false;
     }
 
     private void OnToolPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -260,7 +287,10 @@ public partial class ViewportView : UserControl
             return;
         }
 
-        if (_tools is not { IsActive: true } tools || e.InitialPressMouseButton != MouseButton.Left)
+        // правый клик уже обработан выше; сюда доходят только отпускания ЛКМ
+        if (_tools is not { IsActive: true } tools
+            || e.InitialPressMouseButton != MouseButton.Left
+            || !IsViewportSource(e))
         {
             return;
         }

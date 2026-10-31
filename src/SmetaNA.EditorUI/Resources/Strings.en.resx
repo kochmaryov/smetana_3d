@@ -27,6 +27,30 @@
   <data name="Project.New" xml:space="preserve">
     <value>New project</value>
   </data>
+  <data name="Project.Open" xml:space="preserve">
+    <value>Open file…</value>
+  </data>
+  <data name="Project.Opened" xml:space="preserve">
+    <value>Opened file: {0}</value>
+  </data>
+  <data name="Project.OpenError" xml:space="preserve">
+    <value>Failed to open file: {0}</value>
+  </data>
+  <data name="Project.FileType" xml:space="preserve">
+    <value>SmetaNA projects (*.sna)</value>
+  </data>
+  <data name="Welcome.Subtitle" xml:space="preserve">
+    <value>Draw, model and estimate</value>
+  </data>
+  <data name="Welcome.Recent" xml:space="preserve">
+    <value>Recent</value>
+  </data>
+  <data name="Welcome.RecentEmpty" xml:space="preserve">
+    <value>No recent files yet</value>
+  </data>
+  <data name="Welcome.Templates" xml:space="preserve">
+    <value>Templates</value>
+  </data>
   <data name="Project.Name" xml:space="preserve">
     <value>Project {0}</value>
   </data>
@@ -128,9 +152,6 @@
   </data>
   <data name="Properties.SceneNodes" xml:space="preserve">
     <value>Objects</value>
-  </data>
-  <data name="Properties.StubNote" xml:space="preserve">
-    <value>Exact values are entered in the VCB; Esc cancels the tool action</value>
   </data>
   <data name="Viewport.Title" xml:space="preserve">
     <value>3D viewport</value>
@@ -393,29 +414,11 @@
   <data name="Tool.Hint.ScaleToDimension" xml:space="preserve">
     <value>Scales the model so the segment matches the typed size</value>
   </data>
-  <data name="Properties.ToolHint" xml:space="preserve">
-    <value>Hint</value>
-  </data>
   <data name="Properties.ToolShortcut" xml:space="preserve">
     <value>Shortcut</value>
   </data>
   <data name="Properties.ToolInput" xml:space="preserve">
     <value>Input</value>
-  </data>
-  <data name="Mode.Label" xml:space="preserve">
-    <value>Mode</value>
-  </data>
-  <data name="Mode.Novice" xml:space="preserve">
-    <value>Novice</value>
-  </data>
-  <data name="Mode.Expert" xml:space="preserve">
-    <value>Expert</value>
-  </data>
-  <data name="Mode.Switched" xml:space="preserve">
-    <value>Mode: {0}</value>
-  </data>
-  <data name="Mode.NoviceHint" xml:space="preserve">
-    <value>Novice mode: tool hints and a step-by-step tutorial</value>
   </data>
   <data name="Tutorial.Title" xml:space="preserve">
     <value>Tutorial: glass in 15 minutes</value>

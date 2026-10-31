@@ -17,7 +17,15 @@ public static class LocalizationKeys
     public const string ToolbarAdvancedToggle = "Toolbar.AdvancedToggle";
 
     public const string ProjectNew = "Project.New";
+    public const string ProjectOpen = "Project.Open";
+    public const string ProjectOpened = "Project.Opened";
+    public const string ProjectOpenError = "Project.OpenError";
+    public const string ProjectFileType = "Project.FileType";
     public const string ProjectName = "Project.Name";
+    public const string WelcomeSubtitle = "Welcome.Subtitle";
+    public const string WelcomeRecent = "Welcome.Recent";
+    public const string WelcomeRecentEmpty = "Welcome.RecentEmpty";
+    public const string WelcomeTemplates = "Welcome.Templates";
 
     public const string ToolSelect = "Tool.Select";
     public const string ToolLine = "Tool.Line";
@@ -78,17 +86,8 @@ public static class LocalizationKeys
     public const string PropertiesScene = "Properties.Scene";
     public const string PropertiesSceneUnit = "Properties.SceneUnit";
     public const string PropertiesSceneNodes = "Properties.SceneNodes";
-    public const string PropertiesStubNote = "Properties.StubNote";
-    public const string PropertiesToolHint = "Properties.ToolHint";
     public const string PropertiesToolShortcut = "Properties.ToolShortcut";
     public const string PropertiesToolInput = "Properties.ToolInput";
-
-    // Режим «Новичок»/«Профи» (задача 6.2).
-    public const string ModeLabel = "Mode.Label";
-    public const string ModeNovice = "Mode.Novice";
-    public const string ModeExpert = "Mode.Expert";
-    public const string ModeSwitched = "Mode.Switched";
-    public const string ModeNoviceHint = "Mode.NoviceHint";
 
     // Интерактивный урок S1 «стакан за 15 минут» (задача 6.2).
     public const string TutorialTitle = "Tutorial.Title";

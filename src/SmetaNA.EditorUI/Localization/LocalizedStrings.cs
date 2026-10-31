@@ -26,7 +26,15 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string ToolbarAdvancedToggle => _localization.Get(LocalizationKeys.ToolbarAdvancedToggle);
 
     public string ProjectNew => _localization.Get(LocalizationKeys.ProjectNew);
+    public string ProjectOpen => _localization.Get(LocalizationKeys.ProjectOpen);
+    public string ProjectOpened => _localization.Get(LocalizationKeys.ProjectOpened);
+    public string ProjectOpenError => _localization.Get(LocalizationKeys.ProjectOpenError);
+    public string ProjectFileType => _localization.Get(LocalizationKeys.ProjectFileType);
     public string ProjectName => _localization.Get(LocalizationKeys.ProjectName);
+    public string WelcomeSubtitle => _localization.Get(LocalizationKeys.WelcomeSubtitle);
+    public string WelcomeRecent => _localization.Get(LocalizationKeys.WelcomeRecent);
+    public string WelcomeRecentEmpty => _localization.Get(LocalizationKeys.WelcomeRecentEmpty);
+    public string WelcomeTemplates => _localization.Get(LocalizationKeys.WelcomeTemplates);
 
     public string ToolSelect => _localization.Get(LocalizationKeys.ToolSelect);
     public string ToolLine => _localization.Get(LocalizationKeys.ToolLine);
@@ -86,8 +94,6 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string PropertiesScene => _localization.Get(LocalizationKeys.PropertiesScene);
     public string PropertiesSceneUnit => _localization.Get(LocalizationKeys.PropertiesSceneUnit);
     public string PropertiesSceneNodes => _localization.Get(LocalizationKeys.PropertiesSceneNodes);
-    public string PropertiesStubNote => _localization.Get(LocalizationKeys.PropertiesStubNote);
-    public string PropertiesToolHint => _localization.Get(LocalizationKeys.PropertiesToolHint);
     public string PropertiesToolShortcut => _localization.Get(LocalizationKeys.PropertiesToolShortcut);
     public string PropertiesToolInput => _localization.Get(LocalizationKeys.PropertiesToolInput);
 
@@ -165,12 +171,6 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string ViewportHudSelection => _localization.Get(LocalizationKeys.ViewportHudSelection);
     public string ViewportHudSelectionNone => _localization.Get(LocalizationKeys.ViewportHudSelectionNone);
     public string ViewportCameraHint => _localization.Get(LocalizationKeys.ViewportCameraHint);
-
-    public string ModeLabel => _localization.Get(LocalizationKeys.ModeLabel);
-    public string ModeNovice => _localization.Get(LocalizationKeys.ModeNovice);
-    public string ModeExpert => _localization.Get(LocalizationKeys.ModeExpert);
-    public string ModeSwitched => _localization.Get(LocalizationKeys.ModeSwitched);
-    public string ModeNoviceHint => _localization.Get(LocalizationKeys.ModeNoviceHint);
 
     public string TutorialTitle => _localization.Get(LocalizationKeys.TutorialTitle);
     public string TutorialStart => _localization.Get(LocalizationKeys.TutorialStart);

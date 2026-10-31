@@ -10,6 +10,7 @@ public sealed record ShortcutDefinition(string CommandId, string NameKey, Shortc
 public static class ShortcutCatalog
 {
     public const string ProjectNew = "project.new";
+    public const string ProjectOpen = "project.open";
     public const string EditUndo = "edit.undo";
     public const string EditRedo = "edit.redo";
     public const string ToolSelect = "tool.select";
@@ -44,6 +45,7 @@ public static class ShortcutCatalog
     public static IReadOnlyList<ShortcutDefinition> Defaults { get; } =
     [
         new(ProjectNew, Localization.LocalizationKeys.ProjectNew, Shortcut.Parse("Ctrl+N")),
+        new(ProjectOpen, Localization.LocalizationKeys.ProjectOpen, Shortcut.Parse("Ctrl+O")),
         new(EditUndo, Localization.LocalizationKeys.EditUndo, Shortcut.Parse("Ctrl+Z")),
         new(EditRedo, Localization.LocalizationKeys.EditRedo, Shortcut.Parse("Ctrl+Y")),
         new(ToolSelect, Localization.LocalizationKeys.ToolSelect, Shortcut.Parse("Space")),
