@@ -527,9 +527,12 @@ public sealed class MainWindowViewModel : ViewModelBase
     /// настоящая иерархия сцены, поэтому работает пиккинг и пообъектное выделение.
     /// </summary>
     /// <summary>
-    /// Стартовая сцена (задача 6.0): лёгкая эталонная (плита + корпус + цилиндр)
-    /// по умолчанию; демо-рельеф ~500 000 треугольников для замеров (задача 1.6,
-    /// DoD §5.6) сеется только с флагом <c>--demo-terrain</c>.
+    /// Стартовая сцена: при обычном запуске пустая — никакие модели не
+    /// открываются (заглушка эталонной сцены убрана). Демо-рельеф
+    /// ~500 000 треугольников для замеров (задача 1.6, DoD §5.6) сеется только
+    /// флагом <c>--demo-terrain</c>; в смоук-режиме (<c>--smoke</c>) сцена
+    /// засевается эталонной геометрией — проверка рендер-конвейера требует
+    /// треугольников.
     /// </summary>
     private static void SeedStartScene(EditorSession session)
     {
@@ -540,6 +543,11 @@ public sealed class MainWindowViewModel : ViewModelBase
             int triangles = chunks.Sum(chunk => chunk.Mesh.Faces.Count * 2); // квады → 2 треугольника
             Console.WriteLine(
                 $"[DEMO] terrain: {chunks.Count} chunks, {triangles} triangles, {clock.ElapsedMilliseconds} ms");
+            return;
+        }
+
+        if (App.Smoke is null)
+        {
             return;
         }
 
