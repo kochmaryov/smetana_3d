@@ -1,0 +1,58 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fg="using:SmetaNA.EditorUI.FloatingGroups"
+        xmlns:icons="using:SmetaNA.EditorUI.Icons"
+        x:Class="SmetaNA.EditorUI.FloatingGroups.FloatingGroupWindow"
+        x:DataType="fg:FloatingGroupViewModel"
+        Title="{Binding Group.Name}"
+        Width="220"
+        SizeToContent="Height"
+        CanResize="False"
+        WindowDecorations="None"
+        ShowInTaskbar="False"
+        WindowStartupLocation="Manual"
+        Background="Transparent">
+  <!-- Плавающее окно группы (макет variant_ac «Операции»): шапка «⠿ имя ×»
+       перетаскивается мышью; при подносе к краю рабочей области группа
+       прикрепляется лотком (зона подсвечивается в главном окне). -->
+  <Border Background="{DynamicResource ThemeControlBackgroundSecondary}"
+          BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+          BorderThickness="1"
+          CornerRadius="{DynamicResource RadiusCard}"
+          Margin="6">
+    <DockPanel>
+      <!-- Шапка: ручка-гриф + имя + возврат в палитру -->
+      <Border x:Name="DragHandle"
+              DockPanel.Dock="Top"
+              Background="{DynamicResource ThemeControlBackgroundTertiary}"
+              Padding="8,5"
+              Cursor="SizeAll">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <!-- Ручка перетаскивания: шесть точек (без текстовых литералов) -->
+          <Path Data="M0,0 h2 v2 h-2 z M4,0 h2 v2 h-2 z M0,4 h2 v2 h-2 z M4,4 h2 v2 h-2 z M0,8 h2 v2 h-2 z M4,8 h2 v2 h-2 z"
+                Fill="{DynamicResource ThemeForegroundFaintBrush}"
+                Width="6"
+                Height="10"
+                Stretch="Uniform"
+                VerticalAlignment="Center"
+                Margin="0,0,6,0" />
+          <TextBlock Grid.Column="1"
+                     Text="{Binding Group.Name}"
+                     FontSize="11"
+                     FontWeight="SemiBold"
+                     VerticalAlignment="Center"
+                     TextTrimming="CharacterEllipsis" />
+          <Button Grid.Column="2"
+                  Classes="ibtn"
+                  Width="22"
+                  Height="22"
+                  Command="{Binding ReturnToPaletteCommand}"
+                  ToolTip.Tip="{Binding Group.CloseHint}">
+            <icons:UiIcon IconId="Close" Width="11" Height="11" />
+          </Button>
+        </Grid>
+      </Border>
+      <fg:ToolButtonsPanel DataContext="{Binding Group}" Margin="4" />
+    </DockPanel>
+  </Border>
+</Window>

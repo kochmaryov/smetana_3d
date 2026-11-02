@@ -126,6 +126,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         _toolLayout = new ToolLayoutService(_localization, _session.Shortcuts);
         _toolLayout.LayoutChanged += OnPaletteLayoutChanged;
         ToolPalette = CreateToolPalette();
+        FloatingGroups = new FloatingGroups.FloatingGroupsViewModel(
+            new FloatingGroups.JsonFloatingGroupsStore(),
+            ToolPalette.Groups);
 
         Tutorial = new TutorialViewModel(localization, GlassTutorialLesson.Create());
         Tutorial.StateChanged += OnTutorialStateChanged;
@@ -154,13 +157,6 @@ public sealed class MainWindowViewModel : ViewModelBase
         Projects = [];
         Projects.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasProjects));
 
-        // Смоук и демо-режим требуют вьюпорт сразу; обычный запуск
-        // показывает стартовый экран до первого проекта.
-        if (App.Smoke is not null || EditorOptions.DemoTerrain)
-        {
-            AddProject();
-        }
-
         foreach (string path in RecentFilesStore.Load())
         {
             RecentFiles.Add(new RecentFileViewModel(path, OpenProjectFile));
@@ -173,7 +169,7 @@ public sealed class MainWindowViewModel : ViewModelBase
 
         UndoCommand = new RelayCommand(_ => _session.History.Undo(), _ => _session.History.CanUndo);
         RedoCommand = new RelayCommand(_ => _session.History.Redo(), _ => _session.History.CanRedo);
-        NewProjectCommand = new RelayCommand(AddProject);
+        NewProjectCommand = new RelayCommand(_ => AddProject());
         OpenFileCommand = new RelayCommand(() => OpenFileRequested?.Invoke(this, EventArgs.Empty));
         ToggleRecentCommand = new RelayCommand(
             _ => IsRecentListOpen = !IsRecentListOpen,
@@ -187,10 +183,18 @@ public sealed class MainWindowViewModel : ViewModelBase
         ResetGestureCommand = new RelayCommand(ResetGesture);
         ResetAllGesturesCommand = new RelayCommand(ResetAllGestures);
 
-        _session.History.Changed += OnHistoryChanged;
+        _session.HistoryChanged += OnHistoryChanged;
         _localization.CultureChanged += OnCultureChanged;
         _theme.Changed += OnThemeChanged;
         _localization.CultureChanged += () => OnPropertyChanged(nameof(ToolLayoutMenuLabel));
+
+        // Смоук и демо-режим требуют вьюпорт сразу; обычный запуск
+        // показывает стартовый экран до первого проекта. Первая вкладка
+        // забирает стартовый документ сессии (в смоуке он уже засеян сценой).
+        if (App.Smoke is not null || EditorOptions.DemoTerrain)
+        {
+            AddProject(_session.Document);
+        }
     }
 
     public LocalizedStrings Strings { get; }
@@ -203,6 +207,9 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     /// <summary>Палитра инструментов: группы, вылеты, адаптив (контрол слева в окне).</summary>
     public ToolPaletteViewModel ToolPalette { get; private set; }
+
+    /// <summary>Перемещаемые группы инструментов: плавающие окна и краевые лотки (T3).</summary>
+    public FloatingGroups.FloatingGroupsViewModel FloatingGroups { get; }
 
     /// <summary>Адаптив правой колонки: колонка 320 px ↔ иконочный рейл ≤ 960 px.</summary>
     public RightRailViewModel RightRail { get; }
@@ -237,6 +244,10 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     /// <summary>Запрос выбора файла проекта (обрабатывает окно через StorageProvider).</summary>
     public event EventHandler? OpenFileRequested;
+
+    /// <summary>Палитра команд (Ctrl+K): поиск по каталогу жестов, запуск через RunCommand.</summary>
+    public CommandPalette.CommandPaletteViewModel CreateCommandPalette() =>
+        new(_localization, _session.Shortcuts, RunCommand);
 
     /// <summary>Команда меню «Настройка панели инструментов…».</summary>
     public RelayCommand OpenToolLayoutCommand { get; }
@@ -321,7 +332,13 @@ public sealed class MainWindowViewModel : ViewModelBase
     public ProjectTabViewModel? SelectedProject
     {
         get => _selectedProject;
-        set => SetField(ref _selectedProject, value);
+        set
+        {
+            if (SetField(ref _selectedProject, value))
+            {
+                ActivateProject(value);
+            }
+        }
     }
 
     public LanguageOption? SelectedLanguage
@@ -547,47 +564,91 @@ public sealed class MainWindowViewModel : ViewModelBase
         _session.History.Execute(
             new StubEditCommand(string.Format(Strings.HistoryStubCommand, display)));
 
-    private void AddProject()
+    private void AddProject(EditorDocument? document = null)
     {
-        var project = new ProjectTabViewModel(_localization, _session.Scene, Projects.Count + 1, _session.Tools);
+        var project = new ProjectTabViewModel(
+            _localization,
+            document ?? _session.CreateDocument(),
+            Projects.Count + 1);
+        project.ActivateToolById = ActivateToolById;
+
         Projects.Add(project);
         SelectedProject = project;
+    }
+
+    /// <summary>
+    /// Сделать документ выбранной вкладки активным: ввод вьюпорта, VCB, единицы
+    /// и история переключаются на него, инструмент прошлой вкладки выключается.
+    /// </summary>
+    private void ActivateProject(ProjectTabViewModel? project)
+    {
+        if (project is not null)
+        {
+            _session.Activate(project.Document);
+        }
+
+        ActiveTool = null;
+        OnPropertyChanged(nameof(SceneUnit));
+        OnPropertyChanged(nameof(SceneUnitName));
+        OnHistoryChanged();
+    }
+
+    /// <summary>Закрыть вкладку проекта (Ctrl+W или «×» на вкладке).</summary>
+    public void CloseProject(ProjectTabViewModel project)
+    {
+        int index = Projects.IndexOf(project);
+        if (index < 0)
+        {
+            return;
+        }
+
+        Projects.Remove(project);
+        if (SelectedProject == project)
+        {
+            SelectedProject = Projects.Count == 0
+                ? null
+                : Projects[Math.Min(index, Projects.Count - 1)];
+        }
+    }
+
+    /// <summary>Следующая вкладка (Ctrl+Tab): циклический переход по открытым проектам.</summary>
+    public void SelectNextProject()
+    {
+        if (Projects.Count < 2)
+        {
+            return;
+        }
+
+        int index = SelectedProject is null ? -1 : Projects.IndexOf(SelectedProject);
+        SelectedProject = Projects[(index + 1) % Projects.Count];
     }
 
     /// <summary>Создать проект с заданными единицами измерения (шаблоны стартового экрана).</summary>
     private void CreateProjectWithUnit(object? parameter)
     {
-        if (parameter is string name && Enum.TryParse<LengthUnit>(name, out LengthUnit unit))
+        LengthUnit unit = LengthUnit.Millimeter;
+        if (parameter is string name && Enum.TryParse(name, out LengthUnit parsed))
         {
-            _session.Scene.Unit = unit;
-            OnPropertyChanged(nameof(SceneUnit));
-            OnPropertyChanged(nameof(SceneUnitName));
+            unit = parsed;
         }
 
-        AddProject();
+        AddProject(_session.CreateDocument(unit));
     }
 
     /// <summary>
-    /// Открыть файл проекта (.sna): содержимое сцены заменяется, история сбрасывается,
-    /// файл попадает в список недавних. Ошибка показывается в строке статуса.
+    /// Открыть файл проекта (.sna): содержимое загружается в новый документ и
+    /// новую вкладку, файл попадает в список недавних. Ошибка — в строке статуса.
     /// </summary>
     public void OpenProjectFile(string path)
     {
         try
         {
             ProjectLoadResult loaded = ProjectFileStore.Load(path);
-            _session.LoadDocument(loaded.Document);
+            EditorDocument document = _session.CreateDocument();
+            _session.LoadDocument(document, loaded.Document);
             RecentFilesStore.Add(path);
             RefreshRecentFiles();
-            if (Projects.Count == 0)
-            {
-                AddProject();
-            }
-            else
-            {
-                OnPropertyChanged(nameof(SceneUnit));
-                OnPropertyChanged(nameof(SceneUnitName));
-            }
+            AddProject(document);
 
             StatusText = string.Format(
                 _localization.Get(LocalizationKeys.ProjectOpened),
@@ -730,6 +791,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         ToolPalette = CreateToolPalette();
         ToolPalette.ActiveCommandId = active;
         ToolPalette.HighlightedCommandId = Tutorial.HighlightedCommandId;
+        FloatingGroups.Rebind(ToolPalette.Groups);
         OnPropertyChanged(nameof(ToolPalette));
     }
 

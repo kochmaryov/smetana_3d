@@ -6,59 +6,106 @@
              xmlns:printvolume="using:SmetaNA.EditorUI.PrintVolume"
              x:Class="SmetaNA.EditorUI.Views.RightRailControl"
              x:DataType="vm:MainWindowViewModel">
-  <!-- Правый рейл: постоянные иконки секций (44 px), панели — только вылетом
-       вправо по клику; тексты подсказок не заливают экран. -->
+  <!-- Правый док: иконочный рейл (50 px) + колонка панели выбранной секции
+       (300 px). Панель расширяет сетку окна и поверх сцены не лежит
+       (спека ui-redesign T2, приоритет no-overlay). -->
   <UserControl.Styles>
     <Style Selector="Button.rail">
       <Setter Property="Width" Value="40" />
       <Setter Property="Height" Value="36" />
-      <Setter Property="Margin" Value="2,1" />
+      <Setter Property="Margin" Value="1,1" />
       <Setter Property="Padding" Value="0" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
+    <Style Selector="Button.rail.active">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentSoftBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}" />
+    </Style>
+    <Style Selector="Button.dockTab">
+      <Setter Property="Padding" Value="8,6" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0,0,0,2" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundDimBrush}" />
+    </Style>
+    <Style Selector="Button.dockTab.active">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
+    </Style>
+    <Style Selector="Button.dockTab:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundTertiary}" />
+    </Style>
   </UserControl.Styles>
 
-  <Border Width="{Binding RightRail.PanelWidth}"
-          BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-          BorderThickness="1,0,0,0"
-          Padding="8,6">
-    <StackPanel Spacing="2">
-      <ItemsControl ItemsSource="{Binding RightRail.Sections}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:RightRailSectionViewModel">
-            <Button Classes="rail"
-                    ToolTip.Tip="{Binding Title}"
-                    Tag="{Binding}"
-                    Click="OnSectionButtonClick">
-              <icons:UiIcon IconId="{Binding Icon}"
-                            Width="18"
-                            Height="18" />
-            </Button>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-
-      <Popup x:Name="SectionPopup"
-             IsOpen="{Binding RightRail.OpenSection.IsFlyoutOpen, Mode=TwoWay}"
-             Placement="Right"
-             IsLightDismissEnabled="True">
-        <Border MaxWidth="340"
-                MaxHeight="520"
+  <DockPanel>
+    <!-- Колонка панели секции: вкладки-заголовки + содержимое -->
+    <Border Width="{Binding RightRail.PanelWidth}"
+            IsVisible="{Binding RightRail.IsDockOpen}"
+            Background="{DynamicResource ThemeControlBackground}"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            BorderThickness="1,0,0,0">
+      <DockPanel>
+        <Border DockPanel.Dock="Top"
                 BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-                BorderThickness="1"
-                CornerRadius="4"
-                Padding="8"
-                Background="{DynamicResource ThemeControlBackground}">
-          <Panel>
-            <views:TutorialPanel IsVisible="{Binding RightRail.ShowTutorial}" />
-            <views:PropertiesPanel IsVisible="{Binding RightRail.ShowProperties}" />
-            <views:HistoryPanel IsVisible="{Binding RightRail.ShowHistory}" />
-            <views:ShortcutPanel IsVisible="{Binding RightRail.ShowShortcuts}" />
-            <printvolume:PrintVolumePanel IsVisible="{Binding RightRail.ShowPrintVolume}" />
-          </Panel>
+                BorderThickness="0,0,0,1"
+                Background="{DynamicResource ThemeControlBackgroundSecondary}">
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Orientation="Horizontal">
+              <ItemsControl ItemsSource="{Binding RightRail.Sections}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:RightRailSectionViewModel">
+                    <Button Classes="dockTab"
+                            Classes.active="{Binding IsSelected}"
+                            Content="{Binding Title}"
+                            Tag="{Binding}"
+                            Click="OnSectionButtonClick" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </ScrollViewer>
         </Border>
-      </Popup>
-    </StackPanel>
-  </Border>
+        <Panel>
+          <views:TutorialPanel IsVisible="{Binding RightRail.ShowTutorial}" />
+          <views:PropertiesPanel IsVisible="{Binding RightRail.ShowProperties}" />
+          <views:HistoryPanel IsVisible="{Binding RightRail.ShowHistory}" />
+          <views:ShortcutPanel IsVisible="{Binding RightRail.ShowShortcuts}" />
+          <printvolume:PrintVolumePanel IsVisible="{Binding RightRail.ShowPrintVolume}" />
+        </Panel>
+      </DockPanel>
+    </Border>
+
+    <!-- Иконочный рейл секций (постоянный) -->
+    <Border Width="50"
+            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+            BorderThickness="1,0,0,0"
+            Background="{DynamicResource ThemeControlBackgroundSecondary}"
+            Padding="3,6">
+      <StackPanel Spacing="2">
+        <ItemsControl ItemsSource="{Binding RightRail.Sections}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:RightRailSectionViewModel">
+              <Button Classes="rail"
+                      Classes.active="{Binding IsSelected}"
+                      ToolTip.Tip="{Binding Title}"
+                      Tag="{Binding}"
+                      Click="OnSectionButtonClick">
+                <icons:UiIcon IconId="{Binding Icon}"
+                              Width="18"
+                              Height="18" />
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Border>
+  </DockPanel>
 </UserControl>

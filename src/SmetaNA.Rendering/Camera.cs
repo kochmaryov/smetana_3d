@@ -272,7 +272,9 @@ public sealed class Camera
 
     /// <summary>
     /// Зум: <paramref name="factor"/> &gt; 1 — отдаление, &lt; 1 — приближение.
-    /// Масштабирует расстояние до цели (перспектива) и высоту орто-области (орто).
+    /// Масштабирует высоту орто-области (ордо) и расстояние до цели (перспектива);
+    /// плоскости отсечения вслед за расстоянием пересчитываются, иначе при
+    /// сильном зуме модель выходит за [near, far] и исчезает из кадра.
     /// </summary>
     public void Zoom(double factor)
     {
@@ -281,8 +283,22 @@ public sealed class Camera
             throw new ArgumentOutOfRangeException(nameof(factor), "Масштаб должен быть положительным конечным числом.");
         }
 
-        Distance = Math.Clamp(_distance * factor, MinDistance, MaxDistance);
+        // Радиус сцены восстанавливается из дальней плоскости по инварианту
+        // ZoomExtents (far = (Distance + radius)·2) до изменения расстояния.
+        double radius = Math.Max(_farPlane * 0.5 - _distance, MinDistance);
+
+        if (Mode == ProjectionMode.Perspective)
+        {
+            Distance = Math.Clamp(_distance * factor, MinDistance, MaxDistance);
+        }
+
         OrthoHeight = Math.Clamp(_orthoHeight * factor, MinOrthoHeight, MaxOrthoHeight);
+
+        // Без пересчёта при отдалении модель уходит за дальнюю плоскость,
+        // а при приближении — за ближнюю и исчезает из кадра.
+        double near = Math.Max((_distance - radius) * 0.5, _distance * 1e-3);
+        double far = (_distance + radius) * 2.0;
+        SetClipPlanes(near, far);
     }
 
     /// <summary>Атомарная установка плоскостей отсечения (без промежуточного состояния near ≥ far).</summary>

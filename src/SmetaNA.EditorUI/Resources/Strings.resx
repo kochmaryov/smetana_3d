@@ -54,6 +54,9 @@
   <data name="Project.Name" xml:space="preserve">
     <value>Проект {0}</value>
   </data>
+  <data name="Project.CloseTab" xml:space="preserve">
+    <value>Закрыть вкладку (Ctrl+W)</value>
+  </data>
   <data name="Tool.Select" xml:space="preserve">
     <value>Выделение</value>
   </data>
@@ -254,6 +257,12 @@
   </data>
   <data name="Command.ToggleLanguage" xml:space="preserve">
     <value>Переключить язык</value>
+  </data>
+  <data name="CommandPalette.Label" xml:space="preserve">
+    <value>Команды (Ctrl+K)</value>
+  </data>
+  <data name="Hotbox.Label" xml:space="preserve">
+    <value>Инструменты</value>
   </data>
   <data name="Theme.Label" xml:space="preserve">
     <value>Тема</value>
@@ -659,5 +668,17 @@
   </data>
   <data name="Menu.Help" xml:space="preserve">
     <value>Справка</value>
+  </data>
+  <data name="Error.Title" xml:space="preserve">
+    <value>Ошибка</value>
+  </data>
+  <data name="Error.Unhandled" xml:space="preserve">
+    <value>Произошла непредвиденная ошибка. Приложение продолжает работу — сохраните проект, чтобы не потерять изменения.</value>
+  </data>
+  <data name="Error.Details" xml:space="preserve">
+    <value>Подробности</value>
+  </data>
+  <data name="Error.Close" xml:space="preserve">
+    <value>Закрыть</value>
   </data>
 </root>

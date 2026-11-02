@@ -150,6 +150,41 @@ public sealed class CameraTests
         Assert.Equal(Camera.MinDistance, camera.Distance, 9);
     }
 
+    [Theory]
+    [InlineData(ProjectionMode.Perspective)]
+    [InlineData(ProjectionMode.Orthographic)]
+    public void Zoom_RepeatedSteps_KeepTargetInsideClipPlanes(ProjectionMode mode)
+    {
+        var camera = new Camera { Mode = mode, AspectRatio = 1.5 };
+        camera.SetView(StandardView.Isometric);
+        camera.ZoomExtents(new BoundingBox3d(new Vector3d(-100, -50, 0), new Vector3d(100, 50, 200)));
+
+        for (int i = 0; i < 40; i++)
+        {
+            camera.Zoom(1.25);
+            Vector3d ndc = camera.Project(camera.Target);
+            Assert.True(ndc.Z > -1 && ndc.Z < 1, $"Шаг {i} (отдаление): цель Z={ndc.Z} вышла за плоскости отсечения.");
+        }
+
+        for (int i = 0; i < 60; i++)
+        {
+            camera.Zoom(0.8);
+            Vector3d ndc = camera.Project(camera.Target);
+            Assert.True(ndc.Z > -1 && ndc.Z < 1, $"Шаг {i} (приближение): цель Z={ndc.Z} вышла за плоскости отсечения.");
+        }
+    }
+
+    [Fact]
+    public void Zoom_Orthographic_DoesNotMoveCamera()
+    {
+        var camera = new Camera { Mode = ProjectionMode.Orthographic, Distance = 1000, OrthoHeight = 1000 };
+
+        camera.Zoom(2);
+
+        Assert.Equal(1000, camera.Distance, 9);
+        Assert.Equal(2000, camera.OrthoHeight, 9);
+    }
+
     [Fact]
     public void YawWrapsAndPitchClamps()
     {

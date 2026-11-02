@@ -3,6 +3,7 @@ using SmetaNA.Core.Inference;
 using SmetaNA.Core.Model;
 using SmetaNA.Core.Tools;
 using SmetaNA.Core.Undo;
+using SmetaNA.EditorUI.Sessions;
 using SmetaNA.EditorUI.Tools;
 using SmetaNA.EditorUI.ViewModels;
 using Xunit;
@@ -127,16 +128,16 @@ public class ToolControllerTests
     }
 
     [Fact]
-    public void ProjectTabViewModel_CarriesToolsController()
+    public void ProjectTabViewModel_CarriesDocumentTools()
     {
-        ToolController controller = CreateController();
+        var document = new EditorDocument(new Scene());
         var viewModel = new ProjectTabViewModel(
             new Localization.LocalizationService(),
-            new Scene(),
-            1,
-            controller);
+            document,
+            1);
 
-        Assert.Same(controller, viewModel.Tools);
+        Assert.Same(document.Tools, viewModel.Tools);
+        Assert.Same(document.Scene, viewModel.Scene);
     }
 
     private static ToolController CreateController()

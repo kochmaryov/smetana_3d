@@ -10,7 +10,6 @@ namespace SmetaNA.Rendering;
 /// </summary>
 internal sealed class GlSceneRenderer : IDisposable
 {
-    private static readonly float[] BackgroundColor = [0.14f, 0.16f, 0.19f];
     private static readonly float[] FaceColor = [0.80f, 0.81f, 0.84f, 1f];
     private static readonly float[] XRayFaceColor = [0.80f, 0.81f, 0.84f, 0.32f];
     private static readonly float[] EdgeColor = [0.15f, 0.17f, 0.20f, 1f];
@@ -52,6 +51,17 @@ internal sealed class GlSceneRenderer : IDisposable
     private int _edgeIndexCount;
     private int _gridVertexCount;
     private int _axisVertexCount;
+
+    /// <summary>Цвет фона кадра (линейные компоненты RGB).</summary>
+    private readonly float[] _backgroundColor = [0.14f, 0.16f, 0.19f];
+
+    /// <summary>Смена фона под тему оформления (светлая/тёмная).</summary>
+    public void SetBackground(float r, float g, float b)
+    {
+        _backgroundColor[0] = r;
+        _backgroundColor[1] = g;
+        _backgroundColor[2] = b;
+    }
 
     public GlSceneRenderer(GL gl, bool isEs, int major, int minor, out bool usedFallback)
     {
@@ -154,7 +164,7 @@ internal sealed class GlSceneRenderer : IDisposable
         bool showAxes)
     {
         _gl.Viewport(0, 0, (uint)Math.Max(width, 1), (uint)Math.Max(height, 1));
-        _gl.ClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], 1f);
+        _gl.ClearColor(_backgroundColor[0], _backgroundColor[1], _backgroundColor[2], 1f);
         _gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         _gl.Enable(EnableCap.DepthTest);
         _gl.DepthFunc(DepthFunction.Lequal);

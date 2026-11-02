@@ -382,4 +382,45 @@ public sealed class ToolLayoutDialogViewModelTests : IDisposable
 
         Assert.Equal(new[] { true, false }, closes);
     }
+
+    [Fact]
+    public void PanelGroups_ManageFloatingPlacement_WhenManagerAttached()
+    {
+        var localization = new LocalizationService();
+        var groups = ToolGroupRegistry.DefaultGroups
+            .Select(group => new ToolPaletteGroupViewModel(localization, group, []))
+            .ToList();
+        var manager = new FloatingGroups.FloatingGroupsViewModel(
+            new FloatingGroups.JsonFloatingGroupsStore(Path.Combine(_root, "floating-groups.json")),
+            groups);
+        ToolLayoutDialogViewModel dialog = new(
+            _localization,
+            _shortcuts,
+            ToolLayoutModel.CreateDefault(),
+            manager);
+
+        ToolLayoutPanelGroupNode drawing = dialog.PanelGroups
+            .Single(group => group.Id == ToolGroupRegistry.DrawingGroupId);
+        Assert.True(drawing.IsPlacementManaged);
+        Assert.False(drawing.IsDetached);
+        Assert.NotEqual(string.Empty, drawing.PlacementText);
+
+        drawing.TogglePlacementCommand.Execute(null);
+
+        Assert.True(drawing.IsDetached);
+        Assert.NotEqual(FloatingGroups.FloatingGroupState.Palette, manager.StateOf(drawing.Id));
+
+        drawing.TogglePlacementCommand.Execute(null);
+
+        Assert.False(drawing.IsDetached);
+        Assert.Equal(FloatingGroups.FloatingGroupState.Palette, manager.StateOf(drawing.Id));
+    }
+
+    [Fact]
+    public void PanelGroups_HidePlacementControls_WithoutManager()
+    {
+        ToolLayoutDialogViewModel dialog = CreateDialog();
+
+        Assert.All(dialog.PanelGroups, group => Assert.False(group.IsPlacementManaged));
+    }
 }

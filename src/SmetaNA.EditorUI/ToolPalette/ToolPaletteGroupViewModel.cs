@@ -48,6 +48,8 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
         ];
         ToggleExpandedCommand = new RelayCommand(() => IsExpanded = !IsExpanded);
         OpenFlyoutCommand = new RelayCommand(() => IsFlyoutOpen = true);
+        DetachCommand = new RelayCommand(_ => RequestDetach());
+        ReturnToPaletteCommand = new RelayCommand(_ => RequestReturnToPalette());
         _localization.CultureChanged += OnCultureChanged;
     }
 
@@ -58,6 +60,12 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
 
     /// <summary>Локализованное имя группы («Рисование», «Правка», …).</summary>
     public string Name => _localization.Get(NameKey);
+
+    /// <summary>Подсказка кнопки отрыва группы («⠿» в шапке группы, T3).</summary>
+    public string DetachHint => _localization.Get(ToolPaletteStrings.GroupDetach);
+
+    /// <summary>Подсказка кнопки возврата группы в палитру («×» окна/лотка, T3).</summary>
+    public string CloseHint => _localization.Get(ToolPaletteStrings.GroupClose);
 
     /// <summary>
     /// Ведущая иконка группы (глиф первой кнопки) — для кнопки группы в режиме
@@ -81,6 +89,33 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
     }
 
     public RelayCommand ToggleExpandedCommand { get; }
+
+    /// <summary>Группа оторвана от палитры (плавает или прикреплена к краю, T3).</summary>
+    public bool IsDetached
+    {
+        get => _isDetached;
+        set => SetField(ref _isDetached, value);
+    }
+
+    private bool _isDetached;
+
+    /// <summary>Запрос отрыва группы от палитры (клик по «⠿»).</summary>
+    public event Action<ToolPaletteGroupViewModel>? DetachRequested;
+
+    /// <summary>Запрос возврата группы в палитру (кнопка «×» плавающего окна/лотка).</summary>
+    public event Action<ToolPaletteGroupViewModel>? ReturnToPaletteRequested;
+
+    /// <summary>Оторвать группу от палитры (в плавающее окно или краевую зону).</summary>
+    public RelayCommand DetachCommand { get; }
+
+    /// <summary>Вернуть группу в палитру.</summary>
+    public RelayCommand ReturnToPaletteCommand { get; }
+
+    /// <summary>Поднять запрос отрыва (вызывается контролом палитры).</summary>
+    public void RequestDetach() => DetachRequested?.Invoke(this);
+
+    /// <summary>Поднять запрос возврата в палитру (вызывается окном/лотком).</summary>
+    public void RequestReturnToPalette() => ReturnToPaletteRequested?.Invoke(this);
 
     /// <summary>Вылет-панель группы в режиме рейла открыта.</summary>
     public bool IsFlyoutOpen
@@ -106,5 +141,10 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
             + GroupSpacing;
     }
 
-    private void OnCultureChanged() => OnPropertyChanged(nameof(Name));
+    private void OnCultureChanged()
+    {
+        OnPropertyChanged(nameof(Name));
+        OnPropertyChanged(nameof(DetachHint));
+        OnPropertyChanged(nameof(CloseHint));
+    }
 }

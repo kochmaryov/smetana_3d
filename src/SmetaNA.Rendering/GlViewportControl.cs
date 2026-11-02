@@ -1,6 +1,7 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Avalonia;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using Avalonia.VisualTree;
@@ -72,6 +73,7 @@ public sealed partial class GlViewportControl : OpenGlControlBase
     private double _gridCellMm = 1000;
     private bool _gpuDirty = true;
     private bool _autoZoomPending = true;
+    private uint _backgroundArgb = 0xFF242930;
 
     private DragMode _dragMode = DragMode.None;
     private Point _lastPointer;
@@ -124,6 +126,24 @@ public sealed partial class GlViewportControl : OpenGlControlBase
 
     /// <summary>Шаг сетки, мм (после перестройки сцены).</summary>
     public double GridCellMm => _gridCellMm;
+
+    /// <summary>
+    /// Цвет фона вьюпорта (ARGB) под текущую тему оформления.
+    /// Вызывать при смене темы; применяется со следующего кадра.
+    /// </summary>
+    public void SetBackground(uint argb)
+    {
+        _backgroundArgb = argb;
+        ApplyBackground();
+    }
+
+    private void ApplyBackground()
+    {
+        _renderer?.SetBackground(
+            ((_backgroundArgb >> 16) & 0xFF) / 255f,
+            ((_backgroundArgb >> 8) & 0xFF) / 255f,
+            (_backgroundArgb & 0xFF) / 255f);
+    }
 
     public event EventHandler? SelectionChanged;
 
@@ -222,6 +242,17 @@ public sealed partial class GlViewportControl : OpenGlControlBase
     /// <summary>Минимальный FPS по односекундным бакетам после прогрева.</summary>
     public double MinFps => _warmupDone && _minBucketFps < double.MaxValue ? _minBucketFps : 0;
 
+    /// <summary>
+    /// Прозрачная заливка области вьюпорта: GL-кадры рисует композитор мимо
+    /// managed-сцены, и без собственных команд отрисовки контрол не попадает в
+    /// hit-тест — ни камера, ни инструменты рисования мышь не получали.
+    /// </summary>
+    public override void Render(DrawingContext context)
+    {
+        base.Render(context);
+        context.FillRectangle(Brushes.Transparent, new Rect(Bounds.Size));
+    }
+
     protected override void OnOpenGlInit(GlInterface glInterface)
     {
         try
@@ -235,6 +266,7 @@ public sealed partial class GlViewportControl : OpenGlControlBase
             (bool isEs, int major, int minor) = GlSceneRenderer.ParseVersion(version);
 
             _renderer = new GlSceneRenderer(api, isEs, major, minor, out bool usedFallback);
+            ApplyBackground();
             _glInfo = string.Create(
                 System.Globalization.CultureInfo.InvariantCulture,
                 $"{rendererName} | {version} | GLSL {glsl} | {(isEs ? "GLES" : "GL")}{major}.{minor}{(usedFallback ? " | fallback shaders" : string.Empty)}");

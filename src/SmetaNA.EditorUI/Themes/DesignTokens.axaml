@@ -1,0 +1,68 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Дизайн-токены редактора (спека ui-redesign §4 «Визуальная система»).
+       Тёмная тема — базовая (тёмный профессиональный CAD), светлая — производная
+       от тех же имён токенов. Литералы цветов разрешены только в этом файле:
+       во всём остальном XAML — исключительно DynamicResource. -->
+  <ResourceDictionary.ThemeDictionaries>
+
+    <!-- Тёмная CAD-тема (variant_ac, wireframe.css) -->
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="#0F1216" />
+      <SolidColorBrush x:Key="ThemeControlBackground" Color="#171B21" />
+      <SolidColorBrush x:Key="ThemeControlBackgroundSecondary" Color="#1E242B" />
+      <SolidColorBrush x:Key="ThemeControlBackgroundTertiary" Color="#262D36" />
+      <SolidColorBrush x:Key="ThemeBorderMidBrush" Color="#2E3742" />
+      <SolidColorBrush x:Key="ThemeBorderSoftBrush" Color="#232A32" />
+      <SolidColorBrush x:Key="ThemeForegroundBrush" Color="#E6EAF0" />
+      <SolidColorBrush x:Key="ThemeForegroundDimBrush" Color="#909AA6" />
+      <SolidColorBrush x:Key="ThemeForegroundFaintBrush" Color="#5C6672" />
+      <SolidColorBrush x:Key="ThemeAccentBrush" Color="#E8A33D" />
+      <SolidColorBrush x:Key="ThemeAccentSoftBrush" Color="#2E2416" />
+      <SolidColorBrush x:Key="ThemeSelectionBrush" Color="#4C8DFF" />
+      <SolidColorBrush x:Key="ThemeErrorBrush" Color="#E8695E" />
+      <SolidColorBrush x:Key="ThemeErrorSoftBrush" Color="#33201F" />
+      <SolidColorBrush x:Key="ThemeOverlayBackgroundBrush" Color="#B0000000" />
+      <SolidColorBrush x:Key="ThemeOverlayForegroundBrush" Color="#E0E0E0" />
+      <SolidColorBrush x:Key="ThemeHudStatBrush" Color="#7CFC98" />
+      <SolidColorBrush x:Key="ThemeHudInfoBrush" Color="#D0D0D0" />
+      <SolidColorBrush x:Key="ThemeHudSelectionBrush" Color="#F0C060" />
+      <Color x:Key="ThemeViewportBackground">#242930</Color>
+    </ResourceDictionary>
+
+    <!-- Светлая тема — производная: нейтральные поверхности, тот же акцент в
+         затемнённом виде (контраст на светлом фоне). -->
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="#F2F3F6" />
+      <SolidColorBrush x:Key="ThemeControlBackground" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ThemeControlBackgroundSecondary" Color="#ECEDF1" />
+      <SolidColorBrush x:Key="ThemeControlBackgroundTertiary" Color="#E0E2E8" />
+      <SolidColorBrush x:Key="ThemeBorderMidBrush" Color="#C9CDD6" />
+      <SolidColorBrush x:Key="ThemeBorderSoftBrush" Color="#E0E2E8" />
+      <SolidColorBrush x:Key="ThemeForegroundBrush" Color="#1B2028" />
+      <SolidColorBrush x:Key="ThemeForegroundDimBrush" Color="#5A6270" />
+      <SolidColorBrush x:Key="ThemeForegroundFaintBrush" Color="#8A929E" />
+      <SolidColorBrush x:Key="ThemeAccentBrush" Color="#B97A14" />
+      <SolidColorBrush x:Key="ThemeAccentSoftBrush" Color="#F7E9CE" />
+      <SolidColorBrush x:Key="ThemeSelectionBrush" Color="#2E6FD6" />
+      <SolidColorBrush x:Key="ThemeErrorBrush" Color="#C43B30" />
+      <SolidColorBrush x:Key="ThemeErrorSoftBrush" Color="#F8E2E0" />
+      <SolidColorBrush x:Key="ThemeOverlayBackgroundBrush" Color="#D9FFFFFF" />
+      <SolidColorBrush x:Key="ThemeOverlayForegroundBrush" Color="#2A2F36" />
+      <SolidColorBrush x:Key="ThemeHudStatBrush" Color="#1E7A45" />
+      <SolidColorBrush x:Key="ThemeHudInfoBrush" Color="#3A4048" />
+      <SolidColorBrush x:Key="ThemeHudSelectionBrush" Color="#8A5F12" />
+      <Color x:Key="ThemeViewportBackground">#D6DAE2</Color>
+    </ResourceDictionary>
+
+  </ResourceDictionary.ThemeDictionaries>
+
+  <!-- Геометрия/типографика — общие для обеих тем. -->
+  <CornerRadius x:Key="RadiusSmall">5</CornerRadius>
+  <CornerRadius x:Key="RadiusCard">8</CornerRadius>
+  <x:Double x:Key="FontSmall">10</x:Double>
+  <x:Double x:Key="FontCaption">11</x:Double>
+  <x:Double x:Key="FontBody">12</x:Double>
+  <x:Double x:Key="FontTitle">15</x:Double>
+  <x:Double x:Key="FontHero">27</x:Double>
+</ResourceDictionary>

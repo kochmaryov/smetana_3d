@@ -1,0 +1,52 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:SmetaNA.EditorUI.Localization"
+        xmlns:icons="using:SmetaNA.EditorUI.Icons"
+        x:Class="SmetaNA.EditorUI.Views.ErrorDialog"
+        x:DataType="loc:LocalizedStrings"
+        Title="{Binding ErrorTitle}"
+        Width="560"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner">
+  <!-- Диалог ошибки (спека ui-redesign T9): плотная карточка в единой теме -->
+  <Border Background="{DynamicResource ThemeControlBackgroundSecondary}"
+          BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+          BorderThickness="1"
+          Padding="16">
+    <StackPanel Spacing="12">
+      <StackPanel Orientation="Horizontal" Spacing="10">
+        <Border Background="{DynamicResource ThemeErrorSoftBrush}"
+                CornerRadius="{DynamicResource RadiusCard}"
+                TextElement.Foreground="{DynamicResource ThemeErrorBrush}"
+                Width="32"
+                Height="32">
+          <icons:UiIcon IconId="Ban"
+                        Width="18"
+                        Height="18"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center" />
+        </Border>
+        <TextBlock x:Name="MessageText"
+                   TextWrapping="Wrap"
+                   FontWeight="SemiBold"
+                   VerticalAlignment="Center" />
+      </StackPanel>
+      <Expander Header="{Binding ErrorDetails}" IsExpanded="False">
+        <TextBox Classes="field"
+                 x:Name="DetailsText"
+                 IsReadOnly="True"
+                 AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 MaxHeight="220"
+                 Margin="0,6,0,0" />
+      </Expander>
+      <Border Height="1" Background="{DynamicResource ThemeBorderSoftBrush}" />
+      <Button Content="{Binding ErrorClose}"
+              HorizontalAlignment="Right"
+              IsDefault="True"
+              Click="OnCloseClick" />
+    </StackPanel>
+  </Border>
+</Window>

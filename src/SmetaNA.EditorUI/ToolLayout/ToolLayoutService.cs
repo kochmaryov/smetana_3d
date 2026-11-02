@@ -115,10 +115,12 @@ public sealed class ToolLayoutService
     /// <c>true</c> — пользователь применил раскладку; она сохранена и
     /// <see cref="LayoutChanged"/> уже сработал.
     /// </summary>
-    public async Task<bool> OpenDialogAsync(Window owner)
+    public async Task<bool> OpenDialogAsync(
+        Window owner,
+        FloatingGroups.FloatingGroupsViewModel? floatingGroups = null)
     {
         ArgumentNullException.ThrowIfNull(owner);
-        ToolLayoutDialogViewModel viewModel = new(_localization, _shortcuts, Layout);
+        ToolLayoutDialogViewModel viewModel = new(_localization, _shortcuts, Layout, floatingGroups);
         ToolLayoutDialogWindow window = new(viewModel);
         bool applied = await window.ShowDialog<bool>(owner);
         if (applied)

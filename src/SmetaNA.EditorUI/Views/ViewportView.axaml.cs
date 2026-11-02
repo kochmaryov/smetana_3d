@@ -39,8 +39,11 @@ public partial class ViewportView : UserControl
     private long _lastToolHoverTicks;
     private Point? _toolRightPress;
 
-    /// <summary>Панель режимов раскрыта кнопкой «⚙» (<600 px).</summary>
-    private bool _isViewModePanelOpen;
+    /// <summary>Вьюпорт в визуальном дереве (иначе подписки модели не нужны).</summary>
+    private bool _isAttached;
+
+    /// <summary>Подписки на модель и инструменты уже установлены.</summary>
+    private bool _isModelSubscribed;
 
     public ViewportView()
     {
@@ -49,6 +52,7 @@ public partial class ViewportView : UserControl
         AttachedToVisualTree += OnAttachedToVisualTree;
         DetachedFromVisualTree += OnDetachedFromVisualTree;
         Viewport.SelectionChanged += OnSelectionChanged;
+        Viewport.SelectionChanged += OnSelectionForCursorStrip;
         Viewport.HoverChanged += OnSelectionChanged;
 
         // Маршрутизация ввода в активный инструмент: туннелирующие обработчики
@@ -105,9 +109,16 @@ public partial class ViewportView : UserControl
         int nodesAfter = viewModel.Scene.EnumerateNodes().Count();
         long verticesAfter = VerticesInScene(viewModel);
         tools.Deactivate();
-        bool ok = committed && verticesAfter > verticesBefore;
+
+        // GL-контрол должен участвовать в hit-тесте: без собственной отрисовки
+        // композитор его пропускает и мышь (камера и инструменты) уходит мимо.
+        bool hitTestable = ReferenceEquals(
+            this.InputHitTest(new Point(Bounds.Width * 0.5, Bounds.Height * 0.5)),
+            Viewport);
+
+        bool ok = committed && verticesAfter > verticesBefore && hitTestable;
         Console.WriteLine(
-            $"[DRAWING] pressed={pressed} committed={committed} pressMs={firstPressMs}/{secondPressMs} commitMs={commitMs} totalMs={clock.ElapsedMilliseconds} nodes={nodesBefore}->{nodesAfter} vertices={verticesBefore}->{verticesAfter} result={(ok ? "PASS" : "FAIL")}");
+            $"[DRAWING] pressed={pressed} committed={committed} hitTestable={hitTestable} pressMs={firstPressMs}/{secondPressMs} commitMs={commitMs} totalMs={clock.ElapsedMilliseconds} nodes={nodesBefore}->{nodesAfter} vertices={verticesBefore}->{verticesAfter} result={(ok ? "PASS" : "FAIL")}");
         return ok;
     }
 
@@ -118,6 +129,45 @@ public partial class ViewportView : UserControl
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
+        UnsubscribeModel();
+
+        _viewModel = DataContext as ProjectTabViewModel;
+        _tools = _viewModel?.Tools;
+
+        SubscribeModel();
+        RedrawToolOverlay();
+        BindViewport();
+    }
+
+    /// <summary>Подписка на модель и инструменты вкладки (идемпотентна).</summary>
+    private void SubscribeModel()
+    {
+        if (_isModelSubscribed || !_isAttached || _viewModel is null)
+        {
+            return;
+        }
+
+        _isModelSubscribed = true;
+        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        if (_tools is not null)
+        {
+            _tools.Changed += OnToolStateChanged;
+            _tools.Context.UndoStack.Changed += OnSceneHistoryChanged;
+        }
+    }
+
+    /// <summary>
+    /// Снять подписки при откреплении вкладки: иначе неактивные вкладки
+    /// продолжают получать события модели и держат GL-вьюпорт в памяти.
+    /// </summary>
+    private void UnsubscribeModel()
+    {
+        if (!_isModelSubscribed)
+        {
+            return;
+        }
+
+        _isModelSubscribed = false;
         if (_viewModel is not null)
         {
             _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
@@ -128,40 +178,65 @@ public partial class ViewportView : UserControl
             _tools.Changed -= OnToolStateChanged;
             _tools.Context.UndoStack.Changed -= OnSceneHistoryChanged;
         }
+    }
 
-        _viewModel = DataContext as ProjectTabViewModel;
-        _tools = _viewModel?.Tools;
-        if (_tools is not null)
-        {
-            _tools.Changed += OnToolStateChanged;
-            _tools.Context.UndoStack.Changed += OnSceneHistoryChanged;
-        }
-
-        RedrawToolOverlay();
+    /// <summary>Подключить к GL-контролу сцену и режимы активной вкладки.</summary>
+    private void BindViewport()
+    {
         if (_viewModel is null)
         {
             return;
         }
 
-        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         Viewport.Scene = _viewModel.Scene;
         Viewport.TargetFramesPerSecond = EditorOptions.TargetFps;
+        SyncViewportFromModel();
+    }
+
+    /// <summary>
+    /// Применить режимы вьюпорта из модели (шапка окна) к GL-контролу.
+    /// Смена проекции пересчитывает вписывание камеры — как это делал
+    /// прежний тумблер панели режимов.
+    /// </summary>
+    private void SyncViewportFromModel()
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
         Viewport.RenderMode = _viewModel.SelectedRenderMode.Mode;
+        Viewport.ShowGrid = _viewModel.ShowGrid;
+        Viewport.ShowAxes = _viewModel.ShowAxes;
+
+        ProjectionMode projection = _viewModel.IsOrthographic
+            ? ProjectionMode.Orthographic
+            : ProjectionMode.Perspective;
+        if (Viewport.Camera.Mode != projection)
+        {
+            Viewport.Camera.Mode = projection;
+            Viewport.ZoomExtents();
+        }
     }
 
     private void OnAttachedToVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
     {
+        _isAttached = true;
         _hudTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         _hudTimer.Tick += OnHudTick;
         _hudTimer.Start();
-        SizeChanged += OnViewportSizeChanged;
+        SubscribeModel();
+        BindViewport();
+        ApplyViewportTheme();
+        EditorServices.Theme.Changed += ApplyViewportTheme;
         UpdateHud();
-        ApplyViewModeLayout();
     }
 
     private void OnDetachedFromVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
     {
-        SizeChanged -= OnViewportSizeChanged;
+        _isAttached = false;
+        EditorServices.Theme.Changed -= ApplyViewportTheme;
+        UnsubscribeModel();
         if (_hudTimer is not null)
         {
             _hudTimer.Stop();
@@ -170,43 +245,65 @@ public partial class ViewportView : UserControl
         }
     }
 
+    /// <summary>Фон GL-вьюпорта под тему оформления (светлая тема не должна оставлять тёмную рабочую область).</summary>
+    private void ApplyViewportTheme()
+    {
+        if (Application.Current?.TryFindResource("ThemeViewportBackground", out object? value) == true
+            && value is Color color)
+        {
+            Viewport.SetBackground(0xFF000000u | ((uint)color.R << 16) | ((uint)color.G << 8) | color.B);
+        }
+    }
+
     /// <summary>Ширина вьюпорта задаёт состояние оверлея режимов (адаптив).</summary>
-    private void OnViewportSizeChanged(object? sender, SizeChangedEventArgs e) => ApplyViewModeLayout();
-
-    /// <summary>
-    /// Применить состояние оверлея режимов: полное ≥760, компакт (без подписей,
-    /// только кнопки и поля) 600–760, «⚙» &lt;600 — панель свёрнута и раскрывается
-    /// кнопкой. Порог совпадает с началом наложения на HUD (~740 px).
-    /// </summary>
-    private void ApplyViewModeLayout()
-    {
-        double width = Bounds.Width;
-        bool collapsed = width < 600;
-        bool showLabels = width >= 760;
-
-        _isViewModePanelOpen = false;
-        ViewModeGearButton.IsVisible = collapsed;
-        ViewModePanel.IsVisible = !collapsed;
-
-        ModeLabel.IsVisible = showLabels;
-        ProjectionLabel.IsVisible = showLabels;
-        UnitLabel.IsVisible = showLabels;
-    }
-
-    /// <summary>«⚙» (&lt;600 px): раскрыть/прятать панель режимов.</summary>
-    private void OnViewModeGearClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        _isViewModePanelOpen = !_isViewModePanelOpen;
-        ViewModePanel.IsVisible = _isViewModePanelOpen;
-    }
-
     private void OnHudTick(object? sender, EventArgs e) => UpdateHud();
 
-    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) => UpdateHud();
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        SyncViewportFromModel();
+        UpdateHud();
+    }
 
     private void OnSelectionChanged(object? sender, EventArgs e) => UpdateHud();
 
-    private void OnToolStateChanged() => RedrawToolOverlay();
+    /// <summary>
+    /// Контекстная полоса у курсора (T4): показывается при выбранном объекте,
+    /// закрывается при снятии выделения; выбор действия активирует инструмент.
+    /// </summary>
+    private void OnSelectionForCursorStrip(object? sender, EventArgs e)
+    {
+        if (CursorStrip is null)
+        {
+            return;
+        }
+
+        // Полоса — только в покое: с активным инструментом она перекрывает
+        // ввод (light-dismiss ловит указатель раньше вьюпорта).
+        CursorStrip.IsOpen = Viewport.SelectedObject is not null
+            && _tools is not { IsActive: true };
+    }
+
+    private void OnCursorStripTool(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string commandId })
+        {
+            _viewModel?.ActivateTool(commandId);
+        }
+
+        CursorStrip.IsOpen = false;
+    }
+
+    private void OnToolStateChanged()
+    {
+        // Активация инструмента закрывает контекстную полосу: она не должна
+        // мешать вводу инструмента (выдавливание, рисование и т.п.).
+        if (CursorStrip is { IsOpen: true } && _tools is { IsActive: true })
+        {
+            CursorStrip.IsOpen = false;
+        }
+
+        RedrawToolOverlay();
+    }
 
     private void OnSceneHistoryChanged() => Viewport.RefreshScene();
 
@@ -547,7 +644,7 @@ public partial class ViewportView : UserControl
         UnitsText.Text = string.Format(
             CultureInfo.CurrentCulture,
             _viewModel.Strings.ViewportHudUnits,
-            _viewModel.SelectedUnit.Name,
+            _viewModel.SelectedUnit?.Name ?? string.Empty,
             FormatLength(gridStep));
 
         SelectionText.Text = Viewport.SelectedObject is { } node
@@ -564,30 +661,6 @@ public partial class ViewportView : UserControl
         >= 1 => value.ToString("F1", CultureInfo.CurrentCulture),
         _ => value.ToString("F2", CultureInfo.CurrentCulture),
     };
-
-    private void OnRenderModeChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        if (_viewModel?.SelectedRenderMode is { } option)
-        {
-            Viewport.RenderMode = option.Mode;
-        }
-    }
-
-    private void OnUnitChanged(object? sender, SelectionChangedEventArgs e) => UpdateHud();
-
-    private void OnProjectionToggle(object? sender, RoutedEventArgs e)
-    {
-        Viewport.Camera.Mode = OrthoToggle.IsChecked == true
-            ? ProjectionMode.Orthographic
-            : ProjectionMode.Perspective;
-        Viewport.ZoomExtents();
-    }
-
-    private void OnGridToggle(object? sender, RoutedEventArgs e) =>
-        Viewport.ShowGrid = GridToggle.IsChecked == true;
-
-    private void OnAxesToggle(object? sender, RoutedEventArgs e) =>
-        Viewport.ShowAxes = AxesToggle.IsChecked == true;
 
     private void OnViewIso(object? sender, RoutedEventArgs e) => Viewport.SetView(StandardView.Isometric);
 

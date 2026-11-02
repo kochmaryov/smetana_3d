@@ -204,6 +204,21 @@
                       <TextBlock Text="{Binding CountText}"
                                  Opacity="0.6"
                                  VerticalAlignment="Center" />
+                      <!-- Размещение группы (T9): бейдж и отрыв/возврат -->
+                      <Border Classes="chip"
+                              IsVisible="{Binding IsPlacementManaged}"
+                              Padding="6,0"
+                              VerticalAlignment="Center">
+                        <TextBlock Text="{Binding PlacementText}" FontSize="10" />
+                      </Border>
+                      <Button Classes="ibtn"
+                              Width="22"
+                              Height="22"
+                              IsVisible="{Binding IsPlacementManaged}"
+                              Command="{Binding TogglePlacementCommand}"
+                              ToolTip.Tip="{Binding TogglePlacementToolTip}">
+                        <icons:UiIcon IconId="Import" Width="13" Height="13" />
+                      </Button>
                       <CheckBox IsChecked="{Binding IsVisible}"
                                 ToolTip.Tip="{Binding GroupVisibleToolTip}"
                                 VerticalAlignment="Center" />

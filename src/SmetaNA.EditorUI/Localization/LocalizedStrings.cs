@@ -31,6 +31,7 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string ProjectOpenError => _localization.Get(LocalizationKeys.ProjectOpenError);
     public string ProjectFileType => _localization.Get(LocalizationKeys.ProjectFileType);
     public string ProjectName => _localization.Get(LocalizationKeys.ProjectName);
+    public string ProjectCloseTab => _localization.Get(LocalizationKeys.ProjectCloseTab);
     public string WelcomeSubtitle => _localization.Get(LocalizationKeys.WelcomeSubtitle);
     public string WelcomeRecent => _localization.Get(LocalizationKeys.WelcomeRecent);
     public string WelcomeRecentEmpty => _localization.Get(LocalizationKeys.WelcomeRecentEmpty);
@@ -135,6 +136,8 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
 
     public string CommandToggleTheme => _localization.Get(LocalizationKeys.CommandToggleTheme);
     public string CommandToggleLanguage => _localization.Get(LocalizationKeys.CommandToggleLanguage);
+    public string CommandPaletteLabel => _localization.Get(LocalizationKeys.CommandPaletteLabel);
+    public string HotboxLabel => _localization.Get(LocalizationKeys.HotboxLabel);
 
     public string ThemeLabel => _localization.Get(LocalizationKeys.ThemeLabel);
     public string ThemeLight => _localization.Get(LocalizationKeys.ThemeLight);
@@ -211,6 +214,11 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string MenuEdit => _localization.Get(LocalizationKeys.MenuEdit);
     public string MenuView => _localization.Get(LocalizationKeys.MenuView);
     public string MenuHelp => _localization.Get(LocalizationKeys.MenuHelp);
+
+    public string ErrorTitle => _localization.Get(LocalizationKeys.ErrorTitle);
+    public string ErrorUnhandled => _localization.Get(LocalizationKeys.ErrorUnhandled);
+    public string ErrorDetails => _localization.Get(LocalizationKeys.ErrorDetails);
+    public string ErrorClose => _localization.Get(LocalizationKeys.ErrorClose);
 
     private void OnCultureChanged() =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));

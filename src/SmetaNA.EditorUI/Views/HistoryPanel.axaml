@@ -3,37 +3,40 @@
              xmlns:vm="using:SmetaNA.EditorUI.ViewModels"
              x:Class="SmetaNA.EditorUI.Views.HistoryPanel"
              x:DataType="vm:MainWindowViewModel">
-  <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-          BorderThickness="1"
-          CornerRadius="4"
-          Padding="12">
+  <!-- История (каталог ui-redesign §1): нумерованный лог с акцентом текущего шага -->
+  <ScrollViewer Padding="10">
     <StackPanel Spacing="8">
-      <TextBlock Text="{Binding Strings.HistoryTitle}" FontWeight="SemiBold" />
-      <TextBlock Text="{Binding Strings.HistoryEmpty}"
+      <TextBlock Classes="cardTitle"
+                 Text="{Binding Strings.HistoryTitle}" />
+      <TextBlock Classes="dim"
+                 Text="{Binding Strings.HistoryEmpty}"
                  IsVisible="{Binding IsHistoryEmpty}"
-                 Opacity="0.7" />
+                 FontSize="11" />
       <ItemsControl ItemsSource="{Binding HistoryEntries}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:HistoryEntryViewModel">
-            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2">
-              <Ellipse Width="7"
-                       Height="7"
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto" Margin="0,1">
+              <Ellipse Width="6"
+                       Height="6"
                        VerticalAlignment="Center"
                        Fill="{DynamicResource ThemeAccentBrush}"
                        IsVisible="{Binding IsCurrent}" />
               <TextBlock Grid.Column="1"
-                         Text="{Binding Description}"
-                         TextWrapping="Wrap"
-                         Margin="8,0,0,0" />
-              <TextBlock Grid.Column="2"
+                         Classes="dim"
+                         FontSize="11"
+                         VerticalAlignment="Center"
+                         Margin="8,0,6,0"
+                         Text="{Binding Description}" />
+              <TextBlock Grid.Column="3"
+                         Classes="dim"
                          Text="{Binding CurrentLabel}"
                          IsVisible="{Binding IsCurrent}"
-                         Margin="8,0,0,0"
-                         Opacity="0.6" />
+                         FontSize="10"
+                         VerticalAlignment="Center" />
             </Grid>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
     </StackPanel>
-  </Border>
+  </ScrollViewer>
 </UserControl>

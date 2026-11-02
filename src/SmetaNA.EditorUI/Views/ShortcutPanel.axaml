@@ -4,69 +4,71 @@
              xmlns:icons="using:SmetaNA.EditorUI.Icons"
              x:Class="SmetaNA.EditorUI.Views.ShortcutPanel"
              x:DataType="vm:MainWindowViewModel">
-  <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-          BorderThickness="1"
-          CornerRadius="4"
-          Padding="12">
-    <DockPanel>
-      <TextBlock DockPanel.Dock="Top"
-                 Text="{Binding Strings.ShortcutsTitle}"
-                 FontWeight="SemiBold" />
-      <TextBlock DockPanel.Dock="Top"
-                 Text="{Binding Strings.ShortcutsHint}"
-                 TextWrapping="Wrap"
-                 Opacity="0.6"
-                 Margin="0,4,0,8" />
-      <Grid DockPanel.Dock="Bottom"
-            ColumnDefinitions="*,Auto,Auto"
-            Margin="0,8,0,0">
-        <ComboBox ItemsSource="{Binding ShortcutRows}"
-                  SelectedItem="{Binding SelectedShortcutRow}">
-          <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:ShortcutRowViewModel">
-              <TextBlock Text="{Binding Name}" />
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-        <TextBox Grid.Column="1"
-                 Text="{Binding GestureInput}"
-                 PlaceholderText="{Binding Strings.ShortcutsGesture}"
-                 Width="96"
-                 Margin="6,0" />
-        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
-          <Button Classes="icon"
-                  Command="{Binding ApplyGestureCommand}"
-                  ToolTip.Tip="{Binding Strings.ShortcutsApply}">
-            <icons:UiIcon IconId="Check" Width="18" Height="18" />
-          </Button>
-          <Button Classes="icon"
-                  Command="{Binding ResetGestureCommand}"
-                  ToolTip.Tip="{Binding Strings.ShortcutsReset}">
-            <icons:UiIcon IconId="Reset" Width="18" Height="18" />
-          </Button>
-        </StackPanel>
-      </Grid>
-      <Button DockPanel.Dock="Bottom"
-              Classes="icon"
-              Command="{Binding ResetAllGesturesCommand}"
-              ToolTip.Tip="{Binding Strings.ShortcutsResetAll}"
-              Margin="0,6,0,0"
-              HorizontalAlignment="Right">
-        <icons:UiIcon IconId="ResetAll" Width="18" Height="18" />
-      </Button>
-      <ListBox ItemsSource="{Binding ShortcutRows}">
-        <ListBox.ItemTemplate>
+  <!-- Горячие клавиши (каталог ui-redesign §1): список жестов + строка правки -->
+  <DockPanel Margin="10">
+    <TextBlock DockPanel.Dock="Top"
+               Classes="cardTitle"
+               Text="{Binding Strings.ShortcutsTitle}" />
+    <TextBlock DockPanel.Dock="Top"
+               Classes="dim"
+               Text="{Binding Strings.ShortcutsHint}"
+               TextWrapping="Wrap"
+               FontSize="10"
+               Margin="0,4,0,8" />
+    <Grid DockPanel.Dock="Bottom"
+          ColumnDefinitions="*,Auto,Auto"
+          Margin="0,8,0,0">
+      <ComboBox Classes="field"
+                ItemsSource="{Binding ShortcutRows}"
+                SelectedItem="{Binding SelectedShortcutRow}">
+        <ComboBox.ItemTemplate>
           <DataTemplate x:DataType="vm:ShortcutRowViewModel">
-            <Grid ColumnDefinitions="*,Auto" Margin="0,1">
-              <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-              <TextBlock Grid.Column="1"
-                         Text="{Binding Gesture}"
-                         Margin="8,0,0,0"
-                         Opacity="0.75" />
-            </Grid>
+            <TextBlock Text="{Binding Name}" />
           </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-    </DockPanel>
-  </Border>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <TextBox Grid.Column="1"
+               Classes="field"
+               Text="{Binding GestureInput}"
+               PlaceholderText="{Binding Strings.ShortcutsGesture}"
+               Width="96"
+               Margin="6,0" />
+      <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+        <Button Classes="ibtn"
+                Command="{Binding ApplyGestureCommand}"
+                ToolTip.Tip="{Binding Strings.ShortcutsApply}">
+          <icons:UiIcon IconId="Check" Width="16" Height="16" />
+        </Button>
+        <Button Classes="ibtn"
+                Command="{Binding ResetGestureCommand}"
+                ToolTip.Tip="{Binding Strings.ShortcutsReset}">
+          <icons:UiIcon IconId="Reset" Width="16" Height="16" />
+        </Button>
+      </StackPanel>
+    </Grid>
+    <Button DockPanel.Dock="Bottom"
+            Classes="ibtn"
+            Command="{Binding ResetAllGesturesCommand}"
+            ToolTip.Tip="{Binding Strings.ShortcutsResetAll}"
+            Margin="0,6,0,0"
+            HorizontalAlignment="Right">
+      <icons:UiIcon IconId="ResetAll" Width="16" Height="16" />
+    </Button>
+    <ListBox ItemsSource="{Binding ShortcutRows}"
+             Background="Transparent"
+             BorderThickness="0">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:ShortcutRowViewModel">
+          <Grid ColumnDefinitions="*,Auto" Margin="0,1">
+            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontSize="11" />
+            <TextBlock Grid.Column="1"
+                       Classes="dim"
+                       Text="{Binding Gesture}"
+                       Margin="8,0,0,0"
+                       FontSize="11" />
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </DockPanel>
 </UserControl>

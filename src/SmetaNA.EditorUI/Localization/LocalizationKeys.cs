@@ -22,6 +22,7 @@ public static class LocalizationKeys
     public const string ProjectOpenError = "Project.OpenError";
     public const string ProjectFileType = "Project.FileType";
     public const string ProjectName = "Project.Name";
+    public const string ProjectCloseTab = "Project.CloseTab";
     public const string WelcomeSubtitle = "Welcome.Subtitle";
     public const string WelcomeRecent = "Welcome.Recent";
     public const string WelcomeRecentEmpty = "Welcome.RecentEmpty";
@@ -175,6 +176,11 @@ public static class LocalizationKeys
     public const string MenuView = "Menu.View";
     public const string MenuHelp = "Menu.Help";
 
+    public const string ErrorTitle = "Error.Title";
+    public const string ErrorUnhandled = "Error.Unhandled";
+    public const string ErrorDetails = "Error.Details";
+    public const string ErrorClose = "Error.Close";
+
     public const string ViewportTitle = "Viewport.Title";
     public const string ViewportPlaceholder = "Viewport.Placeholder";
     public const string ViewportPlaceholderHint = "Viewport.PlaceholderHint";
@@ -213,6 +219,8 @@ public static class LocalizationKeys
 
     public const string CommandToggleTheme = "Command.ToggleTheme";
     public const string CommandToggleLanguage = "Command.ToggleLanguage";
+    public const string CommandPaletteLabel = "CommandPalette.Label";
+    public const string HotboxLabel = "Hotbox.Label";
 
     public const string ThemeLabel = "Theme.Label";
     public const string ThemeLight = "Theme.Light";

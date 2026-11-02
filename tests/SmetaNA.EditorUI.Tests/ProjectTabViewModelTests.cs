@@ -51,6 +51,31 @@ public sealed class ProjectTabViewModelTests
     }
 
     [Fact]
+    public void SelectedUnit_NullFromBinding_IsIgnored()
+    {
+        var scene = new Scene { Unit = LengthUnit.Millimeter };
+        ProjectTabViewModel viewModel = CreateViewModel(scene);
+        UnitOption millimeter = viewModel.SelectedUnit;
+
+        // ComboBox при пересоздании контента вкладки пишет null в SelectedItem
+        viewModel.SelectedUnit = null!;
+
+        Assert.Same(millimeter, viewModel.SelectedUnit);
+        Assert.Equal(LengthUnit.Millimeter, scene.Unit);
+    }
+
+    [Fact]
+    public void SelectedRenderMode_NullFromBinding_IsIgnored()
+    {
+        ProjectTabViewModel viewModel = CreateViewModel(new Scene());
+        RenderModeOption shaded = viewModel.SelectedRenderMode;
+
+        viewModel.SelectedRenderMode = null!;
+
+        Assert.Same(shaded, viewModel.SelectedRenderMode);
+    }
+
+    [Fact]
     public void Strings_ExposeViewportHudKeys()
     {
         ProjectTabViewModel viewModel = CreateViewModel(new Scene());

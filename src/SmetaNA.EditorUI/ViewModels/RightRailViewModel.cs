@@ -1,13 +1,13 @@
 namespace SmetaNA.EditorUI.ViewModels;
 
 /// <summary>
-/// Секция правого рейла (свойства/история/…): иконка, заголовок и состояние вылета.
-/// Рейл постоянный (44 px): кнопка-иконка (<see cref="Icons.UiIconId"/>), по клику
-/// вылетает содержимое секции вправо.
+/// Секция правого дока (свойства/история/…): иконка, заголовок и состояние выбора.
+/// Док постоянный (50 px рейл + колонка панели): кнопка-иконка
+/// (<see cref="Icons.UiIconId"/>) выбирает вкладку секции.
 /// </summary>
 public sealed class RightRailSectionViewModel : ViewModelBase
 {
-    private bool _isFlyoutOpen;
+    private bool _isSelected;
 
     public RightRailSectionViewModel(string id, Icons.UiIconId icon, string title)
     {
@@ -33,23 +33,31 @@ public sealed class RightRailSectionViewModel : ViewModelBase
         OnPropertyChanged(nameof(Title));
     }
 
-    /// <summary>Вылет секции в режиме рейла открыт.</summary>
-    public bool IsFlyoutOpen
+    /// <summary>Секция выбрана (её панель показана в доке).</summary>
+    public bool IsSelected
     {
-        get => _isFlyoutOpen;
-        set => SetField(ref _isFlyoutOpen, value);
+        get => _isSelected;
+        set => SetField(ref _isSelected, value);
     }
 }
 
 /// <summary>
-/// Правый рейл главного окна: постоянный иконочный рейл 44 px — секции
-/// (свойства/история/…) открываются вылетом вправо по клику на иконку,
-/// чтобы не сжимать вьюпорт и не заливать экран текстом подсказок.
+/// Правый док главного окна: иконочный рейл (50 px) + колонка панели
+/// выбранной секции (300 px). Панель расширяет сетку окна и не перекрывает
+/// сцену (спека ui-redesign T2, приоритет no-overlay).
 /// </summary>
 public sealed class RightRailViewModel : ViewModelBase
 {
-    /// <summary>Ширина рейла с кнопками-иконками секций.</summary>
-    public const double RailWidth = 44;
+    /// <summary>
+    /// Ширина рейла с кнопками-иконками: кнопка 40 + отступы 2×1 + поле 2×3 + рамка.
+    /// </summary>
+    public const double RailWidth = 50;
+
+    /// <summary>Ширина колонки панели секции.</summary>
+    public const double DockWidth = 300;
+
+    /// <summary>Ширина окна, начиная с которой док сворачивается в рейл.</summary>
+    public const double CompactMaxWindowWidth = 960;
 
     public RightRailViewModel(IEnumerable<RightRailSectionViewModel> sections)
     {
@@ -60,10 +68,25 @@ public sealed class RightRailViewModel : ViewModelBase
     /// <summary>Секции правой колонки в порядке отображения.</summary>
     public IReadOnlyList<RightRailSectionViewModel> Sections { get; }
 
-    /// <summary>Ширина панели: постоянный рейл 44 px.</summary>
-    public double PanelWidth => RailWidth;
+    /// <summary>Ширина колонки панели секции (0 — док свёрнут).</summary>
+    public double PanelWidth => IsDockOpen ? DockWidth : 0;
 
-    /// <summary>Открытая секция (управляет единым вылетом).</summary>
+    /// <summary>Док с панелью секции раскрыт.</summary>
+    public bool IsDockOpen
+    {
+        get => _isDockOpen;
+        private set
+        {
+            if (SetField(ref _isDockOpen, value))
+            {
+                OnPropertyChanged(nameof(PanelWidth));
+            }
+        }
+    }
+
+    private bool _isDockOpen;
+
+    /// <summary>Выбранная секция (её панель показана в доке).</summary>
     public RightRailSectionViewModel? OpenSection
     {
         get => _openSection;
@@ -71,6 +94,11 @@ public sealed class RightRailViewModel : ViewModelBase
         {
             if (SetField(ref _openSection, value))
             {
+                foreach (RightRailSectionViewModel section in Sections)
+                {
+                    section.IsSelected = section == value;
+                }
+
                 RaiseShowFlags();
             }
         }
@@ -85,31 +113,42 @@ public sealed class RightRailViewModel : ViewModelBase
     public bool ShowPrintVolume => OpenSection?.Id == "printVolume";
 
     /// <summary>
-    /// Открыть/закрыть вылет секции по клику на её иконку в рейле.
-    /// Повторный клик по той же секции закрывает вылет.
+    /// Выбрать секцию по клику на её иконку/вкладку. Повторный клик по уже
+    /// выбранной секции сворачивает док в рейл.
     /// </summary>
     public void ToggleSection(RightRailSectionViewModel section)
     {
         ArgumentNullException.ThrowIfNull(section);
-        if (OpenSection == section)
+        if (IsDockOpen && OpenSection == section)
         {
-            section.IsFlyoutOpen = !section.IsFlyoutOpen;
-            if (!section.IsFlyoutOpen)
-            {
-                OpenSection = null;
-            }
-
+            IsDockOpen = false;
             return;
         }
 
-        foreach (RightRailSectionViewModel other in Sections)
+        OpenSection = section;
+        IsDockOpen = true;
+    }
+
+    /// <summary>
+    /// Адаптив по ширине окна: ≤ 960 px док сворачивается в рейл (T11),
+    /// раскрытие секции — выдвижением в сетку.
+    /// </summary>
+    public void ApplyWindowWidth(double width)
+    {
+        bool compact = width < CompactMaxWindowWidth;
+        if (compact == _isCompact)
         {
-            other.IsFlyoutOpen = false;
+            return;
         }
 
-        OpenSection = section;
-        section.IsFlyoutOpen = true;
+        _isCompact = compact;
+        if (compact && IsDockOpen)
+        {
+            IsDockOpen = false;
+        }
     }
+
+    private bool _isCompact;
 
     private void RaiseShowFlags()
     {
@@ -120,14 +159,9 @@ public sealed class RightRailViewModel : ViewModelBase
         OnPropertyChanged(nameof(ShowPrintVolume));
     }
 
-    /// <summary>Закрыть все вылеты рейла.</summary>
+    /// <summary>Свернуть док в рейл.</summary>
     public void CloseAllFlyouts()
     {
-        foreach (RightRailSectionViewModel section in Sections)
-        {
-            section.IsFlyoutOpen = false;
-        }
-
-        OpenSection = null;
+        IsDockOpen = false;
     }
 }

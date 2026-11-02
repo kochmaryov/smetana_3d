@@ -4,7 +4,6 @@
         xmlns:views="using:SmetaNA.EditorUI.Views"
         xmlns:vcb="using:SmetaNA.EditorUI.Vcb"
         xmlns:icons="using:SmetaNA.EditorUI.Icons"
-        xmlns:printvolume="using:SmetaNA.EditorUI.PrintVolume"
         xmlns:toolpalette="using:SmetaNA.EditorUI.ToolPalette"
         x:Class="SmetaNA.EditorUI.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -13,82 +12,159 @@
         Height="800"
         MinWidth="640"
         MinHeight="480"
-        KeyDown="OnWindowKeyDown">
+        KeyDown="OnWindowKeyDown"
+        KeyUp="OnWindowKeyUp">
   <DockPanel>
-    <!-- Меню: быстрый доступ к основным командам (progressive disclosure) -->
-    <Menu DockPanel.Dock="Top">
-      <MenuItem Header="{Binding Strings.MenuFile}">
-        <MenuItem Header="{Binding Strings.ProjectNew}"
-                  Command="{Binding NewProjectCommand}"
-                  InputGesture="Ctrl+N" />
-        <MenuItem Header="{Binding Strings.ProjectOpen}"
-                  Command="{Binding OpenFileCommand}"
-                  InputGesture="Ctrl+O" />
-      </MenuItem>
-      <MenuItem Header="{Binding Strings.MenuEdit}">
-        <MenuItem Header="{Binding Strings.EditUndo}"
-                  Command="{Binding UndoCommand}"
-                  InputGesture="Ctrl+Z"
-                  ToolTip.Tip="{Binding UndoHint}" />
-        <MenuItem Header="{Binding Strings.EditRedo}"
-                  Command="{Binding RedoCommand}"
-                  InputGesture="Ctrl+Y"
-                  ToolTip.Tip="{Binding RedoHint}" />
-      </MenuItem>
-      <MenuItem Header="{Binding Strings.MenuView}">
-        <MenuItem Header="{Binding Strings.CommandToggleTheme}" Command="{Binding ThemeToggleCommand}" />
-        <MenuItem Header="{Binding ToolLayoutMenuLabel}" Command="{Binding OpenToolLayoutCommand}" />
-      </MenuItem>
-      <MenuItem Header="{Binding Strings.MenuHelp}">
-        <MenuItem Header="{Binding Strings.TutorialStart}" Command="{Binding Tutorial.StartCommand}" />
-        <MenuItem Header="{Binding Strings.LicenseOpen}" Command="{Binding OpenLicenseCommand}" />
-      </MenuItem>
-    </Menu>
-
-    <!-- Быстрый доступ: файловые команды и переключатели (инструменты — в палитре слева) -->
+    <!-- Единая шапка (40 px): меню + быстрые команды + документ + виджеты
+         вьюпорта (режимы, проекция, сетка/оси) + тема/язык. Строка-тулбар
+         упразднена — её команды дублировали меню (спека ui-redesign T1). -->
     <Border DockPanel.Dock="Top"
             BorderBrush="{DynamicResource ThemeBorderMidBrush}"
             BorderThickness="0,0,0,1"
-            Padding="8,4">
+            Background="{DynamicResource ThemeControlBackgroundSecondary}"
+            Padding="8,0">
       <Grid ColumnDefinitions="*,Auto">
-        <StackPanel Orientation="Horizontal" Spacing="6">
-          <Button Classes="icon"
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <Menu Background="Transparent">
+            <MenuItem Header="{Binding Strings.MenuFile}">
+              <MenuItem Header="{Binding Strings.ProjectNew}"
+                        Command="{Binding NewProjectCommand}"
+                        InputGesture="Ctrl+N" />
+              <MenuItem Header="{Binding Strings.ProjectOpen}"
+                        Command="{Binding OpenFileCommand}"
+                        InputGesture="Ctrl+O" />
+            </MenuItem>
+            <MenuItem Header="{Binding Strings.MenuEdit}">
+              <MenuItem Header="{Binding Strings.EditUndo}"
+                        Command="{Binding UndoCommand}"
+                        InputGesture="Ctrl+Z"
+                        ToolTip.Tip="{Binding UndoHint}" />
+              <MenuItem Header="{Binding Strings.EditRedo}"
+                        Command="{Binding RedoCommand}"
+                        InputGesture="Ctrl+Y"
+                        ToolTip.Tip="{Binding RedoHint}" />
+            </MenuItem>
+            <MenuItem Header="{Binding Strings.MenuView}">
+              <MenuItem Header="{Binding Strings.CommandToggleTheme}" Command="{Binding ThemeToggleCommand}" />
+              <MenuItem Header="{Binding ToolLayoutMenuLabel}" Command="{Binding OpenToolLayoutCommand}" />
+            </MenuItem>
+            <MenuItem Header="{Binding Strings.MenuHelp}">
+              <MenuItem Header="{Binding Strings.TutorialStart}" Command="{Binding Tutorial.StartCommand}" />
+              <MenuItem Header="{Binding Strings.LicenseOpen}" Command="{Binding OpenLicenseCommand}" />
+            </MenuItem>
+          </Menu>
+
+          <Border Width="1"
+                  Height="18"
+                  Background="{DynamicResource ThemeBorderSoftBrush}"
+                  Margin="4,0"
+                  VerticalAlignment="Center" />
+
+          <Button Classes="ibtn"
                   Command="{Binding NewProjectCommand}"
                   ToolTip.Tip="{Binding Strings.ProjectNew}">
-            <icons:UiIcon IconId="New" Width="18" Height="18" />
+            <icons:UiIcon IconId="New" Width="16" Height="16" />
           </Button>
-          <Button Classes="icon"
+          <Button Classes="ibtn"
+                  Command="{Binding OpenFileCommand}"
+                  ToolTip.Tip="{Binding Strings.ProjectOpen}">
+            <icons:UiIcon IconId="Import" Width="16" Height="16" />
+          </Button>
+          <Button Classes="ibtn"
                   Command="{Binding UndoCommand}"
                   ToolTip.Tip="{Binding UndoHint}">
-            <icons:UiIcon IconId="Undo" Width="18" Height="18" />
+            <icons:UiIcon IconId="Undo" Width="16" Height="16" />
           </Button>
-          <Button Classes="icon"
+          <Button Classes="ibtn"
                   Command="{Binding RedoCommand}"
                   ToolTip.Tip="{Binding RedoHint}">
-            <icons:UiIcon IconId="Redo" Width="18" Height="18" />
+            <icons:UiIcon IconId="Redo" Width="16" Height="16" />
           </Button>
+
+          <TextBlock Text="{Binding SelectedProject.Title}"
+                     IsVisible="{Binding HasProjects}"
+                     VerticalAlignment="Center"
+                     Margin="12,0,0,0"
+                     FontWeight="SemiBold" />
+          <TextBlock Text="{Binding SceneUnitName}"
+                     IsVisible="{Binding HasProjects}"
+                     VerticalAlignment="Center"
+                     Margin="6,0,0,0"
+                     Opacity="0.6" />
         </StackPanel>
+
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-          <Button Classes="icon"
+          <!-- Палитра команд Ctrl+K (слой C, T4) -->
+          <Button Classes="ibtn"
+                  IsVisible="{Binding HasProjects}"
+                  Click="OnCommandPaletteClick"
+                  ToolTip.Tip="{Binding Strings.CommandPaletteLabel}">
+            <icons:UiIcon IconId="Keyboard" Width="16" Height="16" />
+          </Button>
+
+          <!-- Режимы отображения активной вкладки: сегмент-контрол -->
+          <ListBox Classes="seg"
+                   ItemsSource="{Binding SelectedProject.RenderModes}"
+                   SelectedItem="{Binding SelectedProject.SelectedRenderMode, Mode=TwoWay}"
+                   IsVisible="{Binding HasProjects}">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:RenderModeOption">
+                <TextBlock Text="{Binding Name}" FontSize="11" />
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <ToggleButton Classes="ibtn"
+                        IsChecked="{Binding SelectedProject.IsOrthographic, Mode=TwoWay}"
+                        IsVisible="{Binding HasProjects}"
+                        ToolTip.Tip="{Binding Strings.ViewportProjectionOrtho}">
+            <icons:UiIcon IconId="Ortho" Width="16" Height="16" />
+          </ToggleButton>
+          <ToggleButton Classes="ibtn"
+                        IsChecked="{Binding SelectedProject.ShowGrid, Mode=TwoWay}"
+                        IsVisible="{Binding HasProjects}"
+                        ToolTip.Tip="{Binding Strings.ViewportShowGrid}">
+            <icons:UiIcon IconId="Grid" Width="16" Height="16" />
+          </ToggleButton>
+          <ToggleButton Classes="ibtn"
+                        IsChecked="{Binding SelectedProject.ShowAxes, Mode=TwoWay}"
+                        IsVisible="{Binding HasProjects}"
+                        ToolTip.Tip="{Binding Strings.ViewportShowAxes}">
+            <icons:UiIcon IconId="Axes" Width="16" Height="16" />
+          </ToggleButton>
+
+          <Border Width="1"
+                  Height="18"
+                  Background="{DynamicResource ThemeBorderSoftBrush}"
+                  Margin="4,0"
+                  VerticalAlignment="Center" />
+
+          <Button Classes="ibtn"
                   Command="{Binding ThemeToggleCommand}"
                   ToolTip.Tip="{Binding ThemeToggleLabel}">
-            <icons:UiIcon IconId="Theme" Width="18" Height="18" />
+            <icons:UiIcon IconId="Theme" Width="16" Height="16" />
           </Button>
-          <Button Classes="icon"
+          <Button Classes="ibtn"
                   Command="{Binding ToggleLanguageCommand}"
                   ToolTip.Tip="{Binding Strings.CommandToggleLanguage}">
-            <icons:UiIcon IconId="Language" Width="18" Height="18" />
+            <icons:UiIcon IconId="Language" Width="16" Height="16" />
           </Button>
         </StackPanel>
       </Grid>
     </Border>
 
-    <!-- Строка значений (VCB) и статус -->
+    <!-- Статус-строка (30 px): VCB (три состояния) + статус + подсказки + единицы -->
     <Border DockPanel.Dock="Bottom"
             BorderBrush="{DynamicResource ThemeBorderMidBrush}"
             BorderThickness="0,1,0,0"
-            Padding="8">
-      <Grid ColumnDefinitions="Auto,*,Auto">
+            Background="{DynamicResource ThemeControlBackgroundSecondary}"
+            Padding="8,3">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto">
         <vcb:VcbControl Prompt="{Binding VcbPrompt}"
                         PlaceholderText="{Binding Strings.VcbWatermark}"
                         Kind="{Binding VcbKind}"
@@ -98,18 +174,31 @@
         <TextBlock Grid.Column="1"
                    Text="{Binding StatusText}"
                    VerticalAlignment="Center"
-                   Margin="16,0,0,0"
+                   Margin="12,0"
                    TextTrimming="CharacterEllipsis" />
-        <!-- Подсказка управления камерой (ранее была в вьюпорте и наезжала на
-             панель режимов на узких экранах); MaxWidth — чтобы строка статуса
-             не переполнялась по горизонтали на узких окнах -->
+        <!-- Подсказка управления камерой -->
         <TextBlock Grid.Column="2"
                    Text="{Binding Strings.ViewportCameraHint}"
                    VerticalAlignment="Center"
-                   Margin="16,0,0,0"
+                   Margin="8,0"
                    MaxWidth="300"
                    Opacity="0.6"
                    TextTrimming="CharacterEllipsis" />
+        <!-- Единицы активной вкладки -->
+        <ComboBox Grid.Column="3"
+                  Width="110"
+                  Margin="8,0,0,0"
+                  VerticalAlignment="Center"
+                  IsVisible="{Binding HasProjects}"
+                  ItemsSource="{Binding SelectedProject.Units}"
+                  SelectedItem="{Binding SelectedProject.SelectedUnit, Mode=TwoWay}"
+                  ToolTip.Tip="{Binding Strings.ViewportUnitLabel}">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:UnitOption">
+              <TextBlock Text="{Binding Name}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
       </Grid>
     </Border>
 
@@ -120,15 +209,24 @@
     <!-- Правый рейл: иконки секций, панели вылетом вправо -->
     <views:RightRailControl DockPanel.Dock="Right" DataContext="{Binding}" />
 
-    <!-- Вкладки проектов (заготовка) + место вьюпорта; пока проектов нет —
-         стартовый экран с созданием/открытием файла -->
+    <!-- Вкладки проектов + место вьюпорта; пока проектов нет — стартовый экран -->
     <Panel Margin="8">
       <TabControl ItemsSource="{Binding Projects}"
                   SelectedItem="{Binding SelectedProject}"
                   IsVisible="{Binding HasProjects}">
         <TabControl.ItemTemplate>
           <DataTemplate x:DataType="vm:ProjectTabViewModel">
-            <TextBlock Text="{Binding Title}" />
+            <StackPanel Orientation="Horizontal" Spacing="2">
+              <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+              <Button Classes="ibtn"
+                      Width="20"
+                      Height="20"
+                      Tag="{Binding}"
+                      Click="OnTabCloseClick"
+                      ToolTip.Tip="{Binding Strings.ProjectCloseTab}">
+                <icons:UiIcon IconId="Close" Width="11" Height="11" />
+              </Button>
+            </StackPanel>
           </DataTemplate>
         </TabControl.ItemTemplate>
         <TabControl.ContentTemplate>
@@ -138,6 +236,101 @@
         </TabControl.ContentTemplate>
       </TabControl>
       <views:WelcomeView IsVisible="{Binding !HasProjects}" />
+
+      <!-- Хотбокс (удержание пробела, T4): радиальное меню избранного.
+           Показ/скрытие — код-behind окна (таймер удержания клавиши). -->
+      <Popup x:Name="HotboxPopup"
+             Placement="Center"
+             IsLightDismissEnabled="True">
+        <Border Background="{DynamicResource ThemeControlBackgroundSecondary}"
+                BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                BorderThickness="1"
+                CornerRadius="{DynamicResource RadiusCard}"
+                Padding="14">
+          <Grid Width="220"
+                Height="220"
+                PointerMoved="OnHotboxPointerMoved">
+            <Border Width="72"
+                    Height="72"
+                    CornerRadius="36"
+                    Background="{DynamicResource ThemeAccentSoftBrush}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+              <TextBlock Text="{Binding Strings.HotboxLabel}"
+                         FontSize="10"
+                         TextWrapping="Wrap"
+                         TextAlignment="Center"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center" />
+            </Border>
+            <!-- Сектора радиального меню: инструменты по кругу -->
+            <Button Classes="ibtn"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Tag="tool.select"
+                    Click="OnHotboxToolClick"
+                    ToolTip.Tip="{Binding Strings.ToolSelect}">
+              <icons:ToolIcon IconId="Select" Width="16" Height="16" />
+            </Button>
+            <Button Classes="ibtn"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Tag="tool.line"
+                    Click="OnHotboxToolClick"
+                    ToolTip.Tip="{Binding Strings.ToolLine}">
+              <icons:ToolIcon IconId="Line" Width="16" Height="16" />
+            </Button>
+            <Button Classes="ibtn"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Tag="tool.rectangle"
+                    Click="OnHotboxToolClick"
+                    ToolTip.Tip="{Binding Strings.ToolRectangle}">
+              <icons:ToolIcon IconId="Rect" Width="16" Height="16" />
+            </Button>
+            <Button Classes="ibtn"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Tag="tool.pushpull"
+                    Click="OnHotboxToolClick"
+                    ToolTip.Tip="{Binding Strings.ToolPushPull}">
+              <icons:ToolIcon IconId="PushPull" Width="16" Height="16" />
+            </Button>
+            <Button Classes="ibtn"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Tag="tool.move"
+                    Click="OnHotboxToolClick"
+                    ToolTip.Tip="{Binding Strings.ToolMove}">
+              <icons:ToolIcon IconId="Move" Width="16" Height="16" />
+            </Button>
+            <Button Classes="ibtn"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Tag="tool.rotate"
+                    Click="OnHotboxToolClick"
+                    ToolTip.Tip="{Binding Strings.ToolRotate}">
+              <icons:ToolIcon IconId="Rotate" Width="16" Height="16" />
+            </Button>
+            <Button Classes="ibtn"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Tag="tool.eraser"
+                    Click="OnHotboxToolClick"
+                    ToolTip.Tip="{Binding Strings.ToolEraser}">
+              <icons:ToolIcon IconId="Eraser" Width="16" Height="16" />
+            </Button>
+            <Button Classes="ibtn"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Tag="tool.circle"
+                    Click="OnHotboxToolClick"
+                    ToolTip.Tip="{Binding Strings.ToolCircle}">
+              <icons:ToolIcon IconId="Circle" Width="16" Height="16" />
+            </Button>
+          </Grid>
+        </Border>
+      </Popup>
     </Panel>
   </DockPanel>
 </Window>

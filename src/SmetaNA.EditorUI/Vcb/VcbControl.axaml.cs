@@ -29,6 +29,7 @@ public partial class VcbControl : UserControl
     public VcbControl()
     {
         InitializeComponent();
+        UpdateUnitLabel();
     }
 
     /// <summary>Подсказка перед полем ввода («Длина», «Радиус», ...).</summary>
@@ -66,7 +67,7 @@ public partial class VcbControl : UserControl
     public void ResetInput()
     {
         InputBox.Text = string.Empty;
-        ErrorText.Text = string.Empty;
+        SetError(string.Empty);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -85,6 +86,35 @@ public partial class VcbControl : UserControl
         {
             InputBox.PlaceholderText = PlaceholderText;
         }
+        else if (change.Property == UnitProperty)
+        {
+            UpdateUnitLabel();
+        }
+    }
+
+    /// <summary>Единица измерения после значения (как в макетах варианта A).</summary>
+    private void UpdateUnitLabel()
+    {
+        if (UnitLabel is null)
+        {
+            return;
+        }
+
+        UnitLabel.Text = EditorServices.Localization.Get(LocalizationKeys.ForUnit(Unit));
+    }
+
+    /// <summary>Показать/снять сообщение об ошибке (красная рамка строки VCB).</summary>
+    private void SetError(string message)
+    {
+        ErrorText.Text = message;
+        if (message.Length > 0)
+        {
+            RootBorder.Classes.Add("error");
+        }
+        else
+        {
+            RootBorder.Classes.Remove("error");
+        }
     }
 
     private void OnInputKeyDown(object? sender, KeyEventArgs e)
@@ -102,7 +132,7 @@ public partial class VcbControl : UserControl
     }
 
     private void OnInputTextChanged(object? sender, TextChangedEventArgs e) =>
-        ErrorText.Text = string.Empty;
+        SetError(string.Empty);
 
     private void Commit()
     {
@@ -112,11 +142,11 @@ public partial class VcbControl : UserControl
             VcbCoordinateResult result = VcbValueParser.ParseCoordinate(InputBox.Text, Unit);
             if (!result.IsSuccess)
             {
-                ErrorText.Text = localization.Get(LocalizationKeys.ForVcbError(result.Error));
+                SetError(localization.Get(LocalizationKeys.ForVcbError(result.Error)));
                 return;
             }
 
-            ErrorText.Text = string.Empty;
+            SetError(string.Empty);
             Committed?.Invoke(this, VcbCommittedEventArgs.ForCoordinate(result));
             return;
         }
@@ -124,11 +154,11 @@ public partial class VcbControl : UserControl
         VcbParseResult resultScalar = VcbValueParser.ParseScalar(InputBox.Text, Kind, Unit);
         if (!resultScalar.IsSuccess)
         {
-            ErrorText.Text = localization.Get(LocalizationKeys.ForVcbError(resultScalar.Error));
+            SetError(localization.Get(LocalizationKeys.ForVcbError(resultScalar.Error)));
             return;
         }
 
-        ErrorText.Text = string.Empty;
+        SetError(string.Empty);
         Committed?.Invoke(this, VcbCommittedEventArgs.ForScalar(Kind, resultScalar));
     }
 }

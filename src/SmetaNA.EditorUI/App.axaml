@@ -1,19 +1,26 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="SmetaNA.EditorUI.App"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Dark">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://SmetaNA.EditorUI/Themes/DesignTokens.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
   <Application.Styles>
     <FluentTheme />
     <!-- Подсветка кнопки инструмента текущего шага урока (задача 6.2) -->
     <Style Selector="Button.highlighted">
-      <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeSelectionBrush}" />
       <Setter Property="BorderThickness" Value="2" />
       <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
     <!-- Активная кнопка инструмента в палитре (волна 0 палитры tool-palette) -->
     <Style Selector="Button.active">
-      <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight1}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
       <Setter Property="BorderThickness" Value="2" />
     </Style>
     <!-- Кнопка-иконка icon-pack (главное окно, вьюпорт, панели) -->
@@ -23,6 +30,66 @@
       <Setter Property="Padding" Value="0" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <!-- Кнопка-иконка компактная (шапка, панели у курсора) -->
+    <Style Selector="Button.ibtn">
+      <Setter Property="Width" Value="28" />
+      <Setter Property="Height" Value="28" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusSmall}" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundDimBrush}" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.ibtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundTertiary}" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    </Style>
+    <Style Selector="Button.ibtn:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundSecondary}" />
+    </Style>
+    <!-- Карточка контента (панели дока, Welcome) -->
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundSecondary}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderSoftBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusCard}" />
+      <Setter Property="Padding" Value="10,8" />
+    </Style>
+    <!-- Чип статуса/HUD -->
+    <Style Selector="Border.chip">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="13" />
+      <Setter Property="Padding" Value="10,0" />
+      <Setter Property="MinHeight" Value="26" />
+    </Style>
+    <!-- Поле ввода (VCB, диалоги) -->
+    <Style Selector="TextBox.field">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusSmall}" />
+    </Style>
+    <!-- Метка секции (маленькая капитель) -->
+    <Style Selector="TextBlock.sectionLabel">
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundFaintBrush}" />
+      <Setter Property="LetterSpacing" Value="0.8" />
+    </Style>
+    <!-- Вторичный текст -->
+    <Style Selector="TextBlock.dim">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundDimBrush}" />
+    </Style>
+    <!-- Заголовок карточки -->
+    <Style Selector="TextBlock.cardTitle">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
     </Style>
   </Application.Styles>
 </Application>

@@ -4,136 +4,169 @@
              xmlns:icons="using:SmetaNA.EditorUI.Icons"
              x:Class="SmetaNA.EditorUI.Views.WelcomeView"
              x:DataType="vm:MainWindowViewModel">
-  <!-- Стартовый экран: карточки действий, шаблоны единиц и недавние файлы.
+  <!-- Стартовый экран (спека ui-redesign T8): асимметричный split «hero ↔ списки»:
+       слева ценность, CTA и шаблоны единиц; справа недавние файлы и урок.
        Все строки — привязки к каталогу локализации (аудит DoD §5.7). -->
   <UserControl.Styles>
-    <Style Selector="Button.card">
-      <Setter Property="Width" Value="176" />
-      <Setter Property="Height" Value="96" />
-      <Setter Property="Padding" Value="12" />
-      <Setter Property="HorizontalContentAlignment" Value="Center" />
-      <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Style Selector="Button.cta">
+      <Setter Property="Padding" Value="18,10" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeBackgroundBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusSmall}" />
     </Style>
-    <Style Selector="Button.card:pointerover">
-      <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+    <Style Selector="Button.cta:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush}" />
+      <Setter Property="Opacity" Value="0.88" />
+    </Style>
+    <Style Selector="Button.secondary">
+      <Setter Property="Padding" Value="18,10" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusSmall}" />
     </Style>
     <Style Selector="Button.unit">
-      <Setter Property="Padding" Value="12,6" />
-      <Setter Property="Margin" Value="4,0" />
+      <Setter Property="Padding" Value="14,8" />
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusSmall}" />
     </Style>
     <Style Selector="Button.recent">
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Left" />
-      <Setter Property="Padding" Value="10,6" />
+      <Setter Property="Padding" Value="10,7" />
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusSmall}" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Button.recent:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundTertiary}" />
+    </Style>
+    <Style Selector="Button.lesson">
+      <Setter Property="Padding" Value="12,8" />
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusSmall}" />
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
     </Style>
   </UserControl.Styles>
 
   <Border Background="{DynamicResource ThemeBackgroundBrush}">
-    <StackPanel VerticalAlignment="Center"
-                HorizontalAlignment="Center"
-                Spacing="24"
-                Margin="0,0,0,48">
-      <StackPanel Spacing="6" HorizontalAlignment="Center">
-        <TextBlock Text="{Binding Strings.AppTitle}"
-                   FontSize="30"
-                   FontWeight="SemiBold"
-                   HorizontalAlignment="Center" />
-        <TextBlock Text="{Binding Strings.WelcomeSubtitle}"
-                   Opacity="0.7"
-                   HorizontalAlignment="Center" />
-      </StackPanel>
+    <Grid ColumnDefinitions="3*,2*"
+          MaxWidth="1180"
+          Margin="40,28">
+      <!-- Hero: ценность, CTA и шаблоны единиц -->
+      <StackPanel VerticalAlignment="Center"
+                  Spacing="20"
+                  Margin="0,0,36,0">
+        <StackPanel Spacing="6">
+          <TextBlock Text="{Binding Strings.AppTitle}"
+                     FontSize="30"
+                     FontWeight="SemiBold" />
+          <TextBlock Text="{Binding Strings.WelcomeSubtitle}"
+                     Classes="dim"
+                     FontSize="14"
+                     TextWrapping="Wrap" />
+        </StackPanel>
 
-      <!-- Карточки действий -->
-      <StackPanel Orientation="Horizontal"
-                  Spacing="16"
-                  HorizontalAlignment="Center">
-        <Button Classes="card"
-                Command="{Binding NewProjectCommand}">
-          <StackPanel Spacing="8">
-            <icons:UiIcon IconId="New" Width="28" Height="28" HorizontalAlignment="Center" />
-            <TextBlock Text="{Binding Strings.ProjectNew}"
-                       FontWeight="SemiBold"
-                       HorizontalAlignment="Center" />
-          </StackPanel>
-        </Button>
-        <Button Classes="card"
-                Command="{Binding OpenFileCommand}">
-          <StackPanel Spacing="8">
-            <icons:UiIcon IconId="Import" Width="28" Height="28" HorizontalAlignment="Center" />
-            <TextBlock Text="{Binding Strings.ProjectOpen}"
-                       FontWeight="SemiBold"
-                       HorizontalAlignment="Center" />
-          </StackPanel>
-        </Button>
-        <Button Classes="card"
-                Command="{Binding ToggleRecentCommand}"
-                IsEnabled="{Binding HasRecentFiles}"
-                ToolTip.Tip="{Binding Strings.WelcomeRecentEmpty}">
-          <StackPanel Spacing="8">
-            <icons:UiIcon IconId="History" Width="28" Height="28" HorizontalAlignment="Center" />
-            <TextBlock Text="{Binding Strings.WelcomeRecent}"
-                       FontWeight="SemiBold"
-                       HorizontalAlignment="Center" />
-          </StackPanel>
-        </Button>
-      </StackPanel>
-
-      <!-- Недавние файлы (раскрывающийся список) -->
-      <StackPanel Spacing="6"
-                  IsVisible="{Binding IsRecentListOpen}"
-                  Width="420">
-        <Button Classes="recent"
-                IsVisible="{Binding !HasRecentFiles}"
-                IsEnabled="False">
-          <TextBlock Text="{Binding Strings.WelcomeRecentEmpty}"
-                     Opacity="0.6" />
-        </Button>
-        <ItemsControl ItemsSource="{Binding RecentFiles}">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <StackPanel />
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:RecentFileViewModel">
-              <Button Classes="recent"
-                      Command="{Binding OpenCommand}"
-                      ToolTip.Tip="{Binding FullPath}">
-                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-              </Button>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-
-      <!-- Шаблоны: единицы измерения нового проекта -->
-      <StackPanel Spacing="8" HorizontalAlignment="Center">
-        <TextBlock Text="{Binding Strings.WelcomeTemplates}"
-                   Opacity="0.7"
-                   HorizontalAlignment="Center" />
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-          <Button Classes="unit"
-                  Command="{Binding CreateProjectWithUnitCommand}"
-                  CommandParameter="Millimeter">
-            <TextBlock Text="{Binding Strings.UnitMillimeter}" />
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button Classes="cta"
+                  Command="{Binding NewProjectCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <icons:UiIcon IconId="New" Width="17" Height="17" />
+              <TextBlock Text="{Binding Strings.ProjectNew}" />
+            </StackPanel>
           </Button>
-          <Button Classes="unit"
-                  Command="{Binding CreateProjectWithUnitCommand}"
-                  CommandParameter="Centimeter">
-            <TextBlock Text="{Binding Strings.UnitCentimeter}" />
-          </Button>
-          <Button Classes="unit"
-                  Command="{Binding CreateProjectWithUnitCommand}"
-                  CommandParameter="Meter">
-            <TextBlock Text="{Binding Strings.UnitMeter}" />
-          </Button>
-          <Button Classes="unit"
-                  Command="{Binding CreateProjectWithUnitCommand}"
-                  CommandParameter="Inch">
-            <TextBlock Text="{Binding Strings.UnitInch}" />
+          <Button Classes="secondary"
+                  Command="{Binding OpenFileCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <icons:UiIcon IconId="Import" Width="17" Height="17" />
+              <TextBlock Text="{Binding Strings.ProjectOpen}" />
+            </StackPanel>
           </Button>
         </StackPanel>
+
+        <!-- Шаблоны: единицы измерения нового проекта -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="{Binding Strings.WelcomeTemplates}" Classes="sectionLabel" />
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Button Classes="unit"
+                    Command="{Binding CreateProjectWithUnitCommand}"
+                    CommandParameter="Millimeter">
+              <TextBlock Text="{Binding Strings.UnitMillimeter}" />
+            </Button>
+            <Button Classes="unit"
+                    Command="{Binding CreateProjectWithUnitCommand}"
+                    CommandParameter="Centimeter">
+              <TextBlock Text="{Binding Strings.UnitCentimeter}" />
+            </Button>
+            <Button Classes="unit"
+                    Command="{Binding CreateProjectWithUnitCommand}"
+                    CommandParameter="Meter">
+              <TextBlock Text="{Binding Strings.UnitMeter}" />
+            </Button>
+            <Button Classes="unit"
+                    Command="{Binding CreateProjectWithUnitCommand}"
+                    CommandParameter="Inch">
+              <TextBlock Text="{Binding Strings.UnitInch}" />
+            </Button>
+          </StackPanel>
+        </StackPanel>
       </StackPanel>
-    </StackPanel>
+
+      <!-- Списки: недавние файлы и урок -->
+      <StackPanel Grid.Column="1"
+                  VerticalAlignment="Center"
+                  Spacing="12">
+        <Border Classes="card" Padding="12">
+          <StackPanel Spacing="6">
+            <TextBlock Text="{Binding Strings.WelcomeRecent}" Classes="cardTitle" />
+            <TextBlock Text="{Binding Strings.WelcomeRecentEmpty}"
+                       Classes="dim"
+                       IsVisible="{Binding !HasRecentFiles}"
+                       TextWrapping="Wrap" />
+            <ScrollViewer MaxHeight="236">
+              <ItemsControl ItemsSource="{Binding RecentFiles}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:RecentFileViewModel">
+                    <Button Classes="recent"
+                            Command="{Binding OpenCommand}"
+                            ToolTip.Tip="{Binding FullPath}">
+                      <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card" Padding="12">
+          <StackPanel Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <icons:UiIcon IconId="Book" Width="16" Height="16" VerticalAlignment="Center" />
+              <TextBlock Text="{Binding Strings.TutorialTitle}"
+                         Classes="cardTitle"
+                         VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Text="{Binding Strings.TutorialS1Intro}"
+                       Classes="dim"
+                       FontSize="11"
+                       TextWrapping="Wrap" />
+            <Button Classes="lesson"
+                    HorizontalAlignment="Left"
+                    Command="{Binding Tutorial.StartCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <icons:UiIcon IconId="Play" Width="15" Height="15" />
+                <TextBlock Text="{Binding Strings.TutorialStart}" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </Grid>
   </Border>
 </UserControl>

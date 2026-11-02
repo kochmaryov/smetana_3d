@@ -1,5 +1,6 @@
 using SmetaNA.Core.Geometry;
 using SmetaNA.Core.Model;
+using SmetaNA.EditorUI.Commands;
 using SmetaNA.EditorUI.Localization;
 using SmetaNA.EditorUI.Sessions;
 using SmetaNA.EditorUI.Themes;
@@ -99,6 +100,83 @@ public sealed class WelcomeScreenTests : IDisposable
         Assert.False(vm.HasProjects);
         Assert.False(vm.HasRecentFiles);
         Assert.Contains("Не удалось", vm.StatusText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Projects_HaveIndependentDocuments_AndSwitchingActivatesThem()
+    {
+        var vm = CreateViewModel(out EditorSession session);
+
+        vm.NewProjectCommand.Execute(null);
+        ProjectTabViewModel first = vm.SelectedProject!;
+        vm.CreateProjectWithUnitCommand.Execute("Centimeter");
+        ProjectTabViewModel second = vm.SelectedProject!;
+
+        // каждая вкладка — отдельный документ со своей сценой и инструментами
+        Assert.NotSame(first, second);
+        Assert.NotSame(first.Scene, second.Scene);
+        Assert.NotSame(first.Tools, second.Tools);
+        Assert.Equal(LengthUnit.Millimeter, first.Scene.Unit);
+        Assert.Equal(LengthUnit.Centimeter, second.Scene.Unit);
+        Assert.Same(second.Document, session.Document);
+
+        // переключение вкладки меняет активный документ сессии целиком
+        vm.SelectedProject = first;
+        Assert.Same(first.Document, session.Document);
+        Assert.Equal(LengthUnit.Millimeter, vm.SceneUnit);
+        Assert.Equal("0", vm.SceneNodeCount); // в проекте только корень сцены: чужое содержимое не видно
+
+        vm.SelectedProject = second;
+        Assert.Same(second.Document, session.Document);
+        Assert.Equal(LengthUnit.Centimeter, vm.SceneUnit);
+    }
+
+    [Fact]
+    public void Projects_KeepOwnUndoHistory()
+    {
+        var vm = CreateViewModel(out _);
+
+        vm.NewProjectCommand.Execute(null);
+        ProjectTabViewModel first = vm.SelectedProject!;
+        vm.ActivateToolById(ShortcutCatalog.ToolLine);
+        Assert.True(vm.CommitVcbText("100"));
+        Assert.Equal(1, vm.HistoryCount);
+        Assert.True(vm.UndoCommand.CanExecute(null));
+
+        vm.NewProjectCommand.Execute(null);
+        ProjectTabViewModel second = vm.SelectedProject!;
+        Assert.NotSame(first, second);
+        Assert.Equal(0, vm.HistoryCount);
+        Assert.False(vm.UndoCommand.CanExecute(null));
+
+        vm.SelectedProject = first;
+        Assert.Equal(1, vm.HistoryCount);
+        Assert.True(vm.UndoCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void OpenProjectFile_WithOpenProject_OpensInNewTab()
+    {
+        var vm = CreateViewModel(out _);
+        vm.NewProjectCommand.Execute(null);
+        ProjectTabViewModel first = vm.SelectedProject!;
+        string path = WriteTempProject("из файла");
+
+        try
+        {
+            vm.OpenProjectFile(path);
+
+            Assert.Equal(2, vm.Projects.Count);
+            ProjectTabViewModel opened = vm.SelectedProject!;
+            Assert.NotSame(first, opened);
+            Assert.Equal(2, opened.Scene.EnumerateNodes().Count());
+            // содержимое первого проекта не затронуто
+            Assert.Single(first.Scene.EnumerateNodes());
+        }
+        finally
+        {
+            File.Delete(path);
+        }
     }
 
     private static MainWindowViewModel CreateViewModel(out EditorSession session)

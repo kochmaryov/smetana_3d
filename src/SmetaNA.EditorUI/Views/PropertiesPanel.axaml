@@ -3,33 +3,64 @@
              xmlns:vm="using:SmetaNA.EditorUI.ViewModels"
              x:Class="SmetaNA.EditorUI.Views.PropertiesPanel"
              x:DataType="vm:MainWindowViewModel">
-  <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-          BorderThickness="1"
-          CornerRadius="4"
-          Padding="12">
+  <!-- Свойства (каталог ui-redesign §1): карточки «Инструмент / Выделение / Сцена» -->
+  <ScrollViewer Padding="10">
     <StackPanel Spacing="8">
-      <TextBlock Text="{Binding Strings.PropertiesTitle}" FontWeight="SemiBold" />
-      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-        <TextBlock Text="{Binding Strings.PropertiesActiveTool}" Opacity="0.7" />
-        <TextBlock Grid.Column="1" Text="{Binding ActiveToolName}" Margin="12,0,0,0" />
-        <TextBlock Grid.Row="1" Text="{Binding Strings.PropertiesToolShortcut}" Opacity="0.7" />
-        <TextBlock Grid.Row="1" Grid.Column="1"
-                   Text="{Binding ActiveToolGesture}"
-                   Margin="12,0,0,0" />
-        <TextBlock Grid.Row="2" Text="{Binding Strings.PropertiesToolInput}" Opacity="0.7" />
-        <TextBlock Grid.Row="2" Grid.Column="1"
-                   Text="{Binding ActiveToolInputName}"
-                   Margin="12,0,0,0" />
-        <TextBlock Grid.Row="3" Text="{Binding Strings.PropertiesSelection}" Opacity="0.7" />
-        <TextBlock Grid.Row="3" Grid.Column="1"
-                   Text="{Binding Strings.PropertiesNoSelection}"
-                   Margin="12,0,0,0" />
-        <TextBlock Grid.Row="4" Text="{Binding Strings.PropertiesScene}" FontWeight="SemiBold" Margin="0,6,0,0" />
-        <TextBlock Grid.Row="5" Text="{Binding Strings.PropertiesSceneUnit}" Opacity="0.7" />
-        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SceneUnitName}" Margin="12,0,0,0" />
-        <TextBlock Grid.Row="6" Text="{Binding Strings.PropertiesSceneNodes}" Opacity="0.7" />
-        <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SceneNodeCount}" Margin="12,0,0,0" />
-      </Grid>
+      <Border Classes="card">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="cardTitle"
+                     Text="{Binding Strings.PropertiesActiveTool}" />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="{Binding ActiveToolName}"
+                       Foreground="{DynamicResource ThemeAccentBrush}"
+                       FontWeight="SemiBold" />
+            <Border Classes="chip"
+                    Padding="6,0"
+                    MinHeight="20"
+                    VerticalAlignment="Center">
+              <TextBlock Text="{Binding ActiveToolGesture}" FontSize="10" />
+            </Border>
+          </StackPanel>
+          <TextBlock Classes="dim"
+                     Text="{Binding ActiveToolInputName}"
+                     FontSize="11" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="cardTitle"
+                     Text="{Binding Strings.PropertiesSelection}" />
+          <TextBlock Classes="dim"
+                     Text="{Binding Strings.PropertiesNoSelection}"
+                     FontSize="11" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="cardTitle"
+                     Text="{Binding Strings.PropertiesScene}" />
+          <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
+            <TextBlock Classes="dim"
+                       Text="{Binding Strings.PropertiesSceneUnit}"
+                       FontSize="11" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding SceneUnitName}"
+                       Margin="12,0,0,0"
+                       FontSize="11" />
+            <TextBlock Grid.Row="1"
+                       Classes="dim"
+                       Text="{Binding Strings.PropertiesSceneNodes}"
+                       FontSize="11" />
+            <TextBlock Grid.Row="1"
+                       Grid.Column="1"
+                       Text="{Binding SceneNodeCount}"
+                       Margin="12,0,0,0"
+                       FontSize="11" />
+          </Grid>
+        </StackPanel>
+      </Border>
     </StackPanel>
-  </Border>
+  </ScrollViewer>
 </UserControl>

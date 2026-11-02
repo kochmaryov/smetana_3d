@@ -36,6 +36,12 @@ public static class ToolLayoutDialogStrings
     public const string DialogGlyphUp = "ToolPalette.Dialog.GlyphUp";
     public const string DialogGlyphDown = "ToolPalette.Dialog.GlyphDown";
     public const string DialogGrip = "ToolPalette.Dialog.Grip";
+    public const string DialogPlacementPalette = "ToolPalette.Dialog.PlacementPalette";
+    public const string DialogPlacementFloating = "ToolPalette.Dialog.PlacementFloating";
+    public const string DialogPlacementLeft = "ToolPalette.Dialog.PlacementLeft";
+    public const string DialogPlacementRight = "ToolPalette.Dialog.PlacementRight";
+    public const string DialogPlacementTop = "ToolPalette.Dialog.PlacementTop";
+    public const string DialogPlacementBottom = "ToolPalette.Dialog.PlacementBottom";
 
     /// <summary>Строка модуля по ключу и языку; неизвестный ключ возвращается как есть.</summary>
     public static string Get(string key, EditorCulture culture) => (key, culture) switch
@@ -88,7 +94,30 @@ public static class ToolLayoutDialogStrings
         (DialogGlyphDown, EditorCulture.English) => "↓",
         (DialogGrip, EditorCulture.Russian) => "⠿",
         (DialogGrip, EditorCulture.English) => "⠿",
+        (DialogPlacementPalette, EditorCulture.Russian) => "Палитра",
+        (DialogPlacementPalette, EditorCulture.English) => "Palette",
+        (DialogPlacementFloating, EditorCulture.Russian) => "Плавает",
+        (DialogPlacementFloating, EditorCulture.English) => "Floating",
+        (DialogPlacementLeft, EditorCulture.Russian) => "Лоток слева",
+        (DialogPlacementLeft, EditorCulture.English) => "Left dock",
+        (DialogPlacementRight, EditorCulture.Russian) => "Лоток справа",
+        (DialogPlacementRight, EditorCulture.English) => "Right dock",
+        (DialogPlacementTop, EditorCulture.Russian) => "Лоток сверху",
+        (DialogPlacementTop, EditorCulture.English) => "Top dock",
+        (DialogPlacementBottom, EditorCulture.Russian) => "Лоток снизу",
+        (DialogPlacementBottom, EditorCulture.English) => "Bottom dock",
         _ => key,
+    };
+
+    /// <summary>Название размещения группы (T9: управление плавающими группами).</summary>
+    public static string PlacementText(FloatingGroups.FloatingGroupState state, EditorCulture culture) => state switch
+    {
+        FloatingGroups.FloatingGroupState.Floating => Get(DialogPlacementFloating, culture),
+        FloatingGroups.FloatingGroupState.Left => Get(DialogPlacementLeft, culture),
+        FloatingGroups.FloatingGroupState.Right => Get(DialogPlacementRight, culture),
+        FloatingGroups.FloatingGroupState.Top => Get(DialogPlacementTop, culture),
+        FloatingGroups.FloatingGroupState.Bottom => Get(DialogPlacementBottom, culture),
+        _ => Get(DialogPlacementPalette, culture),
     };
 
     /// <summary>

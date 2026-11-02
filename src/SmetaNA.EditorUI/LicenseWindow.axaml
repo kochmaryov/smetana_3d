@@ -27,10 +27,7 @@
     <ScrollViewer>
       <StackPanel Spacing="10">
         <!-- Статус и триал -->
-        <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-                BorderThickness="1"
-                CornerRadius="4"
-                Padding="12">
+        <Border Classes="card" Padding="12">
           <StackPanel Spacing="6">
             <Grid ColumnDefinitions="Auto,*">
               <TextBlock Text="{Binding Strings.LicenseStatus}" Opacity="0.7" />
@@ -59,10 +56,7 @@
         </Border>
 
         <!-- Ключ и запрос активации -->
-        <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-                BorderThickness="1"
-                CornerRadius="4"
-                Padding="12">
+        <Border Classes="card" Padding="12">
           <StackPanel Spacing="6">
             <TextBlock Text="{Binding Strings.LicenseKeyLabel}" FontWeight="SemiBold" />
             <TextBox Text="{Binding KeyInput}"
@@ -96,10 +90,7 @@
         </Border>
 
         <!-- Офлайн-активация токеном -->
-        <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-                BorderThickness="1"
-                CornerRadius="4"
-                Padding="12">
+        <Border Classes="card" Padding="12">
           <StackPanel Spacing="6">
             <TextBlock Text="{Binding Strings.LicenseTokenLabel}" FontWeight="SemiBold" />
             <TextBox Text="{Binding TokenInput}"
@@ -117,10 +108,7 @@
         </Border>
 
         <!-- Перенос лицензии -->
-        <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-                BorderThickness="1"
-                CornerRadius="4"
-                Padding="12">
+        <Border Classes="card" Padding="12">
           <StackPanel Spacing="6">
             <Button Classes="icon"
                     Command="{Binding DeactivateCommand}"

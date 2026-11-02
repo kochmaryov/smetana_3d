@@ -5,160 +5,135 @@
              xmlns:gl="using:SmetaNA.Rendering"
              x:Class="SmetaNA.EditorUI.Views.ViewportView"
              x:DataType="vm:ProjectTabViewModel">
+  <UserControl.Styles>
+    <Style Selector="Button.viewseg">
+      <Setter Property="Width" Value="30" />
+      <Setter Property="Height" Value="26" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="1,0,0,0" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderSoftBrush}" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.viewseg:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundTertiary}" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    </Style>
+    <Style Selector="Button.viewseg:first-child">
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+  </UserControl.Styles>
+
   <Grid>
     <gl:GlViewportControl x:Name="Viewport" />
 
     <!-- Оверлей предпросмотра инструментов (мировые координаты → пиксели камерой) -->
     <Canvas x:Name="ToolOverlay" IsHitTestVisible="False" />
 
-    <!-- Панель режимов: отображение, проекция, сетка/оси, единицы.
-         Три состояния по ширине вьюпорта: полное ≥760, компакт 600–760 (только
-         кнопки, подписи в тултипах), «⚙» <600 (панель свёрнута, кнопка
-         раскрывает её). Один набор контролов — без дублей и рассинхрона. -->
-    <Border x:Name="ViewModePanel"
-            HorizontalAlignment="Left"
+    <!-- HUD одним чипом (спека ui-redesign T6): статистика, единицы, выделение.
+         Панель режимов переехала в шапку окна и поверх сцены не лежит. -->
+    <Border x:Name="HudPanel"
+            HorizontalAlignment="Right"
             VerticalAlignment="Top"
             Margin="8"
-            Padding="10,6"
-            CornerRadius="6"
-            Background="#B0000000">
-      <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock x:Name="ModeLabel"
-                   Text="{Binding Strings.ViewportModeLabel}"
-                   VerticalAlignment="Center"
-                   Foreground="#E0E0E0" />
-        <ComboBox x:Name="ModeSelector"
-                  ItemsSource="{Binding RenderModes}"
-                  SelectedItem="{Binding SelectedRenderMode}"
-                  SelectionChanged="OnRenderModeChanged"
-                  Width="120"
-                  ToolTip.Tip="{Binding Strings.ViewportModeLabel}">
-          <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:RenderModeOption">
-              <TextBlock Text="{Binding Name}" />
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-        <TextBlock x:Name="ProjectionLabel"
-                   Text="{Binding Strings.ViewportProjectionLabel}"
-                   VerticalAlignment="Center"
-                   Foreground="#E0E0E0" />
-        <ToggleButton x:Name="OrthoToggle"
-                      Classes="icon"
-                      ToolTip.Tip="{Binding Strings.ViewportProjectionOrtho}"
-                      Click="OnProjectionToggle">
-          <icons:UiIcon IconId="Ortho" Width="18" Height="18" />
-        </ToggleButton>
-        <ToggleButton x:Name="GridToggle"
-                      Classes="icon"
-                      IsChecked="True"
-                      ToolTip.Tip="{Binding Strings.ViewportShowGrid}"
-                      Click="OnGridToggle">
-          <icons:UiIcon IconId="Grid" Width="18" Height="18" />
-        </ToggleButton>
-        <ToggleButton x:Name="AxesToggle"
-                      Classes="icon"
-                      IsChecked="True"
-                      ToolTip.Tip="{Binding Strings.ViewportShowAxes}"
-                      Click="OnAxesToggle">
-          <icons:UiIcon IconId="Axes" Width="18" Height="18" />
-        </ToggleButton>
-        <TextBlock x:Name="UnitLabel"
-                   Text="{Binding Strings.ViewportUnitLabel}"
-                   VerticalAlignment="Center"
-                   Foreground="#E0E0E0" />
-        <ComboBox x:Name="UnitSelector"
-                  ItemsSource="{Binding Units}"
-                  SelectedItem="{Binding SelectedUnit}"
-                  SelectionChanged="OnUnitChanged"
-                  Width="110"
-                  ToolTip.Tip="{Binding Strings.ViewportUnitLabel}">
-          <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:UnitOption">
-              <TextBlock Text="{Binding Name}" />
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
+            Classes="chip">
+      <StackPanel Spacing="1">
+        <TextBlock x:Name="StatsText" Foreground="{DynamicResource ThemeHudStatBrush}" FontSize="11" />
+        <TextBlock x:Name="UnitsText" Foreground="{DynamicResource ThemeHudInfoBrush}" FontSize="11" />
+        <TextBlock x:Name="SelectionText" Foreground="{DynamicResource ThemeHudSelectionBrush}" FontSize="11" />
       </StackPanel>
     </Border>
 
-    <!-- Компактная кнопка «⚙» (<600 px): раскрывает/прячет панель режимов -->
-    <Button x:Name="ViewModeGearButton"
-            Classes="icon"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Top"
-            Margin="8"
-            IsVisible="False"
-            ToolTip.Tip="{Binding Strings.ViewportModeLabel}"
-            Click="OnViewModeGearClick">
-      <icons:UiIcon IconId="Gear" Width="18" Height="18" />
-    </Button>
-
-    <!-- HUD: статистика, единицы, выделение -->
-    <Border HorizontalAlignment="Right"
-            VerticalAlignment="Top"
-            Margin="8"
-            Padding="10,6"
-            CornerRadius="6"
-            Background="#B0000000">
-      <StackPanel Spacing="2">
-        <TextBlock x:Name="StatsText" Foreground="#7CFC98" />
-        <TextBlock x:Name="UnitsText" Foreground="#D0D0D0" />
-        <TextBlock x:Name="SelectionText" Foreground="#F0C060" />
-      </StackPanel>
-    </Border>
-
-    <!-- Стандартные виды и вписывание (кнопки-иконки: узкая панель без
-         горизонтального переполнения на малых вьюпортах) -->
+    <!-- Стандартные виды и вписывание: сегмент-контрол внизу по центру -->
     <Border HorizontalAlignment="Center"
             VerticalAlignment="Bottom"
             Margin="8"
-            Padding="10,6"
-            CornerRadius="6"
-            Background="#B0000000">
-      <StackPanel Orientation="Horizontal" Spacing="4">
-        <Button Classes="icon"
+            Classes="chip"
+            Padding="1">
+      <StackPanel Orientation="Horizontal">
+        <Button Classes="viewseg"
                 ToolTip.Tip="{Binding Strings.ViewportViewIso}"
                 Click="OnViewIso">
-          <icons:UiIcon IconId="Iso" Width="18" Height="18" />
+          <icons:UiIcon IconId="Iso" Width="15" Height="15" />
         </Button>
-        <Button Classes="icon"
+        <Button Classes="viewseg"
                 ToolTip.Tip="{Binding Strings.ViewportViewFront}"
                 Click="OnViewFront">
-          <icons:UiIcon IconId="ViewFront" Width="18" Height="18" />
+          <icons:UiIcon IconId="ViewFront" Width="15" Height="15" />
         </Button>
-        <Button Classes="icon"
+        <Button Classes="viewseg"
                 ToolTip.Tip="{Binding Strings.ViewportViewBack}"
                 Click="OnViewBack">
-          <icons:UiIcon IconId="ViewBack" Width="18" Height="18" />
+          <icons:UiIcon IconId="ViewBack" Width="15" Height="15" />
         </Button>
-        <Button Classes="icon"
+        <Button Classes="viewseg"
                 ToolTip.Tip="{Binding Strings.ViewportViewLeft}"
                 Click="OnViewLeft">
-          <icons:UiIcon IconId="ViewLeft" Width="18" Height="18" />
+          <icons:UiIcon IconId="ViewLeft" Width="15" Height="15" />
         </Button>
-        <Button Classes="icon"
+        <Button Classes="viewseg"
                 ToolTip.Tip="{Binding Strings.ViewportViewRight}"
                 Click="OnViewRight">
-          <icons:UiIcon IconId="ViewRight" Width="18" Height="18" />
+          <icons:UiIcon IconId="ViewRight" Width="15" Height="15" />
         </Button>
-        <Button Classes="icon"
+        <Button Classes="viewseg"
                 ToolTip.Tip="{Binding Strings.ViewportViewTop}"
                 Click="OnViewTop">
-          <icons:UiIcon IconId="ViewTop" Width="18" Height="18" />
+          <icons:UiIcon IconId="ViewTop" Width="15" Height="15" />
         </Button>
-        <Button Classes="icon"
+        <Button Classes="viewseg"
                 ToolTip.Tip="{Binding Strings.ViewportViewBottom}"
                 Click="OnViewBottom">
-          <icons:UiIcon IconId="ViewBottom" Width="18" Height="18" />
+          <icons:UiIcon IconId="ViewBottom" Width="15" Height="15" />
         </Button>
-        <Button Classes="icon"
+        <Button Classes="viewseg"
                 ToolTip.Tip="{Binding Strings.ViewportZoomExtents}"
                 Click="OnZoomExtents">
-          <icons:UiIcon IconId="ZoomExtents" Width="18" Height="18" />
+          <icons:UiIcon IconId="ZoomExtents" Width="15" Height="15" />
         </Button>
       </StackPanel>
     </Border>
+
+    <!-- Контекстная полоса у курсора (T4): быстрые действия по выделению,
+         появляется только при выбранном объекте и ничего не перекрывает в покое. -->
+    <Popup x:Name="CursorStrip"
+           Placement="Pointer"
+           HorizontalOffset="12"
+           VerticalOffset="12"
+           IsLightDismissEnabled="True"
+           OverlayDismissEventPassThrough="True">
+      <Border Classes="chip"
+              Padding="2">
+        <StackPanel Orientation="Horizontal" Spacing="2">
+          <Button Classes="ibtn"
+                  Tag="tool.pushpull"
+                  Click="OnCursorStripTool"
+                  ToolTip.Tip="{Binding Strings.ToolPushPull}">
+            <icons:ToolIcon IconId="PushPull" Width="15" Height="15" />
+          </Button>
+          <Button Classes="ibtn"
+                  Tag="tool.move"
+                  Click="OnCursorStripTool"
+                  ToolTip.Tip="{Binding Strings.ToolMove}">
+            <icons:ToolIcon IconId="Move" Width="15" Height="15" />
+          </Button>
+          <Button Classes="ibtn"
+                  Tag="tool.scale"
+                  Click="OnCursorStripTool"
+                  ToolTip.Tip="{Binding Strings.ToolScale}">
+            <icons:ToolIcon IconId="Scale" Width="15" Height="15" />
+          </Button>
+          <Button Classes="ibtn"
+                  Tag="tool.paint"
+                  Click="OnCursorStripTool"
+                  ToolTip.Tip="{Binding Strings.ToolPaintBucket}">
+            <icons:ToolIcon IconId="Paint" Width="15" Height="15" />
+          </Button>
+        </StackPanel>
+      </Border>
+    </Popup>
 
   </Grid>
 </UserControl>

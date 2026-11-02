@@ -25,6 +25,10 @@ public static class ToolPaletteStrings
     public const string DialogShowGesture = "ToolPalette.Dialog.ShowGesture";
     public const string DialogHideCompact = "ToolPalette.Dialog.HideCompact";
 
+    // Перемещаемые группы (T3).
+    public const string GroupDetach = "ToolPalette.Group.Detach";
+    public const string GroupClose = "ToolPalette.Group.Close";
+
     /// <summary>Строка модуля по ключу и языку; неизвестный ключ возвращается как есть.</summary>
     public static string Get(string key, EditorCulture culture) => (key, culture) switch
     {
@@ -54,6 +58,10 @@ public static class ToolPaletteStrings
         (DialogShowGesture, EditorCulture.English) => "Show shortcut",
         (DialogHideCompact, EditorCulture.Russian) => "Скрывать в компактном режиме",
         (DialogHideCompact, EditorCulture.English) => "Hide in compact mode",
+        (GroupDetach, EditorCulture.Russian) => "Оторвать и переместить",
+        (GroupDetach, EditorCulture.English) => "Detach and move",
+        (GroupClose, EditorCulture.Russian) => "Вернуть в палитру",
+        (GroupClose, EditorCulture.English) => "Return to palette",
         _ => key,
     };
 }

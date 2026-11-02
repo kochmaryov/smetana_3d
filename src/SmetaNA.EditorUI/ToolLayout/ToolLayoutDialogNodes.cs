@@ -267,10 +267,58 @@ public sealed class ToolLayoutAllGroupNode : ToolLayoutGroupNodeBase
 public sealed class ToolLayoutPanelGroupNode : ToolLayoutGroupNodeBase
 {
     private bool _isVisible = true;
+    private bool _isDetached;
+    private bool _isPlacementManaged;
+    private string _placementText = string.Empty;
+    private Action<ToolLayoutPanelGroupNode>? _togglePlacement;
 
     public ToolLayoutPanelGroupNode(ILocalizationService localization, string id, string? nameKey, string? customName)
         : base(localization, id, nameKey, customName)
     {
+        TogglePlacementCommand = new RelayCommand(_ => _togglePlacement?.Invoke(this));
+    }
+
+    /// <summary>Группа оторвана от палитры (плавает или в краевом лотке, T3/T9).</summary>
+    public bool IsDetached
+    {
+        get => _isDetached;
+        private set => SetField(ref _isDetached, value);
+    }
+
+    /// <summary>Размещением можно управлять (менеджер групп подключён, T9).</summary>
+    public bool IsPlacementManaged
+    {
+        get => _isPlacementManaged;
+        private set => SetField(ref _isPlacementManaged, value);
+    }
+
+    /// <summary>Текущее размещение: «Палитра», «Плавает», «Лоток слева»… (T9).</summary>
+    public string PlacementText
+    {
+        get => _placementText;
+        private set => SetField(ref _placementText, value);
+    }
+
+    /// <summary>Подсказка кнопки размещения: оторвать или вернуть в палитру.</summary>
+    public string TogglePlacementToolTip => ToolLayoutDialogStrings.Resolve(
+        Localization,
+        IsDetached ? ToolPalette.ToolPaletteStrings.GroupClose : ToolPalette.ToolPaletteStrings.GroupDetach);
+
+    /// <summary>Оторвать группу от палитры или вернуть её (T9).</summary>
+    public RelayCommand TogglePlacementCommand { get; }
+
+    /// <summary>
+    /// Привязать управление размещением (диалог «Настройка панели», T9):
+    /// состояние проставляет менеджер плавающих групп, действие — его же.
+    /// </summary>
+    public void SetPlacement(bool isDetached, string placementText, Action<ToolLayoutPanelGroupNode> togglePlacement)
+    {
+        ArgumentNullException.ThrowIfNull(togglePlacement);
+        _togglePlacement = togglePlacement;
+        IsPlacementManaged = true;
+        IsDetached = isDetached;
+        PlacementText = placementText;
+        OnPropertyChanged(nameof(TogglePlacementToolTip));
     }
 
     /// <summary>Группа видима на палитре (для системных — единственная настройка).</summary>

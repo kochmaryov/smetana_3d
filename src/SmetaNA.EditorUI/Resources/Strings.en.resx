@@ -54,6 +54,9 @@
   <data name="Project.Name" xml:space="preserve">
     <value>Project {0}</value>
   </data>
+  <data name="Project.CloseTab" xml:space="preserve">
+    <value>Close tab (Ctrl+W)</value>
+  </data>
   <data name="Tool.Select" xml:space="preserve">
     <value>Select</value>
   </data>
@@ -254,6 +257,12 @@
   </data>
   <data name="Command.ToggleLanguage" xml:space="preserve">
     <value>Toggle language</value>
+  </data>
+  <data name="CommandPalette.Label" xml:space="preserve">
+    <value>Commands (Ctrl+K)</value>
+  </data>
+  <data name="Hotbox.Label" xml:space="preserve">
+    <value>Tools</value>
   </data>
   <data name="Theme.Label" xml:space="preserve">
     <value>Theme</value>
@@ -659,5 +668,17 @@
   </data>
   <data name="Menu.Help" xml:space="preserve">
     <value>Help</value>
+  </data>
+  <data name="Error.Title" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Error.Unhandled" xml:space="preserve">
+    <value>An unexpected error occurred. The application keeps running — save the project so changes are not lost.</value>
+  </data>
+  <data name="Error.Details" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="Error.Close" xml:space="preserve">
+    <value>Close</value>
   </data>
 </root>

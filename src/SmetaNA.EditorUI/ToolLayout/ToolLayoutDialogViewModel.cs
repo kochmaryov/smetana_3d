@@ -21,6 +21,7 @@ namespace SmetaNA.EditorUI.ToolLayout;
 public sealed class ToolLayoutDialogViewModel : ViewModelBase
 {
     private readonly ILocalizationService _localization;
+    private readonly FloatingGroups.FloatingGroupsViewModel? _floatingGroups;
     private readonly Dictionary<string, ToolLayoutToolNode> _toolsByCommand = new(StringComparer.Ordinal);
     private ShortcutMap _shortcuts = null!;
     private string _searchText = string.Empty;
@@ -30,12 +31,14 @@ public sealed class ToolLayoutDialogViewModel : ViewModelBase
     public ToolLayoutDialogViewModel(
         ILocalizationService localization,
         ShortcutMap shortcuts,
-        ToolLayoutModel layout)
+        ToolLayoutModel layout,
+        FloatingGroups.FloatingGroupsViewModel? floatingGroups = null)
     {
         ArgumentNullException.ThrowIfNull(localization);
         ArgumentNullException.ThrowIfNull(shortcuts);
         ArgumentNullException.ThrowIfNull(layout);
         _localization = localization;
+        _floatingGroups = floatingGroups;
 
         ApplyCommand = new RelayCommand(Apply);
         CancelCommand = new RelayCommand(Cancel);
@@ -451,7 +454,38 @@ public sealed class ToolLayoutDialogViewModel : ViewModelBase
         foreach (ToolLayoutPanelGroupNode group in PanelGroups)
         {
             group.RefreshCounts();
+            BindPlacement(group);
         }
+    }
+
+    /// <summary>
+    /// Управление размещением группы из диалога (T9): бейдж текущего места
+    /// (палитра/плавает/лоток) и кнопка отрыва/возврата через менеджер групп.
+    /// </summary>
+    private void BindPlacement(ToolLayoutPanelGroupNode group)
+    {
+        if (_floatingGroups is null)
+        {
+            return;
+        }
+
+        group.SetPlacement(
+            isDetached: _floatingGroups.StateOf(group.Id) != FloatingGroups.FloatingGroupState.Palette,
+            placementText: ToolLayoutDialogStrings.PlacementText(
+                _floatingGroups.StateOf(group.Id),
+                _localization.Culture),
+            togglePlacement: TogglePlacement);
+    }
+
+    private void TogglePlacement(ToolLayoutPanelGroupNode group)
+    {
+        if (_floatingGroups is null)
+        {
+            return;
+        }
+
+        _floatingGroups.SetDetached(group.Id, !group.IsDetached);
+        BindPlacement(group);
     }
 
     private ToolLayoutPanelGroupNode? FindPanelGroup(string groupId) =>
@@ -508,6 +542,11 @@ public sealed class ToolLayoutDialogViewModel : ViewModelBase
         foreach (ToolLayoutGroupNodeBase group in AllGroups.Cast<ToolLayoutGroupNodeBase>().Concat(PanelGroups))
         {
             group.RefreshText();
+        }
+
+        foreach (ToolLayoutPanelGroupNode group in PanelGroups)
+        {
+            BindPlacement(group);
         }
 
         InvalidateAll();
