@@ -70,6 +70,14 @@ public static class M6NodeCloner
                 LocalTransform = group.LocalTransform,
                 Tag = group.Tag,
             },
+            SnapNode snap => new SnapNode
+            {
+                Frame = snap.Frame,
+                Name = snap.Name,
+                IsVisible = snap.IsVisible,
+                LocalTransform = snap.LocalTransform,
+                Tag = snap.Tag,
+            },
             _ => throw new NotSupportedException($"Копирование узлов типа {node.GetType().Name} не поддерживается."),
         };
 
@@ -127,6 +135,17 @@ public static class M6NodeCloner
                     IsVisible = group.IsVisible,
                     LocalTransform = group.LocalTransform,
                     Tag = group.Tag,
+                };
+                break;
+
+            case SnapNode snap:
+                twin = new SnapNode
+                {
+                    Frame = snap.Frame,
+                    Name = snap.Name,
+                    IsVisible = snap.IsVisible,
+                    LocalTransform = snap.LocalTransform,
+                    Tag = snap.Tag,
                 };
                 break;
 

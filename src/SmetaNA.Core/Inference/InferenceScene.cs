@@ -188,6 +188,12 @@ public readonly record struct SnapCircle
 public readonly record struct SnapArcPoint(Vector3d Point, SnapEntityRef Entity);
 
 /// <summary>
+/// Пользовательская точка сборки (Snap) в мировых координатах: позиция, нормаль
+/// диска и up. Привязка к ней даёт ориентацию для соединения «лицевая к лицевой».
+/// </summary>
+public readonly record struct SnapUserPoint(SnapFrame Frame, SnapEntityRef Entity);
+
+/// <summary>
 /// Начало координат группы или инстанса компонента (Component Origin Point)
 /// с мировыми осями контекста.
 /// </summary>
@@ -241,13 +247,15 @@ public sealed class InferenceScene
     private readonly SnapCircle[] _circles;
     private readonly SnapArcPoint[] _arcPoints;
     private readonly SnapInstanceOrigin[] _instanceOrigins;
+    private readonly SnapUserPoint[] _userSnaps;
 
     public InferenceScene(
         IEnumerable<SnapSegment> segments,
         IEnumerable<SnapFace> faces,
         IEnumerable<SnapCircle>? circles = null,
         IEnumerable<SnapArcPoint>? arcPoints = null,
-        IEnumerable<SnapInstanceOrigin>? instanceOrigins = null)
+        IEnumerable<SnapInstanceOrigin>? instanceOrigins = null,
+        IEnumerable<SnapUserPoint>? userSnaps = null)
     {
         ArgumentNullException.ThrowIfNull(segments);
         ArgumentNullException.ThrowIfNull(faces);
@@ -257,6 +265,7 @@ public sealed class InferenceScene
         _circles = circles is null ? [] : [.. circles];
         _arcPoints = arcPoints is null ? [] : [.. arcPoints];
         _instanceOrigins = instanceOrigins is null ? [] : [.. instanceOrigins];
+        _userSnaps = userSnaps is null ? [] : [.. userSnaps];
 
         if (_faces.Any(f => f is null))
         {
@@ -279,6 +288,9 @@ public sealed class InferenceScene
     /// <summary>Начала координат групп и инстансов компонентов.</summary>
     public IReadOnlyList<SnapInstanceOrigin> InstanceOrigins => _instanceOrigins;
 
+    /// <summary>Пользовательские точки сборки (Snap) в мировых координатах.</summary>
+    public IReadOnlyList<SnapUserPoint> UserSnaps => _userSnaps;
+
     /// <summary>
     /// Копия снимка с добавленными сущностями строящейся фигуры (рёбра, окружности).
     /// Середины дуг и начала координат контейнеров сохраняются — новый
@@ -300,6 +312,6 @@ public sealed class InferenceScene
             circles.AddRange(extraCircles);
         }
 
-        return new InferenceScene(segments, _faces, circles, _arcPoints, _instanceOrigins);
+        return new InferenceScene(segments, _faces, circles, _arcPoints, _instanceOrigins, _userSnaps);
     }
 }

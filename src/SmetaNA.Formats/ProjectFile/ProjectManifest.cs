@@ -61,6 +61,9 @@ internal sealed class ProjectNodeDto
     /// <summary>Идентификатор определения компонента (тип <see cref="ProjectNodeTypes.ComponentInstance"/>).</summary>
     public Guid? Definition { get; init; }
 
+    /// <summary>Кадр пользовательской точки сборки (тип <see cref="ProjectNodeTypes.UserSnap"/>).</summary>
+    public ProjectSnapDto? Snap { get; init; }
+
     public List<ProjectNodeDto>? Children { get; init; }
 }
 
@@ -96,6 +99,21 @@ internal static class ProjectNodeTypes
     public const string Group = "group";
     public const string Mesh = "mesh";
     public const string ComponentInstance = "componentInstance";
+
+    /// <summary>Пользовательская точка сборки (Snap, v1.x).</summary>
+    public const string UserSnap = "userSnap";
+}
+
+/// <summary>Кадр пользовательской точки сборки: позиция, нормаль диска и up.</summary>
+internal sealed class ProjectSnapDto
+{
+    public Vector3d Position { get; init; }
+
+    /// <summary>Нормаль диска (Alignment Direction), единичный вектор.</summary>
+    public Vector3d Direction { get; init; } = Vector3d.UnitZ;
+
+    /// <summary>Поворот вокруг нормали, единичный вектор, ортогональный нормали.</summary>
+    public Vector3d Up { get; init; } = Vector3d.UnitY;
 }
 
 /// <summary>Общие настройки сериализации манифеста.</summary>

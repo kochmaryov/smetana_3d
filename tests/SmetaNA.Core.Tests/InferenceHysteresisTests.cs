@@ -8,8 +8,8 @@ using Xunit;
 namespace SmetaNA.Core.Tests;
 
 /// <summary>
-/// W4: Р°РЅС‚РёРјРµСЂС†Р°РЅРёРµ РїСЂРёРІСЏР·РѕРє (R-31), РїРµСЂРµР±РѕСЂ РєР°РЅРґРёРґР°С‚РѕРІ Tab (R-25) Рё С„РёРєСЃР°С†РёСЏ
-/// РїР»РѕСЃРєРѕСЃС‚Рё РїРѕСЃС‚СЂРѕРµРЅРёСЏ Shift+Alt (R-23).
+/// W4: антимерцание привязок (R-31), перебор кандидатов Tab (R-25) и фиксация
+/// плоскости построения Shift+Alt (R-23).
 /// </summary>
 public sealed class InferenceHysteresisTests
 {
@@ -21,8 +21,8 @@ public sealed class InferenceHysteresisTests
 
     private static SnapCandidate OnFaceCandidateNearCursor()
     {
-        // РљР°РЅРґРёРґР°С‚ В«РЅР° РіСЂР°РЅРёВ» С‡СѓС‚СЊ РЅРёР¶Рµ РєСѓСЂСЃРѕСЂР°: РїСЂРёРѕСЂРёС‚РµС‚ 400 вЂ” РІСЃРµРіРѕ РЅР° 50 РЅРёР¶Рµ
-        // В«РЅР° СЂРµР±СЂРµВ» (450), С‚Рѕ РµСЃС‚СЊ РЅРѕРІС‹Р№ РєР°РЅРґРёРґР°С‚ РЅРµ Р»СѓС‡С€Рµ Р·Р°РјРµС‚РЅРѕ.
+        // Кандидат «на грани» чуть ниже курсора: приоритет 400 — всего на 50 ниже
+        // «на ребре» (450), то есть новый кандидат не лучше заметно.
         return new SnapCandidate(
             SnapType.OnFace,
             new Vector3d(15, 11.4, 0),
@@ -74,7 +74,7 @@ public sealed class InferenceHysteresisTests
         SnapResult result = InferenceEngine.Solve(
             baseRequest with { PreviousBest = previous, PreviousBestAgeMs = 50 });
 
-        // Р’РµСЂС€РёРЅР° (900) Р·Р°РјРµС‚РЅРѕ РїСЂРёРѕСЂРёС‚РµС‚РЅРµРµ СЂРµР±СЂР° (450) вЂ” РїРµСЂРµС…РІР°С‚ СЃСЂР°Р·Сѓ.
+        // Вершина (900) заметно приоритетнее ребра (450) — перехват сразу.
         Assert.Equal(SnapType.Endpoint, result.Best!.Type);
     }
 
@@ -134,8 +134,8 @@ public sealed class InferenceHysteresisTests
         tool.Activate(context);
         Vector3d onTopFace = new(5, 5, 10);
 
-        // Shift+Alt РЅР°Рґ РІРµСЂС…РЅРµР№ РіСЂР°РЅСЊСЋ С„РёРєСЃРёСЂСѓРµС‚ РµС‘ РїР»РѕСЃРєРѕСЃС‚СЊ; РєСѓСЂСЃРѕСЂ СѓС…РѕРґРёС‚ РІ СЃС‚РѕСЂРѕРЅСѓ,
-        // РЅРѕ С‚РѕС‡РєР° РїРѕСЃС‚СЂРѕРµРЅРёСЏ РѕСЃС‚Р°С‘С‚СЃСЏ РЅР° z = 10.
+        // Shift+Alt над верхней гранью фиксирует её плоскость; курсор уходит в сторону,
+        // но точка построения остаётся на z = 10.
         DrawingTestSupport.Click(context, tool, onTopFace, ToolModifiers.Shift | ToolModifiers.Alt);
 
         Assert.Equal(10, tool.Chain[0].Z, 6);

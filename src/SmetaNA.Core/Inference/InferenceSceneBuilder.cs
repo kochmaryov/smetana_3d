@@ -34,6 +34,7 @@ public static class InferenceSceneBuilder
         var circles = new List<SnapCircle>();
         var arcPoints = new List<SnapArcPoint>();
         var instanceOrigins = new List<SnapInstanceOrigin>();
+        var userSnaps = new List<SnapUserPoint>();
         CollectNode(
             root,
             rootTransform,
@@ -45,8 +46,9 @@ public static class InferenceSceneBuilder
             faces,
             circles,
             arcPoints,
-            instanceOrigins);
-        return new InferenceScene(segments, faces, circles, arcPoints, instanceOrigins);
+            instanceOrigins,
+            userSnaps);
+        return new InferenceScene(segments, faces, circles, arcPoints, instanceOrigins, userSnaps);
     }
 
     private static void CollectNode(
@@ -60,7 +62,8 @@ public static class InferenceSceneBuilder
         List<SnapFace> faces,
         List<SnapCircle> circles,
         List<SnapArcPoint> arcPoints,
-        List<SnapInstanceOrigin> instanceOrigins)
+        List<SnapInstanceOrigin> instanceOrigins,
+        List<SnapUserPoint> userSnaps)
     {
         if (!includeHidden && !node.IsVisible)
         {
@@ -108,6 +111,13 @@ public static class InferenceSceneBuilder
                 arcPoints);
         }
 
+        if (node is SnapNode snapNode)
+        {
+            userSnaps.Add(new SnapUserPoint(
+                snapNode.WorldFrame(world),
+                new SnapEntityRef(snapNode.Id, SnapEntityKind.UserSnap, null, name ?? snapNode.Name)));
+        }
+
         foreach (SceneNode child in EnumerateContent(node, openDefinitions))
         {
             CollectNode(
@@ -121,7 +131,8 @@ public static class InferenceSceneBuilder
                 faces,
                 circles,
                 arcPoints,
-                instanceOrigins);
+                instanceOrigins,
+                userSnaps);
         }
     }
 

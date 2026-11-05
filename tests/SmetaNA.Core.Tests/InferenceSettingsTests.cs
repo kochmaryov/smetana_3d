@@ -8,8 +8,8 @@ using Xunit;
 namespace SmetaNA.Core.Tests;
 
 /// <summary>
-/// W4: РЅР°СЃС‚СЂРѕР№РєРё РїСЂРёРІСЏР·РѕРє, СЃРµС‚РєР°, СЃРєСЂС‹С‚Р°СЏ РіРµРѕРјРµС‚СЂРёСЏ Рё СЃРѕС…СЂР°РЅРµРЅРёРµ СЃРѕСЃС‚Р°РІРЅРѕРіРѕ
-/// СЃРЅРёРјРєР° СЃС†РµРЅС‹ (СЃРµСЂРµРґРёРЅС‹ РґСѓРі, РЅР°С‡Р°Р»Р° РєРѕРѕСЂРґРёРЅР°С‚ РєРѕРЅС‚РµР№РЅРµСЂРѕРІ).
+/// W4: настройки привязок, сетка, скрытая геометрия, привязка длины и сохранение
+/// составного снимка сцены (середины дуг, начала координат контейнеров).
 /// </summary>
 public sealed class InferenceSettingsTests
 {
@@ -38,7 +38,7 @@ public sealed class InferenceSettingsTests
             Vector3d.UnitX,
             Vector3d.UnitY,
             Vector3d.UnitZ,
-            new SnapEntityRef(Guid.NewGuid(), SnapEntityKind.ComponentInstance, null, "РЎС‚РѕР»"));
+            new SnapEntityRef(Guid.NewGuid(), SnapEntityKind.ComponentInstance, null, "Стол"));
         var scene = new InferenceScene(
             [new SnapSegment(Vector3d.Zero, new Vector3d(10, 0, 0))],
             [],
@@ -46,12 +46,13 @@ public sealed class InferenceSettingsTests
             [arcPoint],
             [origin]);
 
-        InferenceScene extended = scene.WithExtra(extraSegments: [new SnapSegment(new Vector3d(0, 1, 0), new Vector3d(0, 9, 0))]);
+        InferenceScene extended = scene.WithExtra(
+            extraSegments: [new SnapSegment(new Vector3d(0, 1, 0), new Vector3d(0, 9, 0))]);
 
         Assert.Equal(2, extended.Segments.Count);
         Assert.Single(extended.Circles);
         Assert.Equal(arcPoint, Assert.Single(extended.ArcPoints));
-        Assert.Equal("РЎС‚РѕР»", Assert.Single(extended.InstanceOrigins).Entity.DisplayName);
+        Assert.Equal("Стол", Assert.Single(extended.InstanceOrigins).Entity.DisplayName);
     }
 
     [Fact]
@@ -116,7 +117,7 @@ public sealed class InferenceSettingsTests
         var tool = new LineTool();
         tool.Activate(context);
 
-        DrawingTestSupport.Click(context, tool, new Vector3d(12, 3, 0));
+        DrawingTestSupport.Click(context, tool, new Vector3d(11, 9, 0));
 
         Assert.NotEqual(SnapType.Grid, tool.CurrentSnap.Best?.Type);
     }

@@ -151,6 +151,21 @@ internal sealed class ProjectGraphWriter
                 Transform = node.LocalTransform,
                 Children = children,
             },
+            SnapNode snapNode => new ProjectNodeDto
+            {
+                Id = node.Id,
+                Type = ProjectNodeTypes.UserSnap,
+                Name = node.Name,
+                Visible = node.IsVisible,
+                Transform = node.LocalTransform,
+                Snap = new ProjectSnapDto
+                {
+                    Position = snapNode.Frame.Position,
+                    Direction = snapNode.Frame.Direction,
+                    Up = snapNode.Frame.Up,
+                },
+                Children = children,
+            },
             _ => throw new ProjectFileException($"Неизвестный тип узла сцены: {node.GetType().Name}."),
         };
     }

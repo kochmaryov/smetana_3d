@@ -12,7 +12,7 @@ using SmetaNA.Rendering;
 
 namespace SmetaNA.EditorUI.ViewModels;
 
-/// <summary>Р’РєР»Р°РґРєР° РїСЂРѕРµРєС‚Р°: СЃРѕР±СЃС‚РІРµРЅРЅС‹Р№ РґРѕРєСѓРјРµРЅС‚ (СЃС†РµРЅР°, РёСЃС‚РѕСЂРёСЏ, РёРЅСЃС‚СЂСѓРјРµРЅС‚С‹) Рё СЃС‚СЂРѕРєРё РґР»СЏ РІСЊСЋРїРѕСЂС‚Р°.</summary>
+/// <summary>Вкладка проекта: собственный документ (сцена, история, инструменты) и строки для вьюпорта.</summary>
 public sealed class ProjectTabViewModel : ViewModelBase
 {
     private readonly ILocalizationService _localization;
@@ -59,29 +59,29 @@ public sealed class ProjectTabViewModel : ViewModelBase
         _localization.CultureChanged += InvalidateAll;
     }
 
-    /// <summary>Р’РєР»Р°РґРєР° РїРѕРІРµСЂС… СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµР№ СЃС†РµРЅС‹ (СЃС†РµРЅР° РѕР±РѕСЂР°С‡РёРІР°РµС‚СЃСЏ РІ РЅРѕРІС‹Р№ РґРѕРєСѓРјРµРЅС‚).</summary>
+    /// <summary>Вкладка поверх существующей сцены (сцена оборачивается в новый документ).</summary>
     public ProjectTabViewModel(ILocalizationService localization, Scene scene, int number)
         : this(localization, new EditorDocument(scene), number)
     {
     }
 
-    /// <summary>РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ РёРЅСЃС‚СЂСѓРјРµРЅС‚ РІРєР»Р°РґРєРё РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ РєРѕРјР°РЅРґС‹ (РµСЃР»Рё РЅР°Р·РЅР°С‡РµРЅ).</summary>
+    /// <summary>Активировать инструмент вкладки по идентификатору команды (если назначен).</summary>
     public void ActivateTool(string commandId) => ActivateToolById?.Invoke(commandId);
 
     public int Number { get; }
 
-    /// <summary>Р”РѕРєСѓРјРµРЅС‚ РІРєР»Р°РґРєРё: СЃС†РµРЅР°, РёСЃС‚РѕСЂРёСЏ Рё РёРЅСЃС‚СЂСѓРјРµРЅС‚С‹ РїСЂРѕРµРєС‚Р°.</summary>
+    /// <summary>Документ вкладки: сцена, история и инструменты проекта.</summary>
     public EditorDocument Document { get; }
 
-    /// <summary>РЎС†РµРЅР° РІРєР»Р°РґРєРё (РєРѕРЅС‚СЂР°РєС‚С‹ SmetaNA.Core РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ С‚РѕР»СЊРєРѕ РґР»СЏ С‡С‚РµРЅРёСЏ/РІС‹Р·РѕРІР°).</summary>
+    /// <summary>Сцена вкладки (контракты SmetaNA.Core используются только для чтения/вызова).</summary>
     public Scene Scene => Document.Scene;
 
-    /// <summary>РљРѕРЅС‚СЂРѕР»Р»РµСЂ РёРЅСЃС‚СЂСѓРјРµРЅС‚РѕРІ РІРєР»Р°РґРєРё.</summary>
+    /// <summary>Контроллер инструментов вкладки.</summary>
     public ToolController Tools => Document.Tools;
 
     /// <summary>
-    /// РђРєС‚РёРІР°С†РёСЏ РёРЅСЃС‚СЂСѓРјРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ РєРѕРјР°РЅРґС‹ (РїР°РЅРµР»СЊ Сѓ РєСѓСЂСЃРѕСЂР°, T4);
-    /// РЅР°Р·РЅР°С‡Р°РµС‚СЃСЏ РіР»Р°РІРЅРѕР№ РјРѕРґРµР»СЊСЋ РїСЂРё СЃРѕР·РґР°РЅРёРё РІРєР»Р°РґРєРё.
+    /// Активация инструмента по идентификатору команды (панель у курсора, T4);
+    /// назначается главной моделью при создании вкладки.
     /// </summary>
     public Action<string>? ActivateToolById { get; set; }
 
@@ -91,14 +91,14 @@ public sealed class ProjectTabViewModel : ViewModelBase
 
     public ObservableCollection<RenderModeOption> RenderModes { get; }
 
-    /// <summary>РџРѕРєР°Р·С‹РІР°С‚СЊ СЃРµС‚РєСѓ СЃС†РµРЅС‹ (С‚СѓРјР±Р»РµСЂ С€Р°РїРєРё, РІРёРґР¶РµС‚С‹ РІСЊСЋРїРѕСЂС‚Р°).</summary>
+    /// <summary>Показывать сетку сцены (тумблер шапки, виджеты вьюпорта).</summary>
     public bool ShowGrid
     {
         get => _showGrid;
         set => SetField(ref _showGrid, value);
     }
 
-    /// <summary>РџРѕРєР°Р·С‹РІР°С‚СЊ РѕСЃРё СЃС†РµРЅС‹ (С‚СѓРјР±Р»РµСЂ С€Р°РїРєРё, РІРёРґР¶РµС‚С‹ РІСЊСЋРїРѕСЂС‚Р°).</summary>
+    /// <summary>Показывать оси сцены (тумблер шапки, виджеты вьюпорта).</summary>
     public bool ShowAxes
     {
         get => _showAxes;
@@ -106,8 +106,8 @@ public sealed class ProjectTabViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// РџРѕСЃС‚РѕСЏРЅРЅС‹Р№ СЂРµР¶РёРј В«РџРѕРєР°Р·Р°С‚СЊ СЃРєСЂС‹С‚СѓСЋ РіРµРѕРјРµС‚СЂРёСЋВ» (R-10): СЃРєСЂС‹С‚С‹Рµ СѓР·Р»С‹ СЂРёСЃСѓСЋС‚СЃСЏ Рё
-    /// СѓС‡Р°СЃС‚РІСѓСЋС‚ РІ РїСЂРёРІСЏР·РєР°С…. Р’СЂРµРјРµРЅРЅС‹Р№ РїРѕРєР°Р· вЂ” СѓРґРµСЂР¶Р°РЅРёРµ Ctrl+Shift РІРѕ РІСЊСЋРїРѕСЂС‚Рµ.
+    /// Постоянный режим «Показать скрытую геометрию» (R-10): скрытые узлы рисуются и
+    /// участвуют в привязках. Временный показ — удержание Ctrl+Shift во вьюпорте.
     /// </summary>
     public bool ShowHiddenGeometry
     {
@@ -121,7 +121,7 @@ public sealed class ProjectTabViewModel : ViewModelBase
         }
     }
 
-    /// <summary>РџСЂРёРІСЏР·РєР° Рє СЃРµС‚РєРµ СЃ С€Р°РіРѕРј РёР· РЅР°СЃС‚СЂРѕРµРє (R-14), РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РІС‹РєР»СЋС‡РµРЅР°.</summary>
+    /// <summary>Привязка к сетке с шагом из настроек (R-14), по умолчанию выключена.</summary>
     public bool GridSnapping
     {
         get => _gridSnapping;
@@ -134,7 +134,7 @@ public sealed class ProjectTabViewModel : ViewModelBase
         }
     }
 
-    /// <summary>РЁР°Рі СЃРµС‚РєРё РїСЂРёРІСЏР·РєРё РІ РµРґРёРЅРёС†Р°С… СЃС†РµРЅС‹.</summary>
+    /// <summary>Шаг сетки привязки в единицах сцены.</summary>
     public double GridStep
     {
         get => _gridStep;
@@ -149,22 +149,22 @@ public sealed class ProjectTabViewModel : ViewModelBase
         }
     }
 
-    /// <summary>РџРѕРґРїРёСЃСЊ РїСѓРЅРєС‚Р° РјРµРЅСЋ: С‚РµРєСѓС‰РёР№ С€Р°Рі СЃРµС‚РєРё РІ РµРґРёРЅРёС†Р°С… СЃС†РµРЅС‹ (R-14).</summary>
+    /// <summary>Подпись пункта меню: текущий шаг сетки в единицах сцены (R-14).</summary>
     public string GridStepMenuLabel => string.Format(
         CultureInfo.CurrentCulture,
         Strings.ViewGridStep,
         _gridStep.ToString("0.###", CultureInfo.CurrentCulture));
 
-    /// <summary>РџСЂРµСЃРµС‚С‹ С€Р°РіР° СЃРµС‚РєРё: 0,1 / 1 / 10 / 100 РµРґРёРЅРёС† СЃС†РµРЅС‹.</summary>
+    /// <summary>Пресеты шага сетки: 0,1 / 1 / 10 / 100 единиц сцены.</summary>
     public static IReadOnlyList<double> GridStepPresets { get; } = [0.1, 1, 10, 100];
 
-    /// <summary>РџРµСЂРµРєР»СЋС‡РёС‚СЊ С€Р°Рі СЃРµС‚РєРё РЅР° СЃР»РµРґСѓСЋС‰РёР№ РїСЂРµСЃРµС‚ (РїРѕСЃР»Рµ 100 вЂ” СЃРЅРѕРІР° 0,1).</summary>
+    /// <summary>Переключить шаг сетки на следующий пресет (после 100 — снова 0,1).</summary>
     public ICommand CycleGridStepCommand { get; }
 
-    /// <summary>РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С€Р°Рі СЃРµС‚РєРё (Р·РЅР°С‡РµРЅРёРµ РёР· РЅР°СЃС‚СЂРѕРµРє РёР»Рё РїСЂРµСЃРµС‚Р°).</summary>
+    /// <summary>Установить шаг сетки (значение из настроек или пресета).</summary>
     public void SetGridStep(double step) => GridStep = step;
 
-    /// <summary>РџРѕРєР°Р·С‹РІР°С‚СЊ РїРѕРґРїРёСЃРё С‚РёРїРѕРІ РїСЂРёРІСЏР·РѕРє Сѓ РєСѓСЂСЃРѕСЂР° (R-27).</summary>
+    /// <summary>Показывать подписи типов привязок у курсора (R-27).</summary>
     public bool ShowSnapLabels
     {
         get => _showSnapLabels;
@@ -178,8 +178,8 @@ public sealed class ProjectTabViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// РџСЂРёРІСЏР·РєР° РґР»РёРЅС‹ Рє С‚РѕС‡РЅРѕСЃС‚Рё (Р°РЅР°Р»РѕРі `Enable Length Snapping`, R-14.1),
-    /// РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РІС‹РєР»СЋС‡РµРЅР°.
+    /// Привязка длины к точности (аналог `Enable Length Snapping`, R-14.1),
+    /// по умолчанию выключена.
     /// </summary>
     public bool LengthSnapping
     {
@@ -193,12 +193,12 @@ public sealed class ProjectTabViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Р”РµР№СЃС‚РІСѓСЋС‰РёРµ РЅР°СЃС‚СЂРѕР№РєРё РїСЂРёРІСЏР·РѕРє РІРєР»Р°РґРєРё (РїРµСЂРµР¶РёРІР°СЋС‚ СЃРјРµРЅСѓ РІРєР»Р°РґРєРё).</summary>
+    /// <summary>Действующие настройки привязок вкладки (переживают смену вкладки).</summary>
     public InferenceSettings InferenceSettings { get; private set; } = InferenceSettings.Default;
 
     /// <summary>
-    /// Р’СЂРµРјРµРЅРЅС‹Р№ РїРѕРєР°Р· СЃРєСЂС‹С‚РѕР№ РіРµРѕРјРµС‚СЂРёРё СѓРґРµСЂР¶Р°РЅРёРµРј Ctrl+Shift вЂ” РёРЅРґРёРєР°С‚РѕСЂ
-    /// РІ СЃС‚Р°С‚СѓСЃ-СЃС‚СЂРѕРєРµ (R-24).
+    /// Временный показ скрытой геометрии удержанием Ctrl+Shift — индикатор
+    /// в статус-строке (R-24).
     /// </summary>
     public bool IsHiddenGeometryPreview
     {
@@ -206,10 +206,10 @@ public sealed class ProjectTabViewModel : ViewModelBase
         set => SetField(ref _isHiddenGeometryPreview, value);
     }
 
-    /// <summary>РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РёР·РјРµРЅРёР» РЅР°СЃС‚СЂРѕР№РєРё РїСЂРёРІСЏР·РѕРє вЂ” РёС… РЅСѓР¶РЅРѕ СЃРѕС…СЂР°РЅРёС‚СЊ.</summary>
+    /// <summary>Пользователь изменил настройки привязок — их нужно сохранить.</summary>
     public event Action? InferenceSettingsChanged;
 
-    /// <summary>РџСЂРёРјРµРЅРёС‚СЊ РЅР°СЃС‚СЂРѕР№РєРё РїСЂРёРІСЏР·РѕРє (Р·Р°РіСЂСѓР·РєР° РёР· С„Р°Р№Р»Р°, СЃРјРµРЅР° РІРєР»Р°РґРєРё).</summary>
+    /// <summary>Применить настройки привязок (загрузка из файла, смена вкладки).</summary>
     public void ApplyInferenceSettings(InferenceSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -243,22 +243,22 @@ public sealed class ProjectTabViewModel : ViewModelBase
         InferenceSettingsChanged?.Invoke();
     }
 
-    /// <summary>РћСЂС‚РѕРіРѕРЅР°Р»СЊРЅР°СЏ РїСЂРѕРµРєС†РёСЏ РєР°РјРµСЂС‹ (С‚СѓРјР±Р»РµСЂ С€Р°РїРєРё, РІРёРґР¶РµС‚С‹ РІСЊСЋРїРѕСЂС‚Р°).</summary>
+    /// <summary>Ортогональная проекция камеры (тумблер шапки, виджеты вьюпорта).</summary>
     public bool IsOrthographic
     {
         get => _isOrthographic;
         set => SetField(ref _isOrthographic, value);
     }
 
-    /// <summary>Р РµР¶РёРј РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РІСЊСЋРїРѕСЂС‚Р° (РєР°СЂРєР°СЃ/С€С‚СЂРёС…РѕРІРєР°/СЂРµРЅС‚РіРµРЅ).</summary>
+    /// <summary>Режим отображения вьюпорта (каркас/штриховка/рентген).</summary>
     public RenderModeOption SelectedRenderMode
     {
         get => _selectedRenderMode;
         set
         {
-            // ComboBox РїСЂРё РїРµСЂРµСЃРѕР·РґР°РЅРёРё РєРѕРЅС‚РµРЅС‚Р° РІРєР»Р°РґРєРё СЃР±СЂР°СЃС‹РІР°РµС‚ SelectedItem
-            // РІ null вЂ” С‚Р°РєРѕР№ СЃР±СЂРѕСЃ РЅРµ РґРѕР»Р¶РµРЅ Р·Р°С‚РёСЂР°С‚СЊ С‚РµРєСѓС‰РёР№ СЂРµР¶РёРј: HUD Рё
-            // РІСЊСЋРїРѕСЂС‚ С‡РёС‚Р°СЋС‚ Р·РЅР°С‡РµРЅРёРµ Р±РµР· РїСЂРѕРІРµСЂРєРё РЅР° null.
+            // ComboBox при пересоздании контента вкладки сбрасывает SelectedItem
+            // в null — такой сброс не должен затирать текущий режим: HUD и
+            // вьюпорт читают значение без проверки на null.
             if (value is null || !SetField(ref _selectedRenderMode, value))
             {
                 return;
@@ -268,14 +268,14 @@ public sealed class ProjectTabViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Р•РґРёРЅРёС†С‹ РёР·РјРµСЂРµРЅРёСЏ СЃС†РµРЅС‹ (РјРј/СЃРј/Рј/РґСЋР№РјС‹) вЂ” РїРµСЂРµРєР»СЋС‡Р°СЋС‚СЃСЏ РІ HUD РІСЊСЋРїРѕСЂС‚Р°.</summary>
+    /// <summary>Единицы измерения сцены (мм/см/м/дюймы) — переключаются в HUD вьюпорта.</summary>
     public UnitOption SelectedUnit
     {
         get => _selectedUnit;
         set
         {
-            // СЃРј. SelectedRenderMode: null РѕС‚ РїСЂРёРІСЏР·РєРё ComboBox РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ,
-            // РёРЅР°С‡Рµ HUD РїР°РґР°Р» СЃ NullReferenceException РїСЂРё РїРµСЂРµРєР»СЋС‡РµРЅРёРё РІРєР»Р°РґРѕРє.
+            // см. SelectedRenderMode: null от привязки ComboBox игнорируется,
+            // иначе HUD падал с NullReferenceException при переключении вкладок.
             if (value is null || !SetField(ref _selectedUnit, value))
             {
                 return;
@@ -286,7 +286,7 @@ public sealed class ProjectTabViewModel : ViewModelBase
         }
     }
 
-    /// <summary>РљРѕРѕСЂРґРёРЅР°С‚С‹ С‚РѕС‡РєРё РїСЂРёРІСЏР·РєРё РїРѕРґ РєСѓСЂСЃРѕСЂРѕРј РІ РµРґРёРЅРёС†Р°С… СЃС†РµРЅС‹; РїСѓСЃС‚Рѕ вЂ” РїСЂРёРІСЏР·РєРё РЅРµС‚.</summary>
+    /// <summary>Координаты точки привязки под курсором в единицах сцены; пусто — привязки нет.</summary>
     public string CursorCoordinates
     {
         get => _cursorCoordinates;
@@ -295,7 +295,7 @@ public sealed class ProjectTabViewModel : ViewModelBase
 
     public bool HasCursorCoordinates => _cursorCoordinates.Length > 0;
 
-    /// <summary>РћР±РЅРѕРІРёС‚СЊ РєРѕРѕСЂРґРёРЅР°С‚РЅСѓСЋ СЃС‚СЂРѕРєСѓ РїРѕ С‚РѕС‡РєРµ РїСЂРёРІСЏР·РєРё (РјРёСЂРѕРІС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹, РјРј).</summary>
+    /// <summary>Обновить координатную строку по точке привязки (мировые координаты, мм).</summary>
     public void SetCursorPoint(Vector3d? point)
     {
         if (point is Vector3d world)

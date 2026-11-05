@@ -94,6 +94,14 @@ internal static class ProjectGraphReader
                 LocalTransform = transform,
                 Definition = ResolveDefinition(dto, definitions),
             },
+            ProjectNodeTypes.UserSnap => new SnapNode
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                IsVisible = dto.Visible,
+                LocalTransform = transform,
+                Frame = ReadSnapFrame(dto),
+            },
             _ => throw new ProjectFileException(
                 $"Неизвестный тип узла «{dto.Type}» в файле проекта — файл создан более новой версией или повреждён."),
         };
@@ -146,6 +154,20 @@ internal static class ProjectGraphReader
         }
 
         return transform;
+    }
+
+    /// <summary>
+    /// Кадр пользовательской точки сборки: нормаль и up нормализуются, up
+    /// ортогонализуется нормали; отсутствие или вырожденность — ошибка формата.
+    /// </summary>
+    private static SnapFrame ReadSnapFrame(ProjectNodeDto dto)
+    {
+        ProjectSnapDto? snap = dto.Snap
+            ?? throw new ProjectFileException("Узел-точка сборки не содержит кадра — файл повреждён.");
+
+        return SnapFrame.TryCreate(snap.Position, snap.Direction, snap.Up, out SnapFrame frame)
+            ? frame
+            : throw new ProjectFileException("Кадр точки сборки вырожден (нулевая нормаль) — файл повреждён.");
     }
 
     private static void EnsureFinite(ProjectViewSettings view)

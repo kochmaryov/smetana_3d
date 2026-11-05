@@ -253,6 +253,18 @@ public static class InferenceEngine
                 }
             }
 
+            if ((filter & SnapFilter.SnapPoints) != 0)
+            {
+                foreach (SnapUserPoint snap in scene.UserSnaps)
+                {
+                    TryAddPoint(
+                        SnapType.SnapPoint,
+                        snap.Frame.Position,
+                        snap.Entity,
+                        frame: snap.Frame);
+                }
+            }
+
             if ((filter & SnapFilter.Centers) != 0)
             {
                 foreach (SnapCircle circle in scene.Circles)
@@ -824,7 +836,8 @@ public static class InferenceEngine
             Vector3d point,
             SnapEntityRef entity = default,
             int degreesOfFreedom = 0,
-            SnapFace? highlightFace = null)
+            SnapFace? highlightFace = null,
+            SnapFrame? frame = null)
         {
             if (!TryMeasure(point, out double screenDistance))
             {
@@ -842,6 +855,7 @@ public static class InferenceEngine
                 DegreesOfFreedom = degreesOfFreedom,
                 HighlightFace = highlightFace,
                 ScreenDistancePx = screenDistance,
+                Frame = frame,
             });
         }
 

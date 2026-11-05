@@ -37,6 +37,13 @@ public sealed record SnapCandidate(
     public SnapEntityRef Entity { get; init; }
 
     /// <summary>
+    /// Кадр пользовательской точки сборки (Snap): позиция, нормаль диска и up.
+    /// Заполнен только для <see cref="SnapType.SnapPoint"/> — по нему инструмент
+    /// ориентации и Move строят соединение «лицевая к лицевой».
+    /// </summary>
+    public SnapFrame? Frame { get; init; }
+
+    /// <summary>
     /// Степень свободы точки по SketchUp-семантике: 0 — вершина/пересечение,
     /// 1 — на ребре или оси, 2 — на грани, 3 — свободное пространство.
     /// </summary>
