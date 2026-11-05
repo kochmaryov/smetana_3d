@@ -139,7 +139,57 @@ public static class InferenceEngine
                 .ThenBy(c => c.ScreenDistancePx)
                 .ToList();
 
+            ordered = ApplyDwellBoost(ordered);
             return new SnapResult(ApplyHysteresis(Dedupe(ordered)));
+        }
+
+        /// <summary>
+        /// Удержание над точкой (R-37): если кандидат остаётся лучшим дольше
+        /// <see cref="SnapDefaults.DwellPriorityMs"/>, он получает +50 к приоритету —
+        /// можно выбрать «дальнюю» точку, не подводя курсор вплотную.
+        /// </summary>
+        private List<SnapCandidate> ApplyDwellBoost(List<SnapCandidate> ordered)
+        {
+            if (ordered.Count == 0
+                || _request.PreviousBest is not { } previous
+                || _request.PreviousBestAgeMs < SnapDefaults.DwellPriorityMs)
+            {
+                return ordered;
+            }
+
+            int index = -1;
+            for (int i = 0; i < ordered.Count; i++)
+            {
+                SnapCandidate candidate = ordered[i];
+                if (candidate.Type != previous.Type
+                    || _viewport.TryProject(candidate.Point) is not { } pixel
+                    || (pixel - _cursor).Length() > _tolerancePx * SnapDefaults.DwellToleranceFactor)
+                {
+                    continue;
+                }
+
+                index = i;
+                break;
+            }
+
+            if (index <= 0)
+            {
+                return ordered;
+            }
+
+            SnapCandidate boosted = ordered[index] with
+            {
+                Priority = ordered[index].Priority + SnapDefaults.DwellPriorityBonus,
+            };
+
+            if (boosted.Priority < ordered[0].Priority)
+            {
+                return ordered;
+            }
+
+            ordered.RemoveAt(index);
+            ordered.Insert(0, boosted);
+            return ordered;
         }
 
         /// <summary>
@@ -658,6 +708,79 @@ public static class InferenceEngine
             {
                 CollectFromPointCandidates();
             }
+
+            if (_allowedLinear.Contains(SnapType.PerpendicularToFace))
+            {
+                CollectPerpendicularToFaceCandidates();
+            }
+
+            if (_allowedLinear.Contains(SnapType.TangentAtVertex))
+            {
+                CollectTangentAtVertexCandidates();
+            }
+        }
+
+        /// <summary>
+        /// Касательная в вершине ранее нарисованной дуги (R-34): линия касательной
+        /// дуги, проведённой через её концевую вершину.
+        /// </summary>
+        private void CollectTangentAtVertexCandidates()
+        {
+            foreach (SnapArcTangent tangent in _request.Scene.ArcTangents)
+            {
+                TryAddLinear(
+                    SnapType.TangentAtVertex,
+                    tangent.Point,
+                    tangent.Direction,
+                    entity: tangent.Entity);
+            }
+        }
+
+        /// <summary>
+        /// Перпендикуляр к грани (R-33): от опорной точки по нормали грани под
+        /// курсором — так строят «вверх» от наклонной поверхности.
+        /// </summary>
+        private void CollectPerpendicularToFaceCandidates()
+        {
+            if (_anchor is not Vector3d anchor)
+            {
+                return;
+            }
+
+            SnapFace? hovered = null;
+            double closestDepth = double.PositiveInfinity;
+            foreach (SnapFace face in _request.Scene.Faces)
+            {
+                if (!face.TryIntersect(_ray, out Vector3d hit))
+                {
+                    continue;
+                }
+
+                Vector3d fromCentroid = hit - face.Centroid;
+                if (fromCentroid.LengthSquared() > face.BoundingRadius * face.BoundingRadius
+                    || !face.Contains(hit, WorldTolerance(hit)))
+                {
+                    continue;
+                }
+
+                double depth = _viewport.DepthOf(hit);
+                if (depth < closestDepth)
+                {
+                    closestDepth = depth;
+                    hovered = face;
+                }
+            }
+
+            if (hovered is null)
+            {
+                return;
+            }
+
+            TryAddLinear(
+                SnapType.PerpendicularToFace,
+                anchor,
+                hovered.Normal,
+                entity: hovered.Entity);
         }
 
         private void CollectExtendEdgeCandidates()
@@ -1234,6 +1357,8 @@ public static class InferenceEngine
             allowedLinear.Add(SnapType.AxisInstanceZ);
             allowedLinear.Add(SnapType.ExtendEdge);
             allowedLinear.Add(SnapType.FromPoint);
+            allowedLinear.Add(SnapType.PerpendicularToFace);
+            allowedLinear.Add(SnapType.TangentAtVertex);
         }
 
         /// <summary>

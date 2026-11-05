@@ -190,7 +190,7 @@
             BorderThickness="0,1,0,0"
             Background="{DynamicResource ThemeControlBackgroundSecondary}"
             Padding="8,3">
-      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto,Auto">
         <vcb:VcbControl Prompt="{Binding VcbPrompt}"
                         PlaceholderText="{Binding Strings.VcbWatermark}"
                         Kind="{Binding VcbKind}"
@@ -213,8 +213,19 @@
           <TextBlock Text="{Binding Strings.SnapHiddenGeometryOn}"
                      FontSize="11" />
         </Border>
+        <!-- Активная фиксация направления и режим привязок (R-24) -->
+        <Border Grid.Column="3"
+                IsVisible="{Binding SelectedProject.HasSnapState}"
+                Background="{DynamicResource ThemeAccentSoftBrush}"
+                CornerRadius="3"
+                Padding="4,1"
+                Margin="8,0"
+                VerticalAlignment="Center">
+          <TextBlock Text="{Binding SelectedProject.SnapStateText}"
+                     FontSize="11" />
+        </Border>
         <!-- Координаты точки привязки под курсором -->
-        <TextBlock Grid.Column="3"
+        <TextBlock Grid.Column="4"
                    Text="{Binding SelectedProject.CursorCoordinates}"
                    IsVisible="{Binding SelectedProject.HasCursorCoordinates}"
                    VerticalAlignment="Center"
@@ -222,8 +233,17 @@
                    MinWidth="200"
                    FontFamily="Consolas, Menlo, monospace"
                    Opacity="0.8" />
+        <!-- Пространство координат ввода: мир/локально (R-16, S14) -->
+        <Button Grid.Column="5"
+                Content="{Binding SelectedProject.CoordinateSpaceText}"
+                ToolTip.Tip="{Binding Strings.CoordinateSpaceToggle}"
+                Command="{Binding SelectedProject.ToggleCoordinateSpaceCommand}"
+                FontSize="11"
+                Padding="6,1"
+                Margin="8,0"
+                VerticalAlignment="Center" />
         <!-- Подсказка управления камерой -->
-        <TextBlock Grid.Column="4"
+        <TextBlock Grid.Column="6"
                    Text="{Binding Strings.ViewportCameraHint}"
                    VerticalAlignment="Center"
                    Margin="8,0"
@@ -231,7 +251,7 @@
                    Opacity="0.6"
                    TextTrimming="CharacterEllipsis" />
         <!-- Единицы активной вкладки -->
-        <ComboBox Grid.Column="5"
+        <ComboBox Grid.Column="7"
                   Width="110"
                   Margin="8,0,0,0"
                   VerticalAlignment="Center"

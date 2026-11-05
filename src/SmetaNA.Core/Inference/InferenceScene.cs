@@ -188,6 +188,12 @@ public readonly record struct SnapCircle
 public readonly record struct SnapArcPoint(Vector3d Point, SnapEntityRef Entity);
 
 /// <summary>
+/// Касательная в концевой вершине дуги (R-34): точка вершины и направление
+/// касательной дуги в ней.
+/// </summary>
+public readonly record struct SnapArcTangent(Vector3d Point, Vector3d Direction, SnapEntityRef Entity);
+
+/// <summary>
 /// Пользовательская точка сборки (Snap) в мировых координатах: позиция, нормаль
 /// диска и up. Привязка к ней даёт ориентацию для соединения «лицевая к лицевой».
 /// </summary>
@@ -246,6 +252,7 @@ public sealed class InferenceScene
     private readonly SnapFace[] _faces;
     private readonly SnapCircle[] _circles;
     private readonly SnapArcPoint[] _arcPoints;
+    private readonly SnapArcTangent[] _arcTangents;
     private readonly SnapInstanceOrigin[] _instanceOrigins;
     private readonly SnapUserPoint[] _userSnaps;
 
@@ -255,7 +262,8 @@ public sealed class InferenceScene
         IEnumerable<SnapCircle>? circles = null,
         IEnumerable<SnapArcPoint>? arcPoints = null,
         IEnumerable<SnapInstanceOrigin>? instanceOrigins = null,
-        IEnumerable<SnapUserPoint>? userSnaps = null)
+        IEnumerable<SnapUserPoint>? userSnaps = null,
+        IEnumerable<SnapArcTangent>? arcTangents = null)
     {
         ArgumentNullException.ThrowIfNull(segments);
         ArgumentNullException.ThrowIfNull(faces);
@@ -264,6 +272,7 @@ public sealed class InferenceScene
         _faces = [.. faces];
         _circles = circles is null ? [] : [.. circles];
         _arcPoints = arcPoints is null ? [] : [.. arcPoints];
+        _arcTangents = arcTangents is null ? [] : [.. arcTangents];
         _instanceOrigins = instanceOrigins is null ? [] : [.. instanceOrigins];
         _userSnaps = userSnaps is null ? [] : [.. userSnaps];
 
@@ -291,6 +300,9 @@ public sealed class InferenceScene
     /// <summary>Середины открытых дуг проволочных цепей.</summary>
     public IReadOnlyList<SnapArcPoint> ArcPoints => _arcPoints;
 
+    /// <summary>Касательные в концевых вершинах дуг.</summary>
+    public IReadOnlyList<SnapArcTangent> ArcTangents => _arcTangents;
+
     /// <summary>Начала координат групп и инстансов компонентов.</summary>
     public IReadOnlyList<SnapInstanceOrigin> InstanceOrigins => _instanceOrigins;
 
@@ -299,7 +311,7 @@ public sealed class InferenceScene
 
     /// <summary>
     /// Копия снимка с добавленными сущностями строящейся фигуры (рёбра, окружности).
-    /// Середины дуг и начала координат контейнеров сохраняются — новый
+    /// Середины дуг, их касательные и начала координат контейнеров сохраняются — новый
     /// <see cref="InferenceScene"/> собирайте только через этот метод.
     /// </summary>
     public InferenceScene WithExtra(
@@ -318,6 +330,13 @@ public sealed class InferenceScene
             circles.AddRange(extraCircles);
         }
 
-        return new InferenceScene(segments, _faces, circles, _arcPoints, _instanceOrigins, _userSnaps);
+        return new InferenceScene(
+            segments,
+            _faces,
+            circles,
+            _arcPoints,
+            _instanceOrigins,
+            _userSnaps,
+            _arcTangents);
     }
 }

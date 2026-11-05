@@ -77,4 +77,38 @@ public sealed class InferenceSceneBuilderEntityTests
         InferenceAssert.PointEqual(new Vector3d(0, 20, 0), midpoint.Point);
         Assert.Single(snapshot.Circles);
     }
+
+    [Fact]
+    public void FromScene_OpenArcChain_ProducesTangentAtEachEnd()
+    {
+        HalfEdgeMesh mesh = new();
+        var chain = new List<MeshVertex>();
+        for (int i = 0; i <= 8; i++)
+        {
+            double angle = Math.PI * i / 8;
+            chain.Add(mesh.AddVertex(new Vector3d(20 * Math.Cos(angle), 20 * Math.Sin(angle), 0)));
+        }
+
+        for (int i = 0; i + 1 < chain.Count; i++)
+        {
+            mesh.AddWireEdge(chain[i], chain[i + 1]);
+        }
+
+        var scene = new Scene();
+        scene.Root.AddChild(new MeshNode { Mesh = mesh });
+
+        InferenceScene snapshot = InferenceSceneBuilder.FromScene(scene);
+
+        Assert.Equal(2, snapshot.ArcTangents.Count);
+        SnapArcTangent atStart = Assert.Single(
+            snapshot.ArcTangents, t => Math.Abs(t.Point.X - 20) < 1e-9);
+        InferenceAssert.PointEqual(new Vector3d(20, 0, 0), atStart.Point);
+
+        // Знак направления зависит от ориентации подобранной окружности: важна коллинеарность.
+        Assert.Equal(1, Math.Abs(Vector3d.Dot(atStart.Direction, Vector3d.UnitY)), 6);
+
+        SnapArcTangent atEnd = Assert.Single(
+            snapshot.ArcTangents, t => Math.Abs(t.Point.X + 20) < 1e-9);
+        Assert.Equal(1, Math.Abs(Vector3d.Dot(atEnd.Direction, Vector3d.UnitY)), 6);
+    }
 }

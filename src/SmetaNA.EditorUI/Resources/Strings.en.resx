@@ -360,6 +360,33 @@
   <data name="Snap.HiddenGeometryOn" xml:space="preserve">
     <value>Hidden geometry (Ctrl+Shift)</value>
   </data>
+  <data name="Snap.LockParallelPerpendicular" xml:space="preserve">
+    <value>Parallel/perpendicular</value>
+  </data>
+  <data name="Snap.LockAxisX" xml:space="preserve">
+    <value>X axis</value>
+  </data>
+  <data name="Snap.LockAxisY" xml:space="preserve">
+    <value>Y axis</value>
+  </data>
+  <data name="Snap.LockAxisZ" xml:space="preserve">
+    <value>Z axis</value>
+  </data>
+  <data name="Snap.Mode.PointsOnly" xml:space="preserve">
+    <value>Points only</value>
+  </data>
+  <data name="Snap.Mode.ParallelPerpendicular" xml:space="preserve">
+    <value>Parallel/perpendicular only</value>
+  </data>
+  <data name="CoordinateSpace.World" xml:space="preserve">
+    <value>World</value>
+  </data>
+  <data name="CoordinateSpace.Local" xml:space="preserve">
+    <value>Local</value>
+  </data>
+  <data name="CoordinateSpace.Toggle" xml:space="preserve">
+    <value>Coordinate space for numeric input: world axes or the selected container's axes</value>
+  </data>
   <data name="Tool.Snap" xml:space="preserve">
     <value>Snap point</value>
   </data>

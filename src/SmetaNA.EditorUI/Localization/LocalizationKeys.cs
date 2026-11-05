@@ -277,6 +277,33 @@ public static class LocalizationKeys
     /// <summary>Статус-строка: временный показ скрытой геометрии (Ctrl+Shift).</summary>
     public const string SnapHiddenGeometryOn = "Snap.HiddenGeometryOn";
 
+    /// <summary>Индикатор блокировки (R-24): одновременная фиксация параллели и перпендикуляра (↓).</summary>
+    public const string SnapLockParallelPerpendicular = "Snap.LockParallelPerpendicular";
+
+    /// <summary>Индикатор блокировки (R-24): ось X (→).</summary>
+    public const string SnapLockAxisX = "Snap.LockAxisX";
+
+    /// <summary>Индикатор блокировки (R-24): ось Y (←).</summary>
+    public const string SnapLockAxisY = "Snap.LockAxisY";
+
+    /// <summary>Индикатор блокировки (R-24): ось Z (↑).</summary>
+    public const string SnapLockAxisZ = "Snap.LockAxisZ";
+
+    /// <summary>Индикатор режима (R-24): Alt — только точечные привязки.</summary>
+    public const string SnapModePointsOnly = "Snap.Mode.PointsOnly";
+
+    /// <summary>Индикатор режима (R-24): Alt — только параллель/перпендикуляр.</summary>
+    public const string SnapModeParallelPerpendicular = "Snap.Mode.ParallelPerpendicular";
+
+    /// <summary>Переключатель координат (R-16): мировые координаты.</summary>
+    public const string CoordinateSpaceWorld = "CoordinateSpace.World";
+
+    /// <summary>Переключатель координат (R-16): локальные координаты контекста.</summary>
+    public const string CoordinateSpaceLocal = "CoordinateSpace.Local";
+
+    /// <summary>Подсказка переключателя координат (R-16).</summary>
+    public const string CoordinateSpaceToggle = "CoordinateSpace.Toggle";
+
     public const string ViewportCursorCoordinates = "Viewport.CursorCoordinates";
 
     public const string UnitMillimeter = "Unit.Millimeter";

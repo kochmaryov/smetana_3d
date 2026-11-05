@@ -33,6 +33,7 @@ public static class InferenceSceneBuilder
         var faces = new List<SnapFace>();
         var circles = new List<SnapCircle>();
         var arcPoints = new List<SnapArcPoint>();
+        var arcTangents = new List<SnapArcTangent>();
         var instanceOrigins = new List<SnapInstanceOrigin>();
         var userSnaps = new List<SnapUserPoint>();
         CollectNode(
@@ -46,9 +47,11 @@ public static class InferenceSceneBuilder
             faces,
             circles,
             arcPoints,
+            arcTangents,
             instanceOrigins,
             userSnaps);
-        return new InferenceScene(segments, faces, circles, arcPoints, instanceOrigins, userSnaps);
+        return new InferenceScene(
+            segments, faces, circles, arcPoints, instanceOrigins, userSnaps, arcTangents);
     }
 
     private static void CollectNode(
@@ -62,6 +65,7 @@ public static class InferenceSceneBuilder
         List<SnapFace> faces,
         List<SnapCircle> circles,
         List<SnapArcPoint> arcPoints,
+        List<SnapArcTangent> arcTangents,
         List<SnapInstanceOrigin> instanceOrigins,
         List<SnapUserPoint> userSnaps)
     {
@@ -108,7 +112,8 @@ public static class InferenceSceneBuilder
                 segments,
                 faces,
                 circles,
-                arcPoints);
+                arcPoints,
+                arcTangents);
         }
 
         if (node is SnapNode snapNode)
@@ -131,6 +136,7 @@ public static class InferenceSceneBuilder
                 faces,
                 circles,
                 arcPoints,
+                arcTangents,
                 instanceOrigins,
                 userSnaps);
         }
@@ -144,7 +150,8 @@ public static class InferenceSceneBuilder
         List<SnapSegment> segments,
         List<SnapFace> faces,
         List<SnapCircle> circles,
-        List<SnapArcPoint> arcPoints)
+        List<SnapArcPoint> arcPoints,
+        List<SnapArcTangent> arcTangents)
     {
         var indexOf = new Dictionary<MeshVertex, int>(mesh.Vertices.Count);
         for (int i = 0; i < mesh.Vertices.Count; i++)
@@ -207,7 +214,7 @@ public static class InferenceSceneBuilder
             TryAddCircle(ring, closed: true, circles, new SnapEntityRef(nodeId, SnapEntityKind.Circle, circles.Count, displayName));
         }
 
-        CollectWireCircles(mesh, world, indexOf, nodeId, displayName, circles, arcPoints);
+        CollectWireCircles(mesh, world, indexOf, nodeId, displayName, circles, arcPoints, arcTangents);
     }
 
     /// <summary>
@@ -222,7 +229,8 @@ public static class InferenceSceneBuilder
         Guid nodeId,
         string? displayName,
         List<SnapCircle> circles,
-        List<SnapArcPoint> arcPoints)
+        List<SnapArcPoint> arcPoints,
+        List<SnapArcTangent> arcTangents)
     {
         var neighbors = new Dictionary<int, List<int>>();
         var seen = new HashSet<(int From, int To)>();
@@ -325,7 +333,37 @@ public static class InferenceSceneBuilder
                 && TryArcMidpoint(ordered, out Vector3d arcMidpoint))
             {
                 arcPoints.Add(new SnapArcPoint(arcMidpoint, entity));
+                AddArcTangents(ordered, center, normal, entity, arcTangents);
             }
+        }
+    }
+
+    /// <summary>
+    /// Касательные в концевых вершинах открытой дуги (R-34): касательная
+    /// окружности в точке вершины — <c>normal × radial</c>.
+    /// </summary>
+    private static void AddArcTangents(
+        List<Vector3d> ordered,
+        Vector3d center,
+        Vector3d normal,
+        SnapEntityRef entity,
+        List<SnapArcTangent> arcTangents)
+    {
+        if (ordered.Count < 2)
+        {
+            return;
+        }
+
+        foreach (Vector3d vertex in (Vector3d[])[ordered[0], ordered[^1]])
+        {
+            Vector3d radial = vertex - center;
+            Vector3d direction = Vector3d.Cross(normal, radial);
+            if (direction.LengthSquared() <= 0)
+            {
+                continue;
+            }
+
+            arcTangents.Add(new SnapArcTangent(vertex, direction.Normalized(), entity));
         }
     }
 

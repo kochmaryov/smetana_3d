@@ -214,6 +214,28 @@ public abstract class TransformToolBase : ToolBase
         return true;
     }
 
+    /// <summary>
+    /// Точка из VCB (R-19) для инструментов, чья цель задаётся положением в
+    /// плоскости операции (Rotate/Scale): абсолютная координата — целевая точка,
+    /// относительная — смещение от базовой точки. Применяется и фиксирует операцию.
+    /// </summary>
+    public override bool TryApplyPoint(Vector3d point, bool relative)
+    {
+        if (!IsActive || _state != DragState.Dragging)
+        {
+            return false;
+        }
+
+        Vector3d target = relative ? BasePoint + point : point;
+        if (!TryUpdateOperationAt(target))
+        {
+            return false;
+        }
+
+        Commit();
+        return true;
+    }
+
     /// <summary>Отмена текущего действия: предпросмотр сбрасывается, сцена не меняется.</summary>
     public override void Cancel()
     {

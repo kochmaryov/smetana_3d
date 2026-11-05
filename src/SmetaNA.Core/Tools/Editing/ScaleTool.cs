@@ -83,6 +83,28 @@ public sealed class ScaleTool : TransformToolBase
         return true;
     }
 
+    /// <summary>
+    /// Целевая точка из VCB (R-19): множитель — отношение расстояний от пивота до
+    /// целевой и опорной точек в плоскости масштабирования.
+    /// </summary>
+    protected override bool TryUpdateOperationAt(Vector3d point)
+    {
+        if (_referenceDistance <= ReferenceEpsilon)
+        {
+            return false;
+        }
+
+        double distance = EditingMath.ProjectOnPlane(point - _pivot, _axis).Length();
+        if (distance <= ReferenceEpsilon)
+        {
+            return false;
+        }
+
+        _factor = distance / _referenceDistance;
+        WorldDelta = EditingTransforms.CreateUniformScale(_pivot, _factor);
+        return true;
+    }
+
     protected override bool TrySetOperationValue(double value)
     {
         if (_referenceDistance <= ReferenceEpsilon || !double.IsFinite(value) || value <= 0)

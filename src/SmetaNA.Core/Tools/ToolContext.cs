@@ -112,6 +112,9 @@ public sealed class ToolContext
     /// <summary>Активная фиксация направления стрелками (переключатель).</summary>
     public SnapModifiers LockModifiers { get; private set; }
 
+    /// <summary>Фиксация или режим привязок изменились (индикатор статус-строки, R-24).</summary>
+    public event Action? SnapStateChanged;
+
     /// <summary>Режим линейных привязок, переключаемый Alt.</summary>
     public SnapInferenceMode InferenceMode { get; private set; } = SnapInferenceMode.All;
 
@@ -125,17 +128,31 @@ public sealed class ToolContext
         LockModifiers = (LockModifiers & lockModifiers) == lockModifiers
             ? SnapModifiers.None
             : lockModifiers & LockMask;
+        SnapStateChanged?.Invoke();
     }
 
-    public void ResetSnapLocks() => LockModifiers = SnapModifiers.None;
+    public void ResetSnapLocks()
+    {
+        if (LockModifiers == SnapModifiers.None)
+        {
+            return;
+        }
+
+        LockModifiers = SnapModifiers.None;
+        SnapStateChanged?.Invoke();
+    }
 
     /// <summary>Цикл Alt: все → только точки → только параллель/перпендикуляр → все.</summary>
-    public void CycleInferenceMode() => InferenceMode = InferenceMode switch
+    public void CycleInferenceMode()
     {
-        SnapInferenceMode.All => SnapInferenceMode.PointsOnly,
-        SnapInferenceMode.PointsOnly => SnapInferenceMode.ParallelPerpendicularOnly,
-        _ => SnapInferenceMode.All,
-    };
+        InferenceMode = InferenceMode switch
+        {
+            SnapInferenceMode.All => SnapInferenceMode.PointsOnly,
+            SnapInferenceMode.PointsOnly => SnapInferenceMode.ParallelPerpendicularOnly,
+            _ => SnapInferenceMode.All,
+        };
+        SnapStateChanged?.Invoke();
+    }
 
     /// <summary>
     /// Модификаторы привязок с учётом фиксации и режима Alt. Ctrl без Shift — только
@@ -169,6 +186,62 @@ public sealed class ToolContext
 
     /// <summary>Состояние числового ввода (VCB) активного инструмента.</summary>
     public ToolVcbState VcbState { get; private set; } = ToolVcbState.Inactive;
+
+    /// <summary>
+    /// Пространство координат ввода (R-16, S14). В локальном абсолютная строка
+    /// VCB трактуется в осях <see cref="CoordinateContext"/>.
+    /// </summary>
+    public CoordinateSpace CoordinateSpace { get; private set; } = CoordinateSpace.World;
+
+    /// <summary>
+    /// Мировая матрица контекста (выбранного контейнера): начало и оси для
+    /// локального ввода. <c>null</c> — контекста нет, локальный режим недоступен.
+    /// </summary>
+    public Transform3d? CoordinateContext { get; private set; }
+
+    /// <summary>Пространство координат или контекст изменились.</summary>
+    public event Action? CoordinateSpaceChanged;
+
+    /// <summary>Есть ли контекст, в осях которого возможен локальный ввод.</summary>
+    public bool HasCoordinateContext => CoordinateContext is not null;
+
+    /// <summary>Переключить мировые/локальные координаты (без контекста — остаётся мировым).</summary>
+    public void ToggleCoordinateSpace()
+    {
+        CoordinateSpace = CoordinateSpace == CoordinateSpace.World && HasCoordinateContext
+            ? CoordinateSpace.Local
+            : CoordinateSpace.World;
+        CoordinateSpaceChanged?.Invoke();
+    }
+
+    /// <summary>Задать контекст локальных координат (мировая матрица контейнера).</summary>
+    public void SetCoordinateContext(Transform3d? context)
+    {
+        if (CoordinateContext == context)
+        {
+            return;
+        }
+
+        CoordinateContext = context;
+        if (context is null && CoordinateSpace == CoordinateSpace.Local)
+        {
+            CoordinateSpace = CoordinateSpace.World;
+        }
+
+        CoordinateSpaceChanged?.Invoke();
+    }
+
+    /// <summary>Точка ввода → мир: в локальном режиме — через матрицу контекста.</summary>
+    public Vector3d ToWorldPoint(Vector3d point)
+        => CoordinateSpace == CoordinateSpace.Local && CoordinateContext is { } context
+            ? context.TransformPoint(point)
+            : point;
+
+    /// <summary>Вектор/приращение ввода → мир: в локальном режиме — только поворот/масштаб.</summary>
+    public Vector3d ToWorldVector(Vector3d vector)
+        => CoordinateSpace == CoordinateSpace.Local && CoordinateContext is { } context
+            ? context.TransformVector(vector)
+            : vector;
 
     /// <summary>Сцена была изменена командой (UI перестраивает рендер-модель).</summary>
     public event Action? SceneEdited;

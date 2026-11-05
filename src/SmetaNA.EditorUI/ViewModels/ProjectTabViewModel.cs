@@ -4,6 +4,7 @@ using System.Windows.Input;
 using SmetaNA.Core.Geometry;
 using SmetaNA.Core.Inference;
 using SmetaNA.Core.Model;
+using SmetaNA.Core.Tools;
 using SmetaNA.EditorUI.Commands;
 using SmetaNA.EditorUI.Localization;
 using SmetaNA.EditorUI.Sessions;
@@ -71,7 +72,11 @@ public sealed class ProjectTabViewModel : ViewModelBase
             PushInferenceSettings();
         });
 
+        ToggleCoordinateSpaceCommand = new RelayCommand(() => Tools.Context.ToggleCoordinateSpace());
+
         _localization.CultureChanged += InvalidateAll;
+        Tools.Context.SnapStateChanged += OnSnapStateChanged;
+        Tools.Context.CoordinateSpaceChanged += OnCoordinateSpaceChanged;
     }
 
     /// <summary>Вкладка поверх существующей сцены (сцена оборачивается в новый документ).</summary>
@@ -202,6 +207,9 @@ public sealed class ProjectTabViewModel : ViewModelBase
 
     /// <summary>Переключить набор категорий привязок на следующий пресет.</summary>
     public ICommand CycleCategoriesCommand { get; }
+
+    /// <summary>Переключить мировые/локальные координаты ввода (R-16, S14).</summary>
+    public ICommand ToggleCoordinateSpaceCommand { get; }
 
     /// <summary>Переключить шаг сетки на следующий пресет (после 100 — снова 0,1).</summary>
     public ICommand CycleGridStepCommand { get; }
@@ -398,6 +406,97 @@ public sealed class ProjectTabViewModel : ViewModelBase
     }
 
     private static string FormatCoordinate(double value) => value.ToString("0.##", CultureInfo.CurrentCulture);
+
+    /// <summary>
+    /// Текстовая индикация активной фиксации/режима привязок (R-24); пусто — ничего
+    /// не зафиксировано.
+    /// </summary>
+    public string SnapStateText
+    {
+        get
+        {
+            var parts = new List<string>(4);
+            SnapModifiers locks = Tools.Context.LockModifiers;
+            if ((locks & SnapModifiers.LockAxisX) != 0)
+            {
+                parts.Add(_localization.Get(LocalizationKeys.SnapLockAxisX));
+            }
+
+            if ((locks & SnapModifiers.LockAxisY) != 0)
+            {
+                parts.Add(_localization.Get(LocalizationKeys.SnapLockAxisY));
+            }
+
+            if ((locks & SnapModifiers.LockAxisZ) != 0)
+            {
+                parts.Add(_localization.Get(LocalizationKeys.SnapLockAxisZ));
+            }
+
+            bool parallel = (locks & SnapModifiers.LockParallel) != 0;
+            bool perpendicular = (locks & SnapModifiers.LockPerpendicular) != 0;
+            if (parallel && perpendicular)
+            {
+                parts.Add(_localization.Get(LocalizationKeys.SnapLockParallelPerpendicular));
+            }
+            else if (parallel)
+            {
+                parts.Add(_localization.Get(LocalizationKeys.SnapParallel));
+            }
+            else if (perpendicular)
+            {
+                parts.Add(_localization.Get(LocalizationKeys.SnapPerpendicular));
+            }
+
+            parts.Add(Tools.Context.InferenceMode switch
+            {
+                SnapInferenceMode.PointsOnly => _localization.Get(LocalizationKeys.SnapModePointsOnly),
+                SnapInferenceMode.ParallelPerpendicularOnly =>
+                    _localization.Get(LocalizationKeys.SnapModeParallelPerpendicular),
+                _ => string.Empty,
+            });
+
+            parts.RemoveAll(part => part.Length == 0);
+            return string.Join(" · ", parts);
+        }
+    }
+
+    public bool HasSnapState => SnapStateText.Length > 0;
+
+    /// <summary>Есть контекст (выбранный контейнер) для локальных координат ввода.</summary>
+    public bool HasCoordinateContext => Tools.Context.HasCoordinateContext;
+
+    /// <summary>Пространство координат ввода: мир/локально (R-16, S14).</summary>
+    public bool IsLocalCoordinateSpace => Tools.Context.CoordinateSpace == CoordinateSpace.Local;
+
+    /// <summary>Подпись переключателя пространства координат в статус-строке.</summary>
+    public string CoordinateSpaceText => _localization.Get(
+        IsLocalCoordinateSpace
+            ? LocalizationKeys.CoordinateSpaceLocal
+            : LocalizationKeys.CoordinateSpaceWorld);
+
+    /// <summary>Переключить мировые/локальные координаты ввода.</summary>
+    public void ToggleCoordinateSpace() => Tools.Context.ToggleCoordinateSpace();
+
+    /// <summary>
+    /// Контекст локальных координат — выбранный контейнер (группа/компонент):
+    /// его оси и начало используются абсолютной строкой VCB.
+    /// </summary>
+    public void UpdateCoordinateContext(SceneNode? node)
+        => Tools.Context.SetCoordinateContext(
+            node is GroupNode or ComponentInstanceNode ? node.WorldTransform() : null);
+
+    private void OnSnapStateChanged()
+    {
+        OnPropertyChanged(nameof(SnapStateText));
+        OnPropertyChanged(nameof(HasSnapState));
+    }
+
+    private void OnCoordinateSpaceChanged()
+    {
+        OnPropertyChanged(nameof(HasCoordinateContext));
+        OnPropertyChanged(nameof(IsLocalCoordinateSpace));
+        OnPropertyChanged(nameof(CoordinateSpaceText));
+    }
 
     public string Title =>
         string.Format(_localization.Get(LocalizationKeys.ProjectName), Number);

@@ -140,8 +140,15 @@ public sealed class ToolController
     /// <summary>Числовое значение VCB (мм) → активному инструменту; <c>true</c> — применено.</summary>
     public bool CommitValue(double value) => ActiveTool?.TryApplyValue(value) ?? false;
 
-    /// <summary>Координаты из VCB → активному инструменту; <c>true</c> — применено.</summary>
-    public bool CommitPoint(Vector3d point, bool relative) => ActiveTool?.TryApplyPoint(point, relative) ?? false;
+    /// <summary>
+    /// Координаты из VCB → активному инструменту; <c>true</c> — применено.
+    /// В локальном режиме (R-16, S14) строка пересчитывается в мировые оси.
+    /// </summary>
+    public bool CommitPoint(Vector3d point, bool relative)
+    {
+        Vector3d world = relative ? Context.ToWorldVector(point) : Context.ToWorldPoint(point);
+        return ActiveTool?.TryApplyPoint(world, relative) ?? false;
+    }
 
     /// <summary>Отмена текущего действия активного инструмента.</summary>
     public void Cancel() => ActiveTool?.Cancel();

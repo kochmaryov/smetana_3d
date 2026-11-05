@@ -157,6 +157,62 @@ public sealed class DimensionTool : ToolBase
         }
     }
 
+    /// <summary>
+    /// Точка из VCB (R-19): заменяет клик на текущем шаге построения — начало
+    /// измерения, конец измерения (абсолютно или смещением от начала), затем
+    /// положение размерной линии с фиксацией размера.
+    /// </summary>
+    public override bool TryApplyPoint(Vector3d point, bool relative)
+    {
+        if (!IsActive || !InferenceMath.IsFinite(point))
+        {
+            return false;
+        }
+
+        switch (_state)
+        {
+            case DimensionToolState.Idle:
+                if (relative)
+                {
+                    // смещение без опорной точки не определено
+                    return false;
+                }
+
+                _start = point;
+                _lineOffset = Vector3d.Zero;
+                _hasCursor = false;
+                _state = DimensionToolState.StartPicked;
+                SetVcb(ToolValueKind.Length, null, true);
+                SetPreview(ToolPreview.Empty);
+                return true;
+
+            case DimensionToolState.StartPicked:
+                _end = relative ? _start + point : point;
+                if (MeasureLength() <= DimensionMath.MinLengthMm)
+                {
+                    return true;
+                }
+
+                _cursorPoint = _end;
+                _hasCursor = true;
+                _lineOffset = Vector3d.Zero;
+                _state = DimensionToolState.EndPicked;
+                SetVcb(ToolValueKind.Length, _lineOffset.Length(), true);
+                BuildPreview();
+                return true;
+
+            case DimensionToolState.EndPicked:
+                _cursorPoint = relative ? _end + point : point;
+                _hasCursor = true;
+                _lineOffset = PerpendicularOffset(_cursorPoint);
+                Commit();
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
     /// <summary>Отмена: построение сбрасывается, сцена не меняется.</summary>
     public override void Cancel()
     {

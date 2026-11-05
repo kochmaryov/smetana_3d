@@ -6,8 +6,9 @@ namespace SmetaNA.Core.Inference;
 /// <see cref="Intersection"/>, <see cref="OnFace"/>, <see cref="OnEdge"/>, <see cref="Guide"/>,
 /// <see cref="Grid"/>. Линейные ограничения (направления): <see cref="AxisX"/>,
 /// <see cref="AxisY"/>, <see cref="AxisZ"/>, <see cref="AxisInstanceX"/>,
-/// <see cref="Perpendicular"/>, <see cref="Parallel"/>, <see cref="Tangent"/>,
-/// <see cref="ExtendEdge"/>, <see cref="FromPoint"/>. Типы для v1.x помечены в описании.
+/// <see cref="Perpendicular"/>, <see cref="PerpendicularToFace"/>, <see cref="Parallel"/>,
+/// <see cref="Tangent"/>, <see cref="TangentAtVertex"/>, <see cref="ExtendEdge"/>,
+/// <see cref="FromPoint"/>. <see cref="GuidePoint"/> зарезервирован до v1.x.
 /// </summary>
 public enum SnapType
 {
@@ -62,7 +63,7 @@ public enum SnapType
     /// <summary>Узел сетки привязки (наше расширение).</summary>
     Grid,
 
-    /// <summary>Точка-направляющая (v1.x).</summary>
+    /// <summary>Точка-направляющая (зарезервировано до v1.x: направляющие дают <see cref="Guide"/>).</summary>
     GuidePoint,
 
     /// <summary>Пользовательская точка сборки (v1.x).</summary>
@@ -201,6 +202,15 @@ public static class SnapDefaults
 
     /// <summary>Перехват удержанного кандидата, только если новый ближе на 2 px.</summary>
     public const double SwitchDistancePx = 2.0;
+
+    /// <summary>
+    /// Удержание над точкой (R-37): через сколько миллисекунд кандидат получает
+    /// надбавку к приоритету.
+    /// </summary>
+    public const double DwellPriorityMs = 250.0;
+
+    /// <summary>Надбавка к приоритету за удержание над точкой (R-37).</summary>
+    public const int DwellPriorityBonus = 50;
 
     /// <summary>
     /// Насколько новый кандидат должен быть приоритетнее удержанного, чтобы

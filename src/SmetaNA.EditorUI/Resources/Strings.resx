@@ -360,6 +360,33 @@
   <data name="Snap.HiddenGeometryOn" xml:space="preserve">
     <value>Скрытая геометрия (Ctrl+Shift)</value>
   </data>
+  <data name="Snap.LockParallelPerpendicular" xml:space="preserve">
+    <value>Параллельно/перпендикулярно</value>
+  </data>
+  <data name="Snap.LockAxisX" xml:space="preserve">
+    <value>Ось X</value>
+  </data>
+  <data name="Snap.LockAxisY" xml:space="preserve">
+    <value>Ось Y</value>
+  </data>
+  <data name="Snap.LockAxisZ" xml:space="preserve">
+    <value>Ось Z</value>
+  </data>
+  <data name="Snap.Mode.PointsOnly" xml:space="preserve">
+    <value>Только точки</value>
+  </data>
+  <data name="Snap.Mode.ParallelPerpendicular" xml:space="preserve">
+    <value>Параллель/перпендикуляр</value>
+  </data>
+  <data name="CoordinateSpace.World" xml:space="preserve">
+    <value>Мир</value>
+  </data>
+  <data name="CoordinateSpace.Local" xml:space="preserve">
+    <value>Локально</value>
+  </data>
+  <data name="CoordinateSpace.Toggle" xml:space="preserve">
+    <value>Пространство координат числового ввода: мировые оси или оси выбранного контейнера</value>
+  </data>
   <data name="Tool.Snap" xml:space="preserve">
     <value>Точка сборки</value>
   </data>

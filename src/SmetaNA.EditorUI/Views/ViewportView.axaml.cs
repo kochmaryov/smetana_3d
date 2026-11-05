@@ -279,7 +279,11 @@ public partial class ViewportView : UserControl
         UpdateHud();
     }
 
-    private void OnSelectionChanged(object? sender, EventArgs e) => UpdateHud();
+    private void OnSelectionChanged(object? sender, EventArgs e)
+    {
+        _viewModel?.UpdateCoordinateContext(Viewport.SelectedObject);
+        UpdateHud();
+    }
 
     /// <summary>
     /// Контекстная полоса у курсора (T4): показывается при выбранном объекте,

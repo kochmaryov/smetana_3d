@@ -88,6 +88,28 @@ public sealed class RotateTool : TransformToolBase
         return true;
     }
 
+    /// <summary>
+    /// Целевая точка из VCB (R-19): угол считается от опорного направления до
+    /// направления на точку в плоскости вращения.
+    /// </summary>
+    protected override bool TryUpdateOperationAt(Vector3d point)
+    {
+        if (_reference.LengthSquared() <= ReferenceEpsilon * ReferenceEpsilon)
+        {
+            return false;
+        }
+
+        Vector3d direction = EditingMath.ProjectOnPlane(point - _pivot, _axis);
+        if (direction.LengthSquared() <= ReferenceEpsilon * ReferenceEpsilon)
+        {
+            return false;
+        }
+
+        _angleDegrees = EditingMath.SignedAngleDegrees(_reference, direction, _axis);
+        WorldDelta = EditingTransforms.CreateRotation(_axis, _pivot, EditingMath.ToRadians(_angleDegrees));
+        return true;
+    }
+
     protected override bool TrySetOperationValue(double value)
     {
         if (_reference.LengthSquared() <= ReferenceEpsilon * ReferenceEpsilon)

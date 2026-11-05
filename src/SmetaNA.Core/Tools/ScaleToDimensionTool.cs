@@ -154,6 +154,51 @@ public sealed class ScaleToDimensionTool : ToolBase
         }
     }
 
+    /// <summary>
+    /// Точка из VCB (R-19): заменяет клик при выборе начала и конца измеряемого
+    /// отрезка (абсолютно или смещением от начала); затем вводится целевой размер.
+    /// </summary>
+    public override bool TryApplyPoint(Vector3d point, bool relative)
+    {
+        if (!IsActive || !InferenceMath.IsFinite(point))
+        {
+            return false;
+        }
+
+        switch (_state)
+        {
+            case ScaleToDimensionToolState.Idle:
+                if (relative)
+                {
+                    return false;
+                }
+
+                _start = point;
+                _hasCursor = false;
+                _state = ScaleToDimensionToolState.StartPicked;
+                SetVcb(ToolValueKind.Length, null, true);
+                SetPreview(ToolPreview.Empty);
+                return true;
+
+            case ScaleToDimensionToolState.StartPicked:
+                _end = relative ? _start + point : point;
+                if (CurrentDistance() <= DimensionMath.MinLengthMm)
+                {
+                    return true;
+                }
+
+                _cursorPoint = _end;
+                _hasCursor = false;
+                _state = ScaleToDimensionToolState.AwaitingValue;
+                SetVcb(ToolValueKind.Length, CurrentDistance(), true);
+                BuildPreview();
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
     /// <summary>Отмена: построение сбрасывается, сцена не меняется.</summary>
     public override void Cancel() => Reset();
 
