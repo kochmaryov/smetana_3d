@@ -33,6 +33,27 @@ public sealed record SnapCandidate(
     /// <summary>Расстояние от курсора до проекции <see cref="Point"/> в пикселях.</summary>
     public double ScreenDistancePx { get; init; }
 
+    /// <summary>Источник привязки для подсветки ребра/грани и подписи имени контейнера.</summary>
+    public SnapEntityRef Entity { get; init; }
+
+    /// <summary>
+    /// Степень свободы точки по SketchUp-семантике: 0 — вершина/пересечение,
+    /// 1 — на ребре или оси, 2 — на грани, 3 — свободное пространство.
+    /// </summary>
+    public int DegreesOfFreedom { get; init; } = 3;
+
+    /// <summary>Кандидат зафиксирован клавишей (Shift/стрелка).</summary>
+    public bool IsLocked { get; init; }
+
+    /// <summary>Линия ограничения для отрисовки (продолжение, ось через точку).</summary>
+    public SnapLine? ConstraintLine { get; init; }
+
+    /// <summary>Ребро источника — для подсветки в оверлее (точка на ребре, продолжение).</summary>
+    public SnapSegment? HighlightSegment { get; init; }
+
+    /// <summary>Грань источника — контур подсвечивается при привязке «на грани».</summary>
+    public SnapFace? HighlightFace { get; init; }
+
     /// <summary>Комбинированная привязка: точка + линейное ограничение.</summary>
     public bool IsCombined => Direction is not null && Marker == SnapMarkerKind.LineAndPoint;
 }

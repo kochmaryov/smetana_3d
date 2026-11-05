@@ -137,28 +137,46 @@ public partial class VcbControl : UserControl
     private void Commit()
     {
         ILocalizationService localization = EditorServices.Localization;
+        // VCB принимает и числа, и координаты независимо от объявленного типа:
+        // Move понимает длину, Line/Rectangle/Circle — абсолютные и относительные точки.
         if (Kind == VcbInputKind.Coordinate)
         {
             VcbCoordinateResult result = VcbValueParser.ParseCoordinate(InputBox.Text, Unit);
-            if (!result.IsSuccess)
+            if (result.IsSuccess)
             {
-                SetError(localization.Get(LocalizationKeys.ForVcbError(result.Error)));
+                SetError(string.Empty);
+                Committed?.Invoke(this, VcbCommittedEventArgs.ForCoordinate(result));
                 return;
             }
 
-            SetError(string.Empty);
-            Committed?.Invoke(this, VcbCommittedEventArgs.ForCoordinate(result));
+            VcbParseResult fallback = VcbValueParser.ParseScalar(InputBox.Text, VcbInputKind.Length, Unit);
+            if (fallback.IsSuccess)
+            {
+                SetError(string.Empty);
+                Committed?.Invoke(this, VcbCommittedEventArgs.ForScalar(VcbInputKind.Length, fallback));
+                return;
+            }
+
+            SetError(localization.Get(LocalizationKeys.ForVcbError(result.Error)));
             return;
         }
 
         VcbParseResult resultScalar = VcbValueParser.ParseScalar(InputBox.Text, Kind, Unit);
-        if (!resultScalar.IsSuccess)
+        if (resultScalar.IsSuccess)
         {
-            SetError(localization.Get(LocalizationKeys.ForVcbError(resultScalar.Error)));
+            SetError(string.Empty);
+            Committed?.Invoke(this, VcbCommittedEventArgs.ForScalar(Kind, resultScalar));
             return;
         }
 
-        SetError(string.Empty);
-        Committed?.Invoke(this, VcbCommittedEventArgs.ForScalar(Kind, resultScalar));
+        VcbCoordinateResult coordinate = VcbValueParser.ParseCoordinate(InputBox.Text, Unit);
+        if (coordinate.IsSuccess)
+        {
+            SetError(string.Empty);
+            Committed?.Invoke(this, VcbCommittedEventArgs.ForCoordinate(coordinate));
+            return;
+        }
+
+        SetError(localization.Get(LocalizationKeys.ForVcbError(resultScalar.Error)));
     }
 }

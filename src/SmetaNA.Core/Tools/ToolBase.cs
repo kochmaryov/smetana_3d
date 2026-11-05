@@ -1,3 +1,6 @@
+using SmetaNA.Core.Geometry;
+using SmetaNA.Core.Inference;
+
 namespace SmetaNA.Core.Tools;
 
 /// <summary>
@@ -9,6 +12,7 @@ public abstract class ToolBase : ITool
 {
     private ToolContext? _context;
     private ToolPreview _preview = ToolPreview.Empty;
+    private SnapResult _snap = SnapResult.Empty;
     private ToolVcbState _vcb = ToolVcbState.Inactive;
 
     public abstract string Id { get; }
@@ -18,6 +22,8 @@ public abstract class ToolBase : ITool
     public ToolVcbState Vcb => _vcb;
 
     public ToolPreview Preview => _preview;
+
+    public SnapResult CurrentSnap => _snap;
 
     public event Action? StateChanged;
 
@@ -49,6 +55,7 @@ public abstract class ToolBase : ITool
             _context = null;
             _vcb = ToolVcbState.Inactive;
             _preview = ToolPreview.Empty;
+            _snap = SnapResult.Empty;
             RaiseStateChanged();
         }
     }
@@ -60,6 +67,10 @@ public abstract class ToolBase : ITool
     public virtual bool OnKey(KeyInput input) => false;
 
     public abstract bool TryApplyValue(double value);
+
+    public virtual bool TryApplyPoint(Vector3d point, bool relative) => false;
+
+    public void ResetSnap() => _snap = SnapResult.Empty;
 
     /// <summary>Вызывается при активации инструмента.</summary>
     protected virtual void OnActivated()
@@ -81,6 +92,13 @@ public abstract class ToolBase : ITool
 
         _preview = preview;
         RaiseStateChanged();
+    }
+
+    /// <summary>Опубликовать результат привязок для визуальных подсказок.</summary>
+    protected void SetSnap(SnapResult snap)
+    {
+        ArgumentNullException.ThrowIfNull(snap);
+        _snap = snap;
     }
 
     protected void SetVcb(ToolValueKind kind, double? value, bool isActive)

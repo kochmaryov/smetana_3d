@@ -55,6 +55,7 @@ public sealed class RectangleTool : DrawingToolBase
             case PointerEventKind.Move:
                 if (!_started)
                 {
+                    PreviewSnapAt(input.PositionPx, input.Modifiers);
                     return false;
                 }
 
@@ -154,6 +155,31 @@ public sealed class RectangleTool : DrawingToolBase
         }
 
         UpdateCursor(positionPx, modifiers);
+        Commit();
+        return true;
+    }
+
+    protected override bool TryApplyPointCore(Vector3d point, bool relative)
+    {
+        if (!_started)
+        {
+            if (relative)
+            {
+                return false;
+            }
+
+            _corner = OnPlane(point);
+            _cursor = null;
+            _sizeU = null;
+            _sizeV = null;
+            _vcbOnV = false;
+            _started = true;
+            SetVcb(ToolValueKind.Length, null, true);
+            UpdatePreview();
+            return true;
+        }
+
+        _cursor = OnPlane(relative ? _corner + point : point);
         Commit();
         return true;
     }

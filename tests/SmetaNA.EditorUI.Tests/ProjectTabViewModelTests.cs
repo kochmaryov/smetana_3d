@@ -1,3 +1,5 @@
+using System.Globalization;
+using SmetaNA.Core.Geometry;
 using SmetaNA.Core.Model;
 using SmetaNA.EditorUI.Localization;
 using SmetaNA.EditorUI.ViewModels;
@@ -22,6 +24,25 @@ public sealed class ProjectTabViewModelTests
 
         Assert.Equal(LengthUnit.Inch, scene.Unit);
         Assert.Equal(LengthUnit.Inch, viewModel.SelectedUnit.Unit);
+    }
+
+    [Fact]
+    public void SetCursorPoint_FormatsSceneUnits_AndClearsOnNull()
+    {
+        var scene = new Scene { Unit = LengthUnit.Centimeter };
+        ProjectTabViewModel viewModel = CreateViewModel(scene);
+
+        viewModel.SetCursorPoint(new Vector3d(20, 30, 5));
+
+        Assert.True(viewModel.HasCursorCoordinates);
+        Assert.Contains("2", viewModel.CursorCoordinates);
+        Assert.Contains("3", viewModel.CursorCoordinates);
+        Assert.Contains(0.5.ToString("0.##", CultureInfo.CurrentCulture), viewModel.CursorCoordinates);
+
+        viewModel.SetCursorPoint(null);
+
+        Assert.False(viewModel.HasCursorCoordinates);
+        Assert.Equal(string.Empty, viewModel.CursorCoordinates);
     }
 
     [Fact]

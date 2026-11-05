@@ -57,12 +57,13 @@ public class RotateToolTests
         var tool = new RotateTool();
         tool.Activate(context);
 
-        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(1, 10, 30));
+        // Точка наведения дальше 8 px от рёбер: иначе сработает привязка и изменит опору.
+        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(3, 10, 30));
         Vector2d dragPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(5, 6, 30));
         tool.OnPointer(PointerInput.Press(pressPixel, PointerButton.Left));
         tool.OnPointer(PointerInput.Move(dragPixel));
 
-        // опорное направление (-4, 0), текущее (0, -4) — поворот +90° против часовой
+        // опорное направление (-2, 0), текущее (0, -4) — поворот +90° против часовой
         Assert.Equal(90, tool.AngleDegrees, 6);
     }
 
@@ -125,7 +126,7 @@ public class RotateToolTests
         var tool = new RotateTool();
         tool.Activate(context);
 
-        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(1, 10, 30));
+        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(3, 10, 30));
         Vector2d dragPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(5, 6, 30));
         tool.OnPointer(PointerInput.Press(pressPixel, PointerButton.Left));
         tool.OnPointer(PointerInput.Move(dragPixel));

@@ -61,6 +61,36 @@ public sealed class MoveTool : TransformToolBase
         return true;
     }
 
+    /// <summary>Перемещение по привязанной точке (концы, рёбра, оси, сетка).</summary>
+    protected override bool TryUpdateOperationAt(Vector3d point)
+    {
+        _translation = point - _baseWorld;
+        WorldDelta = Transform3d.CreateTranslation(_translation);
+        return true;
+    }
+
+    /// <summary>
+    /// Точная точка из VCB: абсолютная координата — куда переместить захваченную
+    /// точку, относительная — сразу смещение.
+    /// </summary>
+    public override bool TryApplyPoint(Vector3d point, bool relative)
+    {
+        if (!IsActive || !IsDragging)
+        {
+            return false;
+        }
+
+        _translation = relative ? point : point - _baseWorld;
+        if (_translation.Length() < MinCommitDistance)
+        {
+            return true;
+        }
+
+        WorldDelta = Transform3d.CreateTranslation(_translation);
+        Commit();
+        return true;
+    }
+
     protected override bool TrySetOperationValue(double value)
     {
         double length = _translation.Length();

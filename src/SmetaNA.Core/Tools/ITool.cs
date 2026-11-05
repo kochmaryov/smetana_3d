@@ -1,3 +1,6 @@
+using SmetaNA.Core.Geometry;
+using SmetaNA.Core.Inference;
+
 namespace SmetaNA.Core.Tools;
 
 /// <summary>
@@ -20,6 +23,9 @@ public interface ITool
     /// <summary>Текущий предпросмотр для отрисовки.</summary>
     ToolPreview Preview { get; }
 
+    /// <summary>Текущий результат привязок — источник маркеров и подписей вьюпорта.</summary>
+    SnapResult CurrentSnap { get; }
+
     /// <summary>Предпросмотр или состояние VCB изменились.</summary>
     event Action? StateChanged;
 
@@ -41,4 +47,13 @@ public interface ITool
     /// инструментом.
     /// </summary>
     bool TryApplyValue(double value);
+
+    /// <summary>
+    /// Координаты из VCB: абсолютная точка или смещение от опорной точки;
+    /// <c>true</c> — значение применено инструментом.
+    /// </summary>
+    bool TryApplyPoint(Vector3d point, bool relative);
+
+    /// <summary>Сбросить опубликованную привязку (после клика Shift не должен «залипать»).</summary>
+    void ResetSnap();
 }

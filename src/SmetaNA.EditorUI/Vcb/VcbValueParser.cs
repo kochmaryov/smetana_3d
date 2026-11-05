@@ -88,9 +88,25 @@ public static partial class VcbValueParser
         }
 
         string trimmed = text.Trim();
-        string[] components = trimmed.Contains(';')
-            ? trimmed.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-            : trimmed.Split([' ', '\t'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        bool relative = trimmed.Length >= 2 && trimmed[0] == '<' && trimmed[^1] == '>';
+        if (relative || (trimmed.Length >= 2 && trimmed[0] == '[' && trimmed[^1] == ']'))
+        {
+            trimmed = trimmed[1..^1].Trim();
+        }
+
+        string[] components;
+        if (trimmed.Contains(';'))
+        {
+            components = trimmed.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        }
+        else if (trimmed.Count(character => character == ',') == 2)
+        {
+            components = trimmed.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        }
+        else
+        {
+            components = trimmed.Split([' ', '\t'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        }
 
         if (components.Length != 3)
         {
@@ -109,7 +125,7 @@ public static partial class VcbValueParser
             millimeters[i] = parsed.ValueInMillimeters!.Value;
         }
 
-        return VcbCoordinateResult.Ok(millimeters[0], millimeters[1], millimeters[2]);
+        return VcbCoordinateResult.Ok(millimeters[0], millimeters[1], millimeters[2], relative);
     }
 
     /// <summary>Каноническое отображение числа (локаль текущего потока).</summary>

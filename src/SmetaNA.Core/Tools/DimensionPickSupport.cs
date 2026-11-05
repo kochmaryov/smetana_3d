@@ -10,7 +10,11 @@ namespace SmetaNA.Core.Tools;
 /// <param name="Point">Выбранная точка (мировые координаты, мм).</param>
 /// <param name="SnapType">Тип сработавшей привязки или null (ребро/запасная точка).</param>
 /// <param name="Edge">Ребро под курсором (размер «по ребру») или null.</param>
-public readonly record struct DimensionPickResult(Vector3d Point, SnapType? SnapType, SnapSegment? Edge);
+public readonly record struct DimensionPickResult(
+    Vector3d Point,
+    SnapType? SnapType,
+    SnapSegment? Edge,
+    SnapResult? Snap = null);
 
 /// <summary>
 /// Выбор точек и рёбер для размерных инструментов: привязки
@@ -64,24 +68,24 @@ public static class DimensionPickSupport
         SnapCandidate? best = snap.Best;
         if (best is not null && IsStrongPointSnap(best.Type))
         {
-            result = new DimensionPickResult(best.Point, best.Type, null);
+            result = new DimensionPickResult(best.Point, best.Type, null, snap);
             return true;
         }
 
         if (TryPickEdge(viewport, scene, cursorPx, out SnapSegment edge, out Vector3d onEdge))
         {
-            result = new DimensionPickResult(onEdge, null, edge);
+            result = new DimensionPickResult(onEdge, null, edge, snap);
             return true;
         }
 
         if (best is not null)
         {
-            result = new DimensionPickResult(best.Point, best.Type, null);
+            result = new DimensionPickResult(best.Point, best.Type, null, snap);
             return true;
         }
 
         Ray3d ray = viewport.PickRay(cursorPx);
-        result = new DimensionPickResult(FallbackPoint(ray), null, null);
+        result = new DimensionPickResult(FallbackPoint(ray), null, null, snap);
         return true;
     }
 

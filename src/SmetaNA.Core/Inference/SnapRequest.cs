@@ -47,6 +47,22 @@ public sealed record SnapRequest
     public IReadOnlyList<SnapGuide> Guides { get; init; } = Array.Empty<SnapGuide>();
 
     /// <summary>
+    /// Последняя наведённая/зафиксированная точка (не начало построения) — источник
+    /// выравнивания <see cref="SnapType.FromPoint"/>. <c>null</c> — выравнивание от
+    /// точки не строится.
+    /// </summary>
+    public Vector3d? ReferencePoint { get; init; }
+
+    /// <summary>Сетка привязки; <c>null</c> или выключенная — узлы сетки не предлагаются.</summary>
+    public SnapGrid? Grid { get; init; }
+
+    /// <summary>
+    /// Зафиксированная привязка (Shift): движок возвращает только её — точку как есть,
+    /// а направление «скользит» по зафиксированной линии за курсором.
+    /// </summary>
+    public SnapCandidate? LockedCandidate { get; init; }
+
+    /// <summary>
     /// Запрос по пиксельному положению курсора: луч строится через
     /// <see cref="InferenceViewport.PickRay"/>.
     /// </summary>

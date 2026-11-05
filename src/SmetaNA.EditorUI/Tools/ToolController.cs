@@ -1,3 +1,5 @@
+using SmetaNA.Core.Geometry;
+using SmetaNA.Core.Inference;
 using SmetaNA.Core.Model;
 using SmetaNA.Core.Tools;
 using SmetaNA.Core.Undo;
@@ -56,18 +58,70 @@ public sealed class ToolController
     }
 
     /// <summary>Событие указателя → активному инструменту; <c>true</c> — потреблено.</summary>
-    public bool RoutePointer(PointerInput input) => ActiveTool?.OnPointer(input) ?? false;
+    public bool RoutePointer(PointerInput input)
+    {
+        if (input.Kind == PointerEventKind.Press)
+        {
+            // клик применяет привязку: Shift не должен «прилипать» к прошлой точке
+            ActiveTool?.ResetSnap();
+        }
 
-    /// <summary>Событие клавиши → активному инструменту; <c>true</c> — потреблено.</summary>
-    public bool RouteKey(KeyInput input) => ActiveTool?.OnKey(input) ?? false;
+        return ActiveTool?.OnPointer(input) ?? false;
+    }
+
+    /// <summary>
+    /// Событие клавиши: стрелки фиксируют оси, Alt переключает режим привязок,
+    /// Esc снимает фиксацию; остальное — активному инструменту.
+    /// </summary>
+    public bool RouteKey(KeyInput input)
+    {
+        if (ActiveTool is null)
+        {
+            return false;
+        }
+
+        switch (input.Key)
+        {
+            case ToolKey.Right:
+                return ToggleSnapLock(SnapModifiers.LockAxisX);
+            case ToolKey.Left:
+                return ToggleSnapLock(SnapModifiers.LockAxisY);
+            case ToolKey.Up:
+                return ToggleSnapLock(SnapModifiers.LockAxisZ);
+            case ToolKey.Down:
+                return ToggleSnapLock(SnapModifiers.LockParallel | SnapModifiers.LockPerpendicular);
+            case ToolKey.Alt:
+                Context.CycleInferenceMode();
+                Changed?.Invoke();
+                return true;
+            case ToolKey.Escape:
+                Context.ResetSnapLocks();
+                break;
+        }
+
+        return ActiveTool.OnKey(input);
+    }
+
+    private bool ToggleSnapLock(SnapModifiers lockModifiers)
+    {
+        Context.ToggleSnapLock(lockModifiers);
+        Changed?.Invoke();
+        return true;
+    }
 
     /// <summary>Числовое значение VCB (мм) → активному инструменту; <c>true</c> — применено.</summary>
     public bool CommitValue(double value) => ActiveTool?.TryApplyValue(value) ?? false;
+
+    /// <summary>Координаты из VCB → активному инструменту; <c>true</c> — применено.</summary>
+    public bool CommitPoint(Vector3d point, bool relative) => ActiveTool?.TryApplyPoint(point, relative) ?? false;
 
     /// <summary>Отмена текущего действия активного инструмента.</summary>
     public void Cancel() => ActiveTool?.Cancel();
 
     public ToolPreview Preview => ActiveTool?.Preview ?? ToolPreview.Empty;
+
+    /// <summary>Текущий результат привязок активного инструмента (для подсказок вьюпорта).</summary>
+    public SnapResult Snap => ActiveTool?.CurrentSnap ?? SnapResult.Empty;
 
     public ToolVcbState Vcb => ActiveTool?.Vcb ?? ToolVcbState.Inactive;
 

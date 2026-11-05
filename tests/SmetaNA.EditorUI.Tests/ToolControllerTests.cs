@@ -58,6 +58,58 @@ public class ToolControllerTests
     }
 
     [Fact]
+    public void RouteKey_RightArrow_TogglesAxisXLock()
+    {
+        ToolController controller = CreateController();
+        controller.Activate(new FakeTool());
+
+        Assert.True(controller.RouteKey(new KeyInput(ToolKey.Right)));
+        Assert.Equal(SnapModifiers.LockAxisX, controller.Context.LockModifiers);
+
+        Assert.True(controller.RouteKey(new KeyInput(ToolKey.Right)));
+        Assert.Equal(SnapModifiers.None, controller.Context.LockModifiers);
+    }
+
+    [Fact]
+    public void RouteKey_DownArrow_LocksParallelAndPerpendicular()
+    {
+        ToolController controller = CreateController();
+        controller.Activate(new FakeTool());
+
+        Assert.True(controller.RouteKey(new KeyInput(ToolKey.Down)));
+
+        Assert.True((controller.Context.LockModifiers & SnapModifiers.LockParallel) != 0);
+        Assert.True((controller.Context.LockModifiers & SnapModifiers.LockPerpendicular) != 0);
+    }
+
+    [Fact]
+    public void RouteKey_Alt_CyclesInferenceMode()
+    {
+        ToolController controller = CreateController();
+        controller.Activate(new FakeTool());
+
+        Assert.True(controller.RouteKey(new KeyInput(ToolKey.Alt)));
+        Assert.Equal(SnapInferenceMode.PointsOnly, controller.Context.InferenceMode);
+
+        Assert.True(controller.RouteKey(new KeyInput(ToolKey.Alt)));
+        Assert.Equal(SnapInferenceMode.ParallelPerpendicularOnly, controller.Context.InferenceMode);
+    }
+
+    [Fact]
+    public void RouteKey_Escape_ResetsLockAndReachesTool()
+    {
+        ToolController controller = CreateController();
+        var tool = new FakeTool();
+        controller.Activate(tool);
+        controller.RouteKey(new KeyInput(ToolKey.Right));
+
+        Assert.True(controller.RouteKey(new KeyInput(ToolKey.Escape)));
+
+        Assert.Equal(SnapModifiers.None, controller.Context.LockModifiers);
+        Assert.Contains(tool.Keys, key => key.Key == ToolKey.Escape);
+    }
+
+    [Fact]
     public void RoutePointer_ForwardsToActiveTool()
     {
         ToolController controller = CreateController();

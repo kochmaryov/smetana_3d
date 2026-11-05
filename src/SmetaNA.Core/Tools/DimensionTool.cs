@@ -178,6 +178,8 @@ public sealed class DimensionTool : ToolBase
             return false;
         }
 
+        SetSnap(pick.Snap ?? SnapResult.Empty);
+
         switch (_state)
         {
             case DimensionToolState.Idle:
@@ -283,6 +285,7 @@ public sealed class DimensionTool : ToolBase
             return;
         }
 
+        SetSnap(pick.Snap ?? SnapResult.Empty);
         _cursorPoint = pick.Point;
         _hasCursor = true;
 

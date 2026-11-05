@@ -175,4 +175,37 @@ public sealed class VcbValueParserTests
 
         Assert.Equal(VcbError.InvalidNumber, result.Error);
     }
+
+    [Fact]
+    public void ParseCoordinate_SquareBrackets_AreAbsolute()
+    {
+        VcbCoordinateResult result = VcbValueParser.ParseCoordinate("[10, 20, 30]", LengthUnit.Millimeter);
+
+        Assert.True(result.IsSuccess);
+        Assert.False(result.IsRelative);
+        Assert.Equal(10, result.X, 6);
+        Assert.Equal(20, result.Y, 6);
+        Assert.Equal(30, result.Z, 6);
+    }
+
+    [Fact]
+    public void ParseCoordinate_AngleBrackets_AreRelative()
+    {
+        VcbCoordinateResult result = VcbValueParser.ParseCoordinate("<1; 2; 3>", LengthUnit.Millimeter);
+
+        Assert.True(result.IsSuccess);
+        Assert.True(result.IsRelative);
+        Assert.Equal(1, result.X, 6);
+        Assert.Equal(2, result.Y, 6);
+        Assert.Equal(3, result.Z, 6);
+    }
+
+    [Fact]
+    public void ParseCoordinate_CommaSeparated_ThreeValues()
+    {
+        VcbCoordinateResult result = VcbValueParser.ParseCoordinate("1, 2, 3", LengthUnit.Millimeter);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(3, result.Z, 6);
+    }
 }

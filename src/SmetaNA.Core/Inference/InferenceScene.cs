@@ -10,6 +10,9 @@ public readonly record struct SnapSegment
     public Vector3d Start { get; }
     public Vector3d End { get; }
 
+    /// <summary>Источник ребра в снимке (для подсветки и подписи).</summary>
+    public SnapEntityRef Entity { get; init; }
+
     public SnapSegment(Vector3d start, Vector3d end)
     {
         if (!InferenceMath.IsFinite(start) || !InferenceMath.IsFinite(end))
@@ -104,6 +107,9 @@ public sealed class SnapFace
     /// </summary>
     public double BoundingRadius { get; }
 
+    /// <summary>Источник грани в снимке (для подсветки и подписи).</summary>
+    public SnapEntityRef Entity { get; init; }
+
     /// <summary>
     /// Точка пересечения луча с плоскостью грани; <c>false</c> — луч
     /// параллелен плоскости.
@@ -173,6 +179,52 @@ public readonly record struct SnapCircle
         Normal = normal.Normalized();
         Radius = radius;
     }
+
+    /// <summary>Источник окружности в снимке (для подсветки и подписи).</summary>
+    public SnapEntityRef Entity { get; init; }
+}
+
+/// <summary>Середина открытой дуги: точка на кривой, а не центр окружности.</summary>
+public readonly record struct SnapArcPoint(Vector3d Point, SnapEntityRef Entity);
+
+/// <summary>
+/// Начало координат группы или инстанса компонента (Component Origin Point)
+/// с мировыми осями контекста.
+/// </summary>
+public sealed class SnapInstanceOrigin
+{
+    public SnapInstanceOrigin(
+        Vector3d origin,
+        Vector3d axisX,
+        Vector3d axisY,
+        Vector3d axisZ,
+        SnapEntityRef entity)
+    {
+        if (!InferenceMath.IsFinite(origin))
+        {
+            throw new ArgumentException("Начало координат контекста должно быть конечным.", nameof(origin));
+        }
+
+        if (!IsUsableAxis(axisX) || !IsUsableAxis(axisY) || !IsUsableAxis(axisZ))
+        {
+            throw new ArgumentException("Оси контекста должны быть ненулевыми и конечными.", nameof(axisX));
+        }
+
+        Origin = origin;
+        AxisX = axisX.Normalized();
+        AxisY = axisY.Normalized();
+        AxisZ = axisZ.Normalized();
+        Entity = entity;
+    }
+
+    public Vector3d Origin { get; }
+    public Vector3d AxisX { get; }
+    public Vector3d AxisY { get; }
+    public Vector3d AxisZ { get; }
+    public SnapEntityRef Entity { get; }
+
+    private static bool IsUsableAxis(Vector3d axis)
+        => InferenceMath.IsFinite(axis) && axis.LengthSquared() > 0;
 }
 
 /// <summary>
@@ -187,11 +239,15 @@ public sealed class InferenceScene
     private readonly SnapSegment[] _segments;
     private readonly SnapFace[] _faces;
     private readonly SnapCircle[] _circles;
+    private readonly SnapArcPoint[] _arcPoints;
+    private readonly SnapInstanceOrigin[] _instanceOrigins;
 
     public InferenceScene(
         IEnumerable<SnapSegment> segments,
         IEnumerable<SnapFace> faces,
-        IEnumerable<SnapCircle>? circles = null)
+        IEnumerable<SnapCircle>? circles = null,
+        IEnumerable<SnapArcPoint>? arcPoints = null,
+        IEnumerable<SnapInstanceOrigin>? instanceOrigins = null)
     {
         ArgumentNullException.ThrowIfNull(segments);
         ArgumentNullException.ThrowIfNull(faces);
@@ -199,14 +255,27 @@ public sealed class InferenceScene
         _segments = [.. segments];
         _faces = [.. faces];
         _circles = circles is null ? [] : [.. circles];
+        _arcPoints = arcPoints is null ? [] : [.. arcPoints];
+        _instanceOrigins = instanceOrigins is null ? [] : [.. instanceOrigins];
 
         if (_faces.Any(f => f is null))
         {
             throw new ArgumentException("Снимок не может содержать пустые грани.", nameof(faces));
+        }
+
+        if (_instanceOrigins.Any(o => o is null))
+        {
+            throw new ArgumentException("Снимок не может содержать пустые начала координат.", nameof(instanceOrigins));
         }
     }
 
     public IReadOnlyList<SnapSegment> Segments => _segments;
     public IReadOnlyList<SnapFace> Faces => _faces;
     public IReadOnlyList<SnapCircle> Circles => _circles;
+
+    /// <summary>Середины открытых дуг проволочных цепей.</summary>
+    public IReadOnlyList<SnapArcPoint> ArcPoints => _arcPoints;
+
+    /// <summary>Начала координат групп и инстансов компонентов.</summary>
+    public IReadOnlyList<SnapInstanceOrigin> InstanceOrigins => _instanceOrigins;
 }

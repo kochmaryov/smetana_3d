@@ -114,8 +114,9 @@ public sealed class InferenceEnginePointSnapTests
     [Fact]
     public void Tolerance_OutsideRadius_YieldsEmpty()
     {
+        // Курсор в 4 единицах (16 px) от ребра и в 20 px от конца — вне толеранса.
         SnapRequest request = InferenceTestSupport.Request(
-            InferenceTestSupport.TopDown(), InferenceTestSupport.SingleEdge(), new Vector3d(13, 10, 0));
+            InferenceTestSupport.TopDown(), InferenceTestSupport.SingleEdge(), new Vector3d(13, 14, 0));
 
         SnapResult result = InferenceEngine.Solve(request);
 
@@ -230,7 +231,7 @@ public sealed class InferenceEnginePointSnapTests
             InferenceTestSupport.TopDown(),
             InferenceTestSupport.SingleEdge(),
             new Vector3d(11, 10, 0),
-            filter: SnapFilter.All & ~SnapFilter.Endpoints);
+            filter: SnapFilter.All & ~SnapFilter.Endpoints & ~SnapFilter.OnEdges);
 
         SnapResult result = InferenceEngine.Solve(request);
 

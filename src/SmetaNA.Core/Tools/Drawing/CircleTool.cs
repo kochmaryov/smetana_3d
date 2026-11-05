@@ -61,6 +61,7 @@ public sealed class CircleTool : DrawingToolBase
             case PointerEventKind.Move:
                 if (!_started)
                 {
+                    PreviewSnapAt(input.PositionPx, input.Modifiers);
                     return false;
                 }
 
@@ -146,6 +147,39 @@ public sealed class CircleTool : DrawingToolBase
             Commit();
         }
 
+        return true;
+    }
+
+    protected override bool TryApplyPointCore(Vector3d point, bool relative)
+    {
+        if (!_started)
+        {
+            if (relative)
+            {
+                return false;
+            }
+
+            _center = OnPlane(point);
+            _radius = 0;
+            _started = true;
+            SetVcb(ToolValueKind.Length, null, true);
+            UpdatePreview();
+            return true;
+        }
+
+        Vector3d target = OnPlane(relative ? _center + point : point);
+        (double U, double V) center = Plane.Coordinates(_center);
+        (double U, double V) cursor = Plane.Coordinates(target);
+        double radius = Math.Sqrt(
+            ((cursor.U - center.U) * (cursor.U - center.U))
+            + ((cursor.V - center.V) * (cursor.V - center.V)));
+        if (radius <= MinSegmentLengthMm)
+        {
+            return true;
+        }
+
+        _radius = radius;
+        Commit();
         return true;
     }
 

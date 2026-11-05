@@ -60,6 +60,21 @@ public enum ToolKey
     Escape,
     Enter,
     Delete,
+
+    /// <summary>Стрелка влево — фиксация зелёной оси (переключатель).</summary>
+    Left,
+
+    /// <summary>Стрелка вправо — фиксация красной оси.</summary>
+    Right,
+
+    /// <summary>Стрелка вверх — фиксация синей оси.</summary>
+    Up,
+
+    /// <summary>Стрелка вниз — фиксация параллели/перпендикуляра (magenta).</summary>
+    Down,
+
+    /// <summary>Alt — цикл режимов линейных привязок.</summary>
+    Alt,
 }
 
 /// <summary>Событие клавиши с модификаторами.</summary>

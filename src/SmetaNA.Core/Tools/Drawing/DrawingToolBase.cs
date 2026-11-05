@@ -111,6 +111,7 @@ public abstract class DrawingToolBase : ToolBase
     {
         if (Context.Viewport is not { } viewport)
         {
+            SetSnap(SnapResult.Empty);
             return _plane.Origin;
         }
 
@@ -123,18 +124,37 @@ public abstract class DrawingToolBase : ToolBase
             Scene = scene,
             CursorPx = cursorPx,
             Anchor = anchor,
-            Modifiers = (modifiers & ToolModifiers.Ctrl) != 0
-                ? SnapModifiers.PointsOnly
-                : SnapModifiers.None,
+            Modifiers = Context.ResolveSnapModifiers((modifiers & ToolModifiers.Ctrl) != 0),
         };
 
-        if (Context.Snap(request).Best is { } best)
+        if ((modifiers & ToolModifiers.Shift) != 0 && CurrentSnap.Best is { } active)
+        {
+            request = request with { LockedCandidate = active };
+        }
+
+        SnapResult snap = Context.Snap(request);
+        SetSnap(snap);
+        if (snap.Best is { } best)
         {
             return best.Point;
         }
 
         return _plane.TryIntersect(ray, out Vector3d point) ? point : _plane.Origin;
     }
+
+    /// <summary>
+    /// Разрешить и опубликовать привязку под курсором до первого клика:
+    /// инструмент показывает маркеры ещё до начала построения.
+    /// </summary>
+    protected void PreviewSnapAt(Vector2d cursorPx, ToolModifiers modifiers = ToolModifiers.None)
+        => ResolvePoint(cursorPx, anchor: null, modifiers);
+
+    /// <summary>Применить точку из VCB (абсолютную или относительную).</summary>
+    public override bool TryApplyPoint(Vector3d point, bool relative)
+        => IsActive && TryApplyPointCore(point, relative);
+
+    /// <summary>Шаг построения по координате; <c>false</c> — инструмент не поддерживает.</summary>
+    protected virtual bool TryApplyPointCore(Vector3d point, bool relative) => false;
 
     /// <summary>Проекция точки на плоскость построения (фигуры — плоские).</summary>
     protected Vector3d OnPlane(Vector3d point) => _plane.Project(point);

@@ -164,7 +164,7 @@
             BorderThickness="0,1,0,0"
             Background="{DynamicResource ThemeControlBackgroundSecondary}"
             Padding="8,3">
-      <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
         <vcb:VcbControl Prompt="{Binding VcbPrompt}"
                         PlaceholderText="{Binding Strings.VcbWatermark}"
                         Kind="{Binding VcbKind}"
@@ -176,8 +176,17 @@
                    VerticalAlignment="Center"
                    Margin="12,0"
                    TextTrimming="CharacterEllipsis" />
-        <!-- Подсказка управления камерой -->
+        <!-- Координаты точки привязки под курсором -->
         <TextBlock Grid.Column="2"
+                   Text="{Binding SelectedProject.CursorCoordinates}"
+                   IsVisible="{Binding SelectedProject.HasCursorCoordinates}"
+                   VerticalAlignment="Center"
+                   Margin="8,0"
+                   MinWidth="200"
+                   FontFamily="Consolas, Menlo, monospace"
+                   Opacity="0.8" />
+        <!-- Подсказка управления камерой -->
+        <TextBlock Grid.Column="3"
                    Text="{Binding Strings.ViewportCameraHint}"
                    VerticalAlignment="Center"
                    Margin="8,0"
@@ -185,7 +194,7 @@
                    Opacity="0.6"
                    TextTrimming="CharacterEllipsis" />
         <!-- Единицы активной вкладки -->
-        <ComboBox Grid.Column="3"
+        <ComboBox Grid.Column="4"
                   Width="110"
                   Margin="8,0,0,0"
                   VerticalAlignment="Center"

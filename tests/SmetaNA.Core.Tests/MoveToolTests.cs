@@ -185,6 +185,37 @@ public class MoveToolTests
     }
 
     [Fact]
+    public void Tool_RelativeCoordinate_TranslatesExactly()
+    {
+        (ToolContext context, UndoStack undo) = Setup(out _, out _);
+        var tool = new MoveTool();
+        tool.Activate(context);
+        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(3, 5, 10));
+        Assert.True(tool.OnPointer(PointerInput.Press(pressPixel, PointerButton.Left)));
+
+        Assert.True(tool.TryApplyPoint(new Vector3d(3, 0, 0), relative: true));
+
+        Assert.Equal(3, tool.Translation.X, 6);
+        Assert.Equal(0, tool.Translation.Y, 6);
+        Assert.True(undo.CanUndo);
+    }
+
+    [Fact]
+    public void Tool_AbsoluteCoordinate_MovesGrabbedPointThere()
+    {
+        (ToolContext context, UndoStack undo) = Setup(out _, out _);
+        var tool = new MoveTool();
+        tool.Activate(context);
+        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(3, 5, 10));
+        Assert.True(tool.OnPointer(PointerInput.Press(pressPixel, PointerButton.Left)));
+
+        Assert.True(tool.TryApplyPoint(new Vector3d(5, 5, 10), relative: false));
+
+        Assert.Equal(2, tool.Translation.X, 6);
+        Assert.True(undo.CanUndo);
+    }
+
+    [Fact]
     public void Tool_FaceMove_PullsGluedNeighborVertices()
     {
         HalfEdgeMesh mesh = ToolsTestSupport.Box(10, 10, 10);

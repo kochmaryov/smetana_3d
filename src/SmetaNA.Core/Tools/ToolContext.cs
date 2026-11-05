@@ -36,6 +36,53 @@ public sealed class ToolContext
     /// <summary>Решатель привязок; <c>null</c> — <see cref="InferenceEngine.Solve"/>.</summary>
     public Func<SnapRequest, SnapResult>? SnapSolver { get; set; }
 
+    /// <summary>Активная фиксация направления стрелками (переключатель).</summary>
+    public SnapModifiers LockModifiers { get; private set; }
+
+    /// <summary>Режим линейных привязок, переключаемый Alt.</summary>
+    public SnapInferenceMode InferenceMode { get; private set; } = SnapInferenceMode.All;
+
+    private const SnapModifiers LockMask =
+        SnapModifiers.LockAxisX | SnapModifiers.LockAxisY | SnapModifiers.LockAxisZ
+        | SnapModifiers.LockParallel | SnapModifiers.LockPerpendicular;
+
+    /// <summary>Переключить фиксацию: та же — снять, другая — заменить.</summary>
+    public void ToggleSnapLock(SnapModifiers lockModifiers)
+    {
+        LockModifiers = (LockModifiers & lockModifiers) == lockModifiers
+            ? SnapModifiers.None
+            : lockModifiers & LockMask;
+    }
+
+    public void ResetSnapLocks() => LockModifiers = SnapModifiers.None;
+
+    /// <summary>Цикл Alt: все → только точки → только параллель/перпендикуляр → все.</summary>
+    public void CycleInferenceMode() => InferenceMode = InferenceMode switch
+    {
+        SnapInferenceMode.All => SnapInferenceMode.PointsOnly,
+        SnapInferenceMode.PointsOnly => SnapInferenceMode.ParallelPerpendicularOnly,
+        _ => SnapInferenceMode.All,
+    };
+
+    /// <summary>Модификаторы привязок с учётом фиксации и режима Alt; <paramref name="ctrl"/> — только точки.</summary>
+    public SnapModifiers ResolveSnapModifiers(bool ctrl = false)
+    {
+        SnapModifiers modifiers = LockModifiers;
+        modifiers |= InferenceMode switch
+        {
+            SnapInferenceMode.PointsOnly => SnapModifiers.PointsOnly,
+            SnapInferenceMode.ParallelPerpendicularOnly => SnapModifiers.ParallelPerpendicularOnly,
+            _ => SnapModifiers.None,
+        };
+
+        if (ctrl)
+        {
+            modifiers |= SnapModifiers.PointsOnly;
+        }
+
+        return modifiers;
+    }
+
     /// <summary>Состояние числового ввода (VCB) активного инструмента.</summary>
     public ToolVcbState VcbState { get; private set; } = ToolVcbState.Inactive;
 

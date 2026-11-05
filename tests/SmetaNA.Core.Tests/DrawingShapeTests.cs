@@ -81,18 +81,19 @@ public class DrawingShapeTests
         var tool = new RectangleTool();
         tool.Activate(context);
 
-        DrawingTestSupport.Click(context, tool, new Vector3d(2, 2, 10));
-        DrawingTestSupport.Click(context, tool, new Vector3d(8, 6, 10));
+        // Углы дальше толеранса от рёбер: иначе срабатывает привязка «на ребре».
+        DrawingTestSupport.Click(context, tool, new Vector3d(3, 3, 10));
+        DrawingTestSupport.Click(context, tool, new Vector3d(7, 7, 10));
 
         Assert.Single(scene.Root.Children);
         Assert.Equal(12, box.Vertices.Count);
         Assert.Equal(7, box.Faces.Count);
         DrawingTestSupport.PointsEqual(
             [
-                new Vector3d(2, 2, 10),
-                new Vector3d(8, 2, 10),
-                new Vector3d(8, 6, 10),
-                new Vector3d(2, 6, 10),
+                new Vector3d(3, 3, 10),
+                new Vector3d(7, 3, 10),
+                new Vector3d(7, 7, 10),
+                new Vector3d(3, 7, 10),
             ],
             box.Vertices.Skip(8).Select(vertex => vertex.Position),
             1e-9);

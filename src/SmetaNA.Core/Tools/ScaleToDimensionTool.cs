@@ -176,6 +176,8 @@ public sealed class ScaleToDimensionTool : ToolBase
             return false;
         }
 
+        SetSnap(pick.Snap ?? SnapResult.Empty);
+
         switch (_state)
         {
             case ScaleToDimensionToolState.Idle:
@@ -223,6 +225,7 @@ public sealed class ScaleToDimensionTool : ToolBase
             return;
         }
 
+        SetSnap(pick.Snap ?? SnapResult.Empty);
         _cursorPoint = pick.Point;
         _hasCursor = true;
 

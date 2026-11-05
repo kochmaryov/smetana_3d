@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
@@ -36,6 +37,8 @@ public partial class ViewportView : UserControl
     private DispatcherTimer? _hudTimer;
     private ProjectTabViewModel? _viewModel;
     private ToolController? _tools;
+    private Vector2d? _lastPointerPx;
+    private readonly HashSet<Key> _heldToolKeys = [];
     private long _lastToolHoverTicks;
     private Point? _toolRightPress;
 
@@ -61,6 +64,7 @@ public partial class ViewportView : UserControl
         AddHandler(InputElement.PointerReleasedEvent, OnToolPointerReleased, RoutingStrategies.Tunnel);
         AddHandler(InputElement.PointerMovedEvent, OnToolPointerMoved, RoutingStrategies.Tunnel);
         AddHandler(InputElement.KeyDownEvent, OnToolKeyDown, RoutingStrategies.Tunnel);
+        AddHandler(InputElement.KeyUpEvent, OnToolKeyUp, RoutingStrategies.Tunnel);
     }
 
     /// <summary>Снимок статистики вьюпорта (для смоук-прогона).</summary>
@@ -136,6 +140,7 @@ public partial class ViewportView : UserControl
 
         SubscribeModel();
         RedrawToolOverlay();
+        UpdateCursorCoordinates();
         BindViewport();
     }
 
@@ -303,6 +308,7 @@ public partial class ViewportView : UserControl
         }
 
         RedrawToolOverlay();
+        UpdateCursorCoordinates();
     }
 
     private void OnSceneHistoryChanged() => Viewport.RefreshScene();
@@ -448,11 +454,15 @@ public partial class ViewportView : UserControl
 
     private void OnToolPointerMoved(object? sender, PointerEventArgs e)
     {
+        Point cursor = e.GetPosition(Viewport);
+        _lastPointerPx = new Vector2d(cursor.X, cursor.Y);
+
         // камера могла повернуться — перепроецировать предпросмотр
         RedrawToolOverlay();
 
         if (_tools is not { IsActive: true } tools)
         {
+            UpdateCursorCoordinates();
             return;
         }
 
@@ -481,6 +491,48 @@ public partial class ViewportView : UserControl
         {
             e.Handled = true;
         }
+
+        // Подсказки привязок могли измениться без смены предпросмотра.
+        RedrawToolOverlay();
+        UpdateCursorCoordinates();
+    }
+
+    /// <summary>
+    /// Обновить координатную строку статус-бара: точка привязки, а без неё —
+    /// пересечение луча курсора с плоскостью z = 0.
+    /// </summary>
+    private void UpdateCursorCoordinates()
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        if (_tools?.Snap.Best is { } best)
+        {
+            _viewModel.SetCursorPoint(best.Point);
+            return;
+        }
+
+        _viewModel.SetCursorPoint(TryGroundPoint());
+    }
+
+    private Vector3d? TryGroundPoint()
+    {
+        if (_lastPointerPx is not { } pointer || Bounds.Width <= 0 || Bounds.Height <= 0)
+        {
+            return null;
+        }
+
+        SmetaNA.Rendering.Ray3d ray = CameraRay.FromViewportPoint(
+            Viewport.Camera, pointer.X, pointer.Y, Bounds.Width, Bounds.Height);
+        if (Math.Abs(ray.Direction.Z) <= 1e-9)
+        {
+            return null;
+        }
+
+        double distance = -ray.Origin.Z / ray.Direction.Z;
+        return distance <= 0 ? null : ray.GetPoint(distance);
     }
 
     private void OnToolKeyDown(object? sender, KeyEventArgs e)
@@ -490,11 +542,23 @@ public partial class ViewportView : UserControl
             return;
         }
 
+        // Автоповтор стрелок/Alt не должен переключать фиксацию много раз.
+        if (IsRepeatableToolKey(e.Key) && !_heldToolKeys.Add(e.Key))
+        {
+            e.Handled = true;
+            return;
+        }
+
         ToolKey? key = e.Key switch
         {
             Key.Escape => ToolKey.Escape,
             Key.Enter => ToolKey.Enter,
             Key.Delete => ToolKey.Delete,
+            Key.Left => ToolKey.Left,
+            Key.Right => ToolKey.Right,
+            Key.Up => ToolKey.Up,
+            Key.Down => ToolKey.Down,
+            Key.LeftAlt or Key.RightAlt => ToolKey.Alt,
             _ => null,
         };
         if (key is null)
@@ -512,6 +576,11 @@ public partial class ViewportView : UserControl
             e.Handled = true;
         }
     }
+
+    private void OnToolKeyUp(object? sender, KeyEventArgs e) => _heldToolKeys.Remove(e.Key);
+
+    private static bool IsRepeatableToolKey(Key key)
+        => key is Key.Left or Key.Right or Key.Up or Key.Down or Key.LeftAlt or Key.RightAlt;
 
     /// <summary>Обновить вьюпорт инструментов (лучи/проекции) из камеры GL-вьюпорта.</summary>
     private void UpdateToolViewport()
@@ -595,7 +664,252 @@ public partial class ViewportView : UserControl
             Canvas.SetLeft(text, pixel.X + 8);
             Canvas.SetTop(text, pixel.Y + 8);
         }
+
+        DrawInferenceOverlay(tools);
     }
+
+    /// <summary>
+    /// Подсказки привязок (W2): не более двух одновременно — лучший кандидат
+    /// (маркер + подпись + подсветка ребра) и одно линейное ограничение.
+    /// </summary>
+    private void DrawInferenceOverlay(ToolController tools)
+    {
+        SnapResult snap = tools.Snap;
+        if (snap.IsEmpty)
+        {
+            return;
+        }
+
+        SnapCandidate? best = snap.Best;
+        if (best is not null)
+        {
+            DrawSnapHighlight(best);
+            DrawConstraintLine(best);
+        }
+
+        SnapCandidate? linear = snap.Candidates.FirstOrDefault(candidate =>
+            !ReferenceEquals(candidate, best)
+            && candidate.Direction is not null
+            && !candidate.IsCombined);
+        if (linear is not null)
+        {
+            DrawConstraintLine(linear);
+        }
+
+        if (best is not null)
+        {
+            DrawSnapMarker(best);
+            DrawSnapLabel(best);
+        }
+    }
+
+    private void DrawSnapHighlight(SnapCandidate candidate)
+    {
+        if (candidate.HighlightFace is { } face)
+        {
+            var ring = new AvaloniaList<Point>();
+            foreach (Vector3d vertex in face.Ring)
+            {
+                if (!TryProject(vertex, out Point vertexPx))
+                {
+                    return;
+                }
+
+                ring.Add(vertexPx);
+            }
+
+            if (ring.Count < 3)
+            {
+                return;
+            }
+
+            ring.Add(ring[0]);
+            ToolOverlay.Children.Add(new Polyline
+            {
+                Points = ring,
+                Stroke = new SolidColorBrush(SnapColor(candidate.Type)),
+                StrokeThickness = 1.8,
+                Opacity = 0.8,
+            });
+            return;
+        }
+
+        if (candidate.HighlightSegment is not { } segment)
+        {
+            return;
+        }
+
+        if (!TryProject(segment.Start, out Point start) || !TryProject(segment.End, out Point end))
+        {
+            return;
+        }
+
+        ToolOverlay.Children.Add(new Line
+        {
+            StartPoint = start,
+            EndPoint = end,
+            Stroke = new SolidColorBrush(SnapColor(candidate.Type)),
+            StrokeThickness = 2.5,
+            Opacity = 0.75,
+        });
+    }
+
+    private void DrawConstraintLine(SnapCandidate candidate)
+    {
+        if (candidate.Direction is not Vector3d direction)
+        {
+            return;
+        }
+
+        Vector3d origin = candidate.SecondaryPoint ?? candidate.ConstraintLine?.Origin ?? candidate.Point;
+        if (!TryProject(origin, out Point originPx)
+            || !TryProject(origin + direction.Normalized(), out Point unitPx))
+        {
+            return;
+        }
+
+        var delta = new Vector2d(unitPx.X - originPx.X, unitPx.Y - originPx.Y);
+        if (delta.LengthSquared() <= 1e-6)
+        {
+            return;
+        }
+
+        Vector2d screenDirection = delta * (1.0 / delta.Length());
+        const double halfLength = 2000;
+        var line = new Line
+        {
+            StartPoint = new Point(originPx.X - screenDirection.X * halfLength, originPx.Y - screenDirection.Y * halfLength),
+            EndPoint = new Point(originPx.X + screenDirection.X * halfLength, originPx.Y + screenDirection.Y * halfLength),
+            Stroke = new SolidColorBrush(SnapColor(candidate.Type)),
+            StrokeThickness = 1.4,
+            Opacity = 0.9,
+        };
+
+        if (!IsAxis(candidate.Type))
+        {
+            line.StrokeDashArray = new AvaloniaList<double> { 4, 4 };
+        }
+
+        ToolOverlay.Children.Add(line);
+    }
+
+    private void DrawSnapMarker(SnapCandidate candidate)
+    {
+        if (!TryProject(candidate.Point, out Point pixel))
+        {
+            return;
+        }
+
+        IBrush stroke = new SolidColorBrush(SnapColor(candidate.Type));
+        switch (candidate.Marker)
+        {
+            case SnapMarkerKind.Cube:
+                var square = new Rectangle
+                {
+                    Width = 10,
+                    Height = 10,
+                    Stroke = stroke,
+                    StrokeThickness = 2,
+                    Fill = Brushes.Transparent,
+                };
+                ToolOverlay.Children.Add(square);
+                Canvas.SetLeft(square, pixel.X - 5);
+                Canvas.SetTop(square, pixel.Y - 5);
+                break;
+
+            case SnapMarkerKind.Circle:
+            case SnapMarkerKind.Ring:
+            case SnapMarkerKind.LineAndPoint:
+                var circle = new Ellipse
+                {
+                    Width = 12,
+                    Height = 12,
+                    Stroke = stroke,
+                    StrokeThickness = 2,
+                    Fill = Brushes.Transparent,
+                };
+                ToolOverlay.Children.Add(circle);
+                Canvas.SetLeft(circle, pixel.X - 6);
+                Canvas.SetTop(circle, pixel.Y - 6);
+                break;
+
+            case SnapMarkerKind.Cross:
+                ToolOverlay.Children.Add(new Line
+                {
+                    StartPoint = new Point(pixel.X - 6, pixel.Y - 6),
+                    EndPoint = new Point(pixel.X + 6, pixel.Y + 6),
+                    Stroke = stroke,
+                    StrokeThickness = 2,
+                });
+                ToolOverlay.Children.Add(new Line
+                {
+                    StartPoint = new Point(pixel.X + 6, pixel.Y - 6),
+                    EndPoint = new Point(pixel.X - 6, pixel.Y + 6),
+                    Stroke = stroke,
+                    StrokeThickness = 2,
+                });
+                break;
+
+            case SnapMarkerKind.Dot:
+                var dot = new Ellipse { Width = 7, Height = 7, Fill = stroke };
+                ToolOverlay.Children.Add(dot);
+                Canvas.SetLeft(dot, pixel.X - 3.5);
+                Canvas.SetTop(dot, pixel.Y - 3.5);
+                break;
+
+            default:
+                // Линейное ограничение рисуется линией; отдельного маркера нет.
+                break;
+        }
+    }
+
+    private void DrawSnapLabel(SnapCandidate candidate)
+    {
+        if (!TryProject(candidate.Point, out Point pixel))
+        {
+            return;
+        }
+
+        string label = _viewModel?.Strings.GetSnapLabel(candidate.Type) ?? candidate.Type.ToString();
+        if (!string.IsNullOrWhiteSpace(candidate.Entity.DisplayName))
+        {
+            label += Environment.NewLine + candidate.Entity.DisplayName;
+        }
+
+        var text = new TextBlock
+        {
+            Text = label,
+            Foreground = Brushes.White,
+            Background = new SolidColorBrush(Color.FromArgb(170, 20, 20, 20)),
+            Padding = new Thickness(5, 2),
+            FontSize = 12,
+        };
+        ToolOverlay.Children.Add(text);
+        Canvas.SetLeft(text, pixel.X + 12);
+        Canvas.SetTop(text, pixel.Y - 26);
+    }
+
+    private static bool IsAxis(SnapType type)
+        => type is SnapType.AxisX or SnapType.AxisY or SnapType.AxisZ
+            or SnapType.AxisInstanceX or SnapType.AxisInstanceY or SnapType.AxisInstanceZ;
+
+    private static Color SnapColor(SnapType type) => type switch
+    {
+        SnapType.Endpoint => Color.FromRgb(76, 175, 80),
+        SnapType.Midpoint or SnapType.ArcMidpoint or SnapType.Center => Color.FromRgb(79, 195, 247),
+        SnapType.Intersection => Color.FromRgb(255, 82, 82),
+        SnapType.OnFace => Color.FromRgb(66, 165, 245),
+        SnapType.OnEdge => Color.FromRgb(239, 83, 80),
+        SnapType.Origin or SnapType.InstanceOrigin or SnapType.SnapPoint => Color.FromRgb(0, 229, 255),
+        SnapType.AxisX or SnapType.AxisInstanceX => Color.FromRgb(229, 57, 53),
+        SnapType.AxisY or SnapType.AxisInstanceY => Color.FromRgb(67, 160, 71),
+        SnapType.AxisZ or SnapType.AxisInstanceZ => Color.FromRgb(30, 136, 229),
+        SnapType.Perpendicular or SnapType.PerpendicularToFace
+            or SnapType.Parallel or SnapType.Tangent or SnapType.TangentAtVertex => Color.FromRgb(224, 64, 251),
+        SnapType.Grid => Color.FromRgb(158, 158, 158),
+        SnapType.ExtendEdge or SnapType.FromPoint => Color.FromRgb(176, 190, 197),
+        _ => Color.FromRgb(255, 255, 255),
+    };
 
     /// <summary>Проекция мировой точки в пиксели вьюпорта; <c>false</c> — за камерой.</summary>
     private bool TryProject(Vector3d worldPoint, out Point pixel)

@@ -93,7 +93,9 @@ internal static class InferenceTestSupport
         Vector3d? anchor = null,
         SnapFilter filter = SnapFilter.All,
         SnapModifiers modifiers = SnapModifiers.None,
-        IReadOnlyList<SnapGuide>? guides = null)
+        IReadOnlyList<SnapGuide>? guides = null,
+        Vector3d? referencePoint = null,
+        SnapGrid? grid = null)
     {
         Vector2d cursorPx = Project(viewport, cursorWorld);
         return new SnapRequest
@@ -107,6 +109,8 @@ internal static class InferenceTestSupport
             Filter = filter,
             Modifiers = modifiers,
             Guides = guides ?? Array.Empty<SnapGuide>(),
+            ReferencePoint = referencePoint,
+            Grid = grid,
         };
     }
 }

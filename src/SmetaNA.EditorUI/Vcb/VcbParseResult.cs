@@ -38,15 +38,19 @@ public sealed record VcbCoordinateResult
     public double Y { get; init; }
     public double Z { get; init; }
 
+    /// <summary>Ввод в угловых скобках <c>&lt;...&gt;</c> — смещение, а не абсолютная точка.</summary>
+    public bool IsRelative { get; init; }
+
     public bool IsSuccess => Error == VcbError.None;
 
     public static VcbCoordinateResult Fail(VcbError error) => new() { Error = error };
 
-    public static VcbCoordinateResult Ok(double x, double y, double z) => new()
+    public static VcbCoordinateResult Ok(double x, double y, double z, bool isRelative = false) => new()
     {
         Error = VcbError.None,
         X = x,
         Y = y,
         Z = z,
+        IsRelative = isRelative,
     };
 }

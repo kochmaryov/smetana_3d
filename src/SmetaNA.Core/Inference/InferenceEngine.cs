@@ -50,6 +50,12 @@ public static class InferenceEngine
         /// </summary>
         private const int MaxIntersectionSegments = 256;
 
+        /// <summary>Потолок рёбер-кандидатов «на ребре» и продолжений на один запрос.</summary>
+        private const int MaxEdgeCandidates = 8;
+
+        /// <summary>Потолок направлений выравнивания от точки.</summary>
+        private const int MaxFromPointDirections = 12;
+
         /// <summary>
         /// Запас радиуса отсева: луч курсора не совпадает с Forward, а тест —
         /// консервативное супермножество точного экранного фильтра.
@@ -63,6 +69,7 @@ public static class InferenceEngine
         private readonly Ray3d _ray;
         private readonly Vector3d _rayDirection;
         private readonly Vector3d? _anchor;
+        private readonly Vector3d? _referencePoint;
         private readonly bool _pointsAllowed;
         private readonly HashSet<SnapType> _allowedLinear;
         private readonly double _snapRadiusPerDepth;
@@ -81,6 +88,7 @@ public static class InferenceEngine
             _ray = request.Ray;
             _rayDirection = request.Ray.Direction.Normalized();
             _anchor = request.Anchor;
+            _referencePoint = request.ReferencePoint;
             ResolveModifiers(request.Modifiers, out _pointsAllowed, out _allowedLinear);
 
             // радиус толеранса линеен по глубине (перспектива) или постоянен (орто):
@@ -101,6 +109,11 @@ public static class InferenceEngine
 
         public SnapResult Solve()
         {
+            if (_request.LockedCandidate is { } locked)
+            {
+                return new SnapResult([ResolveLocked(locked)]);
+            }
+
             if (_pointsAllowed && (_request.Filter & SnapFilter.Points) != 0)
             {
                 CollectPointCandidates();
@@ -111,6 +124,7 @@ public static class InferenceEngine
                 CollectLinearCandidates();
                 CollectOnFaceAlongDirections();
                 PromoteCombined();
+                CollectExtensionCandidates();
             }
 
             List<SnapCandidate> accepted = [];
@@ -128,6 +142,33 @@ public static class InferenceEngine
             return new SnapResult(Dedupe(ordered));
         }
 
+        /// <summary>
+        /// Зафиксированная привязка: точка возвращается как есть, направление
+        /// скользит по своей линии за курсором (Shift в SketchUp).
+        /// </summary>
+        private SnapCandidate ResolveLocked(SnapCandidate locked)
+        {
+            if (locked.Direction is not Vector3d direction)
+            {
+                return locked with { IsLocked = true };
+            }
+
+            Vector3d origin = locked.ConstraintLine?.Origin ?? locked.SecondaryPoint ?? locked.Point;
+            if (!InferenceMath.TryClosestPointOnLineToRay(_ray, origin, direction, out Vector3d point))
+            {
+                point = locked.Point;
+            }
+
+            return locked with
+            {
+                Point = point,
+                Direction = direction.Normalized(),
+                SecondaryPoint = locked.ConstraintLine?.Origin ?? locked.SecondaryPoint,
+                DegreesOfFreedom = 1,
+                IsLocked = true,
+            };
+        }
+
         private void CollectPointCandidates()
         {
             SnapFilter filter = _request.Filter;
@@ -142,8 +183,9 @@ public static class InferenceEngine
             {
                 foreach (SnapSegment segment in scene.Segments)
                 {
-                    TryAddPoint(SnapType.Endpoint, segment.Start);
-                    TryAddPoint(SnapType.Endpoint, segment.End);
+                    SnapEntityRef vertex = segment.Entity with { Kind = SnapEntityKind.Vertex };
+                    TryAddPoint(SnapType.Endpoint, segment.Start, vertex);
+                    TryAddPoint(SnapType.Endpoint, segment.End, vertex);
                 }
             }
 
@@ -151,7 +193,20 @@ public static class InferenceEngine
             {
                 foreach (SnapSegment segment in scene.Segments)
                 {
-                    TryAddPoint(SnapType.Midpoint, segment.Midpoint);
+                    TryAddPoint(SnapType.Midpoint, segment.Midpoint, segment.Entity);
+                }
+
+                foreach (SnapArcPoint arc in scene.ArcPoints)
+                {
+                    TryAddPoint(SnapType.ArcMidpoint, arc.Point, arc.Entity);
+                }
+            }
+
+            if ((filter & SnapFilter.InstanceOrigins) != 0)
+            {
+                foreach (SnapInstanceOrigin instance in scene.InstanceOrigins)
+                {
+                    TryAddPoint(SnapType.InstanceOrigin, instance.Origin, instance.Entity);
                 }
             }
 
@@ -159,12 +214,12 @@ public static class InferenceEngine
             {
                 foreach (SnapCircle circle in scene.Circles)
                 {
-                    TryAddPoint(SnapType.Center, circle.Center);
+                    TryAddPoint(SnapType.Center, circle.Center, circle.Entity);
                 }
 
                 foreach (SnapFace face in scene.Faces)
                 {
-                    TryAddPoint(SnapType.Center, face.Centroid);
+                    TryAddPoint(SnapType.Center, face.Centroid, face.Entity);
                 }
             }
 
@@ -174,7 +229,7 @@ public static class InferenceEngine
                 {
                     if (InferenceMath.TryClosestPointOnLineToRay(_ray, guide.Point, guide.Direction, out Vector3d point))
                     {
-                        TryAddPoint(SnapType.Guide, point);
+                        TryAddPoint(SnapType.Guide, point, guide.Entity, degreesOfFreedom: 1);
                     }
                 }
             }
@@ -203,9 +258,19 @@ public static class InferenceEngine
 
                     if (face.Contains(hit, WorldTolerance(hit)))
                     {
-                        TryAddPoint(SnapType.OnFace, hit);
+                        TryAddPoint(SnapType.OnFace, hit, face.Entity, degreesOfFreedom: 2, highlightFace: face);
                     }
                 }
+            }
+
+            if ((filter & SnapFilter.OnEdges) != 0)
+            {
+                CollectOnEdgeCandidates();
+            }
+
+            if ((filter & SnapFilter.Grid) != 0)
+            {
+                CollectGridCandidate();
             }
         }
 
@@ -278,6 +343,30 @@ public static class InferenceEngine
         private void CollectLinearCandidates()
         {
             Vector3d basis = _anchor ?? Vector3d.Zero;
+
+            if (_allowedLinear.Contains(SnapType.AxisInstanceX))
+            {
+                foreach (SnapInstanceOrigin instance in _request.Scene.InstanceOrigins)
+                {
+                    TryAddLinear(SnapType.AxisInstanceX, instance.Origin, instance.AxisX, entity: instance.Entity);
+                }
+            }
+
+            if (_allowedLinear.Contains(SnapType.AxisInstanceY))
+            {
+                foreach (SnapInstanceOrigin instance in _request.Scene.InstanceOrigins)
+                {
+                    TryAddLinear(SnapType.AxisInstanceY, instance.Origin, instance.AxisY, entity: instance.Entity);
+                }
+            }
+
+            if (_allowedLinear.Contains(SnapType.AxisInstanceZ))
+            {
+                foreach (SnapInstanceOrigin instance in _request.Scene.InstanceOrigins)
+                {
+                    TryAddLinear(SnapType.AxisInstanceZ, instance.Origin, instance.AxisZ, entity: instance.Entity);
+                }
+            }
 
             if (_allowedLinear.Contains(SnapType.AxisX))
             {
@@ -407,6 +496,7 @@ public static class InferenceEngine
             {
                 SnapCandidate linear = _linearCandidates[i];
                 int promotedPriority = linear.Priority;
+                int promotedDof = linear.DegreesOfFreedom;
                 bool promoted = false;
 
                 foreach (SnapCandidate point in _pointCandidates)
@@ -418,6 +508,7 @@ public static class InferenceEngine
 
                     promoted = true;
                     promotedPriority = Math.Max(promotedPriority, point.Priority + 1);
+                    promotedDof = Math.Min(promotedDof, point.DegreesOfFreedom);
                 }
 
                 if (promoted)
@@ -426,9 +517,236 @@ public static class InferenceEngine
                     {
                         Priority = promotedPriority,
                         Marker = SnapMarkerKind.LineAndPoint,
+                        DegreesOfFreedom = promotedDof,
                     };
                 }
             }
+        }
+
+        private void CollectOnEdgeCandidates()
+        {
+            bool withDirection = _allowedLinear.Count > 0;
+            int added = 0;
+            foreach (SnapSegment segment in _request.Scene.Segments)
+            {
+                if (added >= MaxEdgeCandidates)
+                {
+                    break;
+                }
+
+                if (!IsProjectedSegmentNearCursor(segment)
+                    || !InferenceMath.TryClosestPointOnLineToRay(
+                        _ray, segment.Start, segment.Direction, out Vector3d onLine))
+                {
+                    continue;
+                }
+
+                Vector3d point = segment.ClosestPoint(onLine);
+                if (!TryMeasure(point, out double screenDistance))
+                {
+                    continue;
+                }
+
+                _pointCandidates.Add(new SnapCandidate(
+                    SnapType.OnEdge,
+                    point,
+                    Confidence(screenDistance),
+                    SnapDefaults.OnEdgePriority,
+                    SnapMarkerKind.Dot)
+                {
+                    Direction = withDirection ? segment.Direction : null,
+                    Entity = segment.Entity,
+                    DegreesOfFreedom = 1,
+                    HighlightSegment = segment,
+                    ScreenDistancePx = screenDistance,
+                });
+                added++;
+            }
+        }
+
+        private void CollectExtensionCandidates()
+        {
+            if (_allowedLinear.Contains(SnapType.ExtendEdge))
+            {
+                CollectExtendEdgeCandidates();
+            }
+
+            if (_allowedLinear.Contains(SnapType.FromPoint))
+            {
+                CollectFromPointCandidates();
+            }
+        }
+
+        private void CollectExtendEdgeCandidates()
+        {
+            int added = 0;
+            foreach (SnapSegment segment in _request.Scene.Segments)
+            {
+                if (added >= MaxEdgeCandidates)
+                {
+                    break;
+                }
+
+                if (!IsProjectedSegmentNearCursor(segment)
+                    || !InferenceMath.TryClosestPointOnLineToRay(
+                        _ray, segment.Start, segment.Direction, out Vector3d onLine))
+                {
+                    continue;
+                }
+
+                double along = Vector3d.Dot(onLine - segment.Start, segment.Direction);
+                if (along >= 0 && along <= segment.Length)
+                {
+                    continue;
+                }
+
+                if (!TryMeasure(onLine, out double screenDistance))
+                {
+                    continue;
+                }
+
+                _linearCandidates.Add(new SnapCandidate(
+                    SnapType.ExtendEdge,
+                    onLine,
+                    Confidence(screenDistance),
+                    SnapDefaults.ExtendEdgePriority,
+                    SnapMarkerKind.Line)
+                {
+                    Direction = segment.Direction,
+                    SecondaryPoint = along < 0 ? segment.Start : segment.End,
+                    Entity = segment.Entity,
+                    DegreesOfFreedom = 1,
+                    ConstraintLine = new SnapLine(segment.Start, segment.Direction),
+                    HighlightSegment = segment,
+                    ScreenDistancePx = screenDistance,
+                });
+                added++;
+            }
+        }
+
+        private void CollectFromPointCandidates()
+        {
+            if (_referencePoint is not Vector3d reference)
+            {
+                return;
+            }
+
+            if (_anchor is Vector3d anchor && (anchor - reference).LengthSquared() <= 1e-18)
+            {
+                // Линия через опорную точку уже построена осями или параллелями.
+                return;
+            }
+
+            int added = 0;
+            foreach (Vector3d direction in EnumerateFromPointDirections())
+            {
+                if (added >= MaxFromPointDirections)
+                {
+                    break;
+                }
+
+                if (!InferenceMath.TryClosestPointOnLineToRay(_ray, reference, direction, out Vector3d point)
+                    || !TryMeasure(point, out double screenDistance))
+                {
+                    continue;
+                }
+
+                _linearCandidates.Add(new SnapCandidate(
+                    SnapType.FromPoint,
+                    point,
+                    Confidence(screenDistance),
+                    SnapDefaults.FromPointPriority,
+                    SnapMarkerKind.Line)
+                {
+                    Direction = direction,
+                    SecondaryPoint = reference,
+                    DegreesOfFreedom = 1,
+                    ConstraintLine = new SnapLine(reference, direction),
+                    ScreenDistancePx = screenDistance,
+                });
+                added++;
+            }
+        }
+
+        private IEnumerable<Vector3d> EnumerateFromPointDirections()
+        {
+            yield return Vector3d.UnitX;
+            yield return Vector3d.UnitY;
+            yield return Vector3d.UnitZ;
+
+            int count = 0;
+            foreach (Vector3d direction in ReferenceDirections)
+            {
+                if (IsAxisAligned(direction))
+                {
+                    continue;
+                }
+
+                if (count++ >= MaxFromPointDirections)
+                {
+                    yield break;
+                }
+
+                yield return direction;
+            }
+        }
+
+        private static bool IsAxisAligned(Vector3d direction)
+        {
+            Vector3d normalized = direction.Normalized();
+            return Math.Abs(Math.Abs(normalized.X) - 1) <= 1e-9
+                || Math.Abs(Math.Abs(normalized.Y) - 1) <= 1e-9
+                || Math.Abs(Math.Abs(normalized.Z) - 1) <= 1e-9;
+        }
+
+        private void CollectGridCandidate()
+        {
+            if (_request.Grid is not { IsEnabled: true } grid)
+            {
+                return;
+            }
+
+            Vector3d normal = grid.Normal;
+            double denominator = Vector3d.Dot(_rayDirection, normal);
+            if (Math.Abs(denominator) <= 1e-12)
+            {
+                return;
+            }
+
+            double distance = Vector3d.Dot(grid.Origin - _ray.Origin, normal) / denominator;
+            if (distance <= 0 && _viewport.Projection == InferenceProjection.Perspective)
+            {
+                return;
+            }
+
+            Vector3d hit = _ray.PointAt(distance);
+            Vector3d offset = hit - grid.Origin;
+            double u = Math.Round(Vector3d.Dot(offset, grid.AxisU) / grid.Step) * grid.Step;
+            double v = Math.Round(Vector3d.Dot(offset, grid.AxisV) / grid.Step) * grid.Step;
+            Vector3d point = grid.Origin + grid.AxisU * u + grid.AxisV * v;
+
+            if (_viewport.TryProject(point) is not { } projected)
+            {
+                return;
+            }
+
+            double screenDistance = Vector2d.Distance(projected, _cursor);
+            if (screenDistance > grid.TolerancePx)
+            {
+                return;
+            }
+
+            _pointCandidates.Add(new SnapCandidate(
+                SnapType.Grid,
+                point,
+                InferenceMath.Clamp01(1.0 - (screenDistance / grid.TolerancePx)),
+                SnapDefaults.GridPriority,
+                SnapMarkerKind.Dot)
+            {
+                Entity = new SnapEntityRef(null, SnapEntityKind.Grid, null, null),
+                DegreesOfFreedom = 2,
+                ScreenDistancePx = screenDistance,
+            });
         }
 
         private bool AreCoincident(Vector3d a, Vector3d b)
@@ -458,7 +776,12 @@ public static class InferenceEngine
             return Vector2d.Distance(projectedA.Value, projectedB.Value) <= _tolerancePx * 0.5;
         }
 
-        private void TryAddPoint(SnapType type, Vector3d point)
+        private void TryAddPoint(
+            SnapType type,
+            Vector3d point,
+            SnapEntityRef entity = default,
+            int degreesOfFreedom = 0,
+            SnapFace? highlightFace = null)
         {
             if (!TryMeasure(point, out double screenDistance))
             {
@@ -472,6 +795,9 @@ public static class InferenceEngine
                 SnapDefaults.PriorityOf(type),
                 SnapDefaults.MarkerOf(type))
             {
+                Entity = entity,
+                DegreesOfFreedom = degreesOfFreedom,
+                HighlightFace = highlightFace,
                 ScreenDistancePx = screenDistance,
             });
         }
@@ -481,7 +807,8 @@ public static class InferenceEngine
             Vector3d lineBasis,
             Vector3d direction,
             int? priority = null,
-            SnapMarkerKind? marker = null)
+            SnapMarkerKind? marker = null,
+            SnapEntityRef entity = default)
         {
             Vector3d dir = direction.Normalized();
             if (!InferenceMath.TryClosestPointOnLineToRay(_ray, lineBasis, dir, out Vector3d point))
@@ -489,7 +816,7 @@ public static class InferenceEngine
                 return;
             }
 
-            TryAddLinearPoint(type, point, dir, priority, marker);
+            TryAddLinearPoint(type, point, dir, priority, marker, entity);
         }
 
         private void TryAddLinearPoint(
@@ -497,7 +824,8 @@ public static class InferenceEngine
             Vector3d point,
             Vector3d direction,
             int? priority = null,
-            SnapMarkerKind? marker = null)
+            SnapMarkerKind? marker = null,
+            SnapEntityRef entity = default)
         {
             if (!TryMeasure(point, out double screenDistance))
             {
@@ -513,6 +841,8 @@ public static class InferenceEngine
             {
                 Direction = direction.Normalized(),
                 SecondaryPoint = _anchor,
+                Entity = entity,
+                DegreesOfFreedom = 1,
                 ScreenDistancePx = screenDistance,
             });
         }
@@ -540,6 +870,7 @@ public static class InferenceEngine
             {
                 Direction = offset.Normalized(),
                 SecondaryPoint = anchor,
+                DegreesOfFreedom = 1,
                 ScreenDistancePx = screenDistance,
             });
         }
@@ -566,6 +897,7 @@ public static class InferenceEngine
             {
                 Direction = offset.Normalized(),
                 SecondaryPoint = anchor,
+                DegreesOfFreedom = 1,
                 ScreenDistancePx = screenDistance,
             });
         }
@@ -794,6 +1126,13 @@ public static class InferenceEngine
             }
 
             pointsAllowed = true;
+            if ((modifiers & SnapModifiers.ParallelPerpendicularOnly) != 0)
+            {
+                allowedLinear.Add(SnapType.Parallel);
+                allowedLinear.Add(SnapType.Perpendicular);
+                return;
+            }
+
             if ((modifiers & SnapModifiers.PointsOnly) != 0)
             {
                 return;
@@ -805,6 +1144,11 @@ public static class InferenceEngine
             allowedLinear.Add(SnapType.Parallel);
             allowedLinear.Add(SnapType.Perpendicular);
             allowedLinear.Add(SnapType.Tangent);
+            allowedLinear.Add(SnapType.AxisInstanceX);
+            allowedLinear.Add(SnapType.AxisInstanceY);
+            allowedLinear.Add(SnapType.AxisInstanceZ);
+            allowedLinear.Add(SnapType.ExtendEdge);
+            allowedLinear.Add(SnapType.FromPoint);
         }
 
         private static bool SharesEndpoint(SnapSegment a, SnapSegment b)

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using SmetaNA.Core.Geometry;
 using SmetaNA.Core.Model;
 using SmetaNA.Core.Tools;
 using SmetaNA.EditorUI.Commands;
@@ -476,25 +477,39 @@ public sealed class MainWindowViewModel : ViewModelBase
         if (VcbKind == VcbInputKind.Coordinate)
         {
             VcbCoordinateResult coordinate = VcbValueParser.ParseCoordinate(text, SceneUnit);
-            if (!coordinate.IsSuccess)
+            if (coordinate.IsSuccess)
             {
-                StatusText = _localization.Get(LocalizationKeys.ForVcbError(coordinate.Error));
-                return false;
+                OnVcbCommitted(coordinate);
+                return true;
             }
 
-            OnVcbCommitted(coordinate);
-            return true;
-        }
+            VcbParseResult lengthFallback = VcbValueParser.ParseScalar(text, VcbInputKind.Length, SceneUnit);
+            if (lengthFallback.IsSuccess)
+            {
+                OnVcbCommitted(lengthFallback);
+                return true;
+            }
 
-        VcbParseResult scalar = VcbValueParser.ParseScalar(text, VcbKind, SceneUnit);
-        if (!scalar.IsSuccess)
-        {
-            StatusText = _localization.Get(LocalizationKeys.ForVcbError(scalar.Error));
+            StatusText = _localization.Get(LocalizationKeys.ForVcbError(coordinate.Error));
             return false;
         }
 
-        OnVcbCommitted(scalar);
-        return true;
+        VcbParseResult scalar = VcbValueParser.ParseScalar(text, VcbKind, SceneUnit);
+        if (scalar.IsSuccess)
+        {
+            OnVcbCommitted(scalar);
+            return true;
+        }
+
+        VcbCoordinateResult coordinateFallback = VcbValueParser.ParseCoordinate(text, SceneUnit);
+        if (coordinateFallback.IsSuccess)
+        {
+            OnVcbCommitted(coordinateFallback);
+            return true;
+        }
+
+        StatusText = _localization.Get(LocalizationKeys.ForVcbError(scalar.Error));
+        return false;
     }
 
     /// <summary>Принять разобранное скалярное значение из VCB.</summary>
@@ -538,10 +553,25 @@ public sealed class MainWindowViewModel : ViewModelBase
 
         string display = string.Format(
             CultureInfo.CurrentCulture,
-            "{0}; {1}; {2}",
+            result.IsRelative ? "<{0}; {1}; {2}>" : "{0}; {1}; {2}",
             VcbValueParser.FormatValue(result.X),
             VcbValueParser.FormatValue(result.Y),
             VcbValueParser.FormatValue(result.Z));
+
+        if (_session.Tools.IsActive)
+        {
+            if (_session.Tools.CommitPoint(new Vector3d(result.X, result.Y, result.Z), result.IsRelative))
+            {
+                StatusText = string.Format(Strings.VcbCommitted, display);
+            }
+            else
+            {
+                StatusText = _localization.Get(LocalizationKeys.VcbErrorNotApplicable);
+            }
+
+            return;
+        }
+
         StatusText = string.Format(Strings.VcbCommitted, display);
         PushStubCommand(display);
     }

@@ -681,4 +681,88 @@
   <data name="Error.Close" xml:space="preserve">
     <value>Закрыть</value>
   </data>
+  <data name="Vcb.ErrorNotApplicable" xml:space="preserve">
+    <value>Значение не применимо к текущему шагу построения</value>
+  </data>
+  <data name="Snap.Origin" xml:space="preserve">
+    <value>Начало координат</value>
+  </data>
+  <data name="Snap.InstanceOrigin" xml:space="preserve">
+    <value>Начало координат компонента</value>
+  </data>
+  <data name="Snap.Endpoint" xml:space="preserve">
+    <value>Точка</value>
+  </data>
+  <data name="Snap.Midpoint" xml:space="preserve">
+    <value>Середина</value>
+  </data>
+  <data name="Snap.ArcMidpoint" xml:space="preserve">
+    <value>Середина дуги</value>
+  </data>
+  <data name="Snap.Center" xml:space="preserve">
+    <value>Центр</value>
+  </data>
+  <data name="Snap.Intersection" xml:space="preserve">
+    <value>Пересечение</value>
+  </data>
+  <data name="Snap.OnFace" xml:space="preserve">
+    <value>На грани</value>
+  </data>
+  <data name="Snap.OnEdge" xml:space="preserve">
+    <value>На ребре</value>
+  </data>
+  <data name="Snap.Guide" xml:space="preserve">
+    <value>На направляющей</value>
+  </data>
+  <data name="Snap.GuidePoint" xml:space="preserve">
+    <value>Точка направляющей</value>
+  </data>
+  <data name="Snap.Grid" xml:space="preserve">
+    <value>Сетка</value>
+  </data>
+  <data name="Snap.SnapPoint" xml:space="preserve">
+    <value>Точка привязки</value>
+  </data>
+  <data name="Snap.AxisX" xml:space="preserve">
+    <value>По красной оси</value>
+  </data>
+  <data name="Snap.AxisY" xml:space="preserve">
+    <value>По зелёной оси</value>
+  </data>
+  <data name="Snap.AxisZ" xml:space="preserve">
+    <value>По синей оси</value>
+  </data>
+  <data name="Snap.AxisInstanceX" xml:space="preserve">
+    <value>По оси X контекста</value>
+  </data>
+  <data name="Snap.AxisInstanceY" xml:space="preserve">
+    <value>По оси Y контекста</value>
+  </data>
+  <data name="Snap.AxisInstanceZ" xml:space="preserve">
+    <value>По оси Z контекста</value>
+  </data>
+  <data name="Snap.Perpendicular" xml:space="preserve">
+    <value>Перпендикулярно</value>
+  </data>
+  <data name="Snap.PerpendicularToFace" xml:space="preserve">
+    <value>Перпендикулярно грани</value>
+  </data>
+  <data name="Snap.Parallel" xml:space="preserve">
+    <value>Параллельно</value>
+  </data>
+  <data name="Snap.Tangent" xml:space="preserve">
+    <value>Касательно</value>
+  </data>
+  <data name="Snap.TangentAtVertex" xml:space="preserve">
+    <value>Касательно в вершине</value>
+  </data>
+  <data name="Snap.ExtendEdge" xml:space="preserve">
+    <value>Продолжение ребра</value>
+  </data>
+  <data name="Snap.FromPoint" xml:space="preserve">
+    <value>От точки</value>
+  </data>
+  <data name="Viewport.CursorCoordinates" xml:space="preserve">
+    <value>Координаты: X {0}   Y {1}   Z {2} {3}</value>
+  </data>
 </root>

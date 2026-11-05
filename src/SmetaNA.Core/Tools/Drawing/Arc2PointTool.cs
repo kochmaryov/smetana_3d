@@ -57,6 +57,12 @@ public sealed class Arc2PointTool : DrawingToolBase
         switch (input.Kind)
         {
             case PointerEventKind.Move:
+                if (!_hasStart)
+                {
+                    PreviewSnapAt(input.PositionPx, input.Modifiers);
+                    return false;
+                }
+
                 if (!_hasEnd)
                 {
                     return false;
@@ -177,6 +183,47 @@ public sealed class Arc2PointTool : DrawingToolBase
         return true;
     }
 
+    protected override bool TryApplyPointCore(Vector3d point, bool relative)
+    {
+        if (!_hasStart)
+        {
+            if (relative)
+            {
+                return false;
+            }
+
+            _start = point;
+            _toward = _start + Plane.U;
+            _hasStart = true;
+            SetVcb(ToolValueKind.None, null, true);
+            UpdatePreview();
+            return true;
+        }
+
+        if (!_hasEnd)
+        {
+            Vector3d end = relative ? _start + point : point;
+            if ((end - _start).Length() <= MinSegmentLengthMm)
+            {
+                return true;
+            }
+
+            _end = end;
+            _hasEnd = true;
+            _toward = end;
+            SetVcb(ToolValueKind.Angle, null, true);
+            return true;
+        }
+
+        UpdateBulgeAt(relative ? _end + point : point);
+        if (Radius > MinSegmentLengthMm)
+        {
+            Commit();
+        }
+
+        return true;
+    }
+
     private bool OnRightPress()
     {
         if (!_hasStart)
@@ -197,8 +244,11 @@ public sealed class Arc2PointTool : DrawingToolBase
     }
 
     private void UpdateBulge(Vector2d positionPx, ToolModifiers modifiers)
+        => UpdateBulgeAt(ResolvePoint(positionPx, _start, modifiers, [], ChordSegments()));
+
+    private void UpdateBulgeAt(Vector3d toward)
     {
-        _toward = OnPlane(ResolvePoint(positionPx, _start, modifiers, [], ChordSegments()));
+        _toward = OnPlane(toward);
         Vector3d chord = _end - _start;
         double chordLength = chord.Length();
         if (chordLength <= 0)

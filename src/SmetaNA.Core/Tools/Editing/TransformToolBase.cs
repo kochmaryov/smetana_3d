@@ -49,6 +49,9 @@ public abstract class TransformToolBase : ToolBase
 
     public override bool IsInteracting => _state == DragState.Dragging;
 
+    /// <summary>Идёт перетаскивание (операция начата и ещё не зафиксирована).</summary>
+    protected bool IsDragging => _state == DragState.Dragging;
+
     /// <summary>Режим объекта (трансформация узла), иначе — геометрия грани.</summary>
     public bool IsObjectMode => _subjectNode is not null;
 
@@ -72,6 +75,9 @@ public abstract class TransformToolBase : ToolBase
 
     /// <summary>Обновить операцию по курсору (пиксели); <c>false</c> — курсор вне рабочей плоскости.</summary>
     protected abstract bool TryUpdateOperation(Vector2d cursorPx);
+
+    /// <summary>Обновить операцию по привязанной точке; <c>false</c> — инструмент не поддерживает.</summary>
+    protected virtual bool TryUpdateOperationAt(Vector3d point) => false;
 
     /// <summary>Установить операцию по точному значению VCB; <c>false</c> — значение не применимо.</summary>
     protected abstract bool TrySetOperationValue(double value);
@@ -108,11 +114,11 @@ public abstract class TransformToolBase : ToolBase
             case PointerEventKind.Move:
                 if (_state == DragState.Dragging)
                 {
-                    UpdateDrag(input.PositionPx);
+                    UpdateDrag(input.PositionPx, input.Modifiers);
                     return true;
                 }
 
-                UpdateHover(input.PositionPx);
+                UpdateHover(input.PositionPx, input.Modifiers);
                 return false;
 
             case PointerEventKind.Press when input.Button == PointerButton.Left:
@@ -122,7 +128,7 @@ public abstract class TransformToolBase : ToolBase
                     return false;
                 }
 
-                return BeginDrag(input.PositionPx, (input.Modifiers & ToolModifiers.Ctrl) != 0);
+                return BeginDrag(input.PositionPx, input.Modifiers);
 
             case PointerEventKind.Release when input.Button == PointerButton.Left:
                 return EndDrag();
@@ -187,7 +193,7 @@ public abstract class TransformToolBase : ToolBase
         ClearHit();
     }
 
-    private bool BeginDrag(Vector2d positionPx, bool copyRequested)
+    private bool BeginDrag(Vector2d positionPx, ToolModifiers modifiers)
     {
         if (_state == DragState.Dragging)
         {
@@ -198,6 +204,12 @@ public abstract class TransformToolBase : ToolBase
         {
             ClearHit();
             return false;
+        }
+
+        bool copyRequested = (modifiers & ToolModifiers.Ctrl) != 0;
+        if (ResolveSnapPoint(positionPx, anchor: null, modifiers) is { } snappedBase)
+        {
+            hit = hit with { Point = snappedBase };
         }
 
         SetHit(hit);
@@ -223,7 +235,7 @@ public abstract class TransformToolBase : ToolBase
         WorldDelta = Transform3d.Identity;
         _state = DragState.Dragging;
         SetVcb(VcbKind, CurrentVcbValue, true);
-        UpdateDrag(positionPx);
+        UpdateDrag(positionPx, modifiers);
         return true;
     }
 
@@ -238,7 +250,8 @@ public abstract class TransformToolBase : ToolBase
         return true;
     }
 
-    private void Commit()
+    /// <summary>Зафиксировать операцию одной командой истории.</summary>
+    protected void Commit()
     {
         Transform3d delta = WorldDelta;
         bool apply = !IsNoOp && HasGeometryChange(delta);
@@ -305,19 +318,57 @@ public abstract class TransformToolBase : ToolBase
         Context.Execute(new MoveVerticesCommand(CommandDescription(), moves));
     }
 
-    private void UpdateDrag(Vector2d positionPx)
+    /// <summary>
+    /// Точка привязки под курсором (или <c>null</c>): фиксация стрелками, режим Alt
+    /// и Shift-удержание учитываются, результат публикуется для оверлея.
+    /// </summary>
+    protected Vector3d? ResolveSnapPoint(Vector2d cursorPx, Vector3d? anchor, ToolModifiers modifiers = ToolModifiers.None)
     {
-        if (!TryUpdateOperation(positionPx))
+        if (Context.Viewport is not { } viewport)
         {
-            return;
+            SetSnap(SnapResult.Empty);
+            return null;
+        }
+
+        SnapRequest request = new()
+        {
+            Ray = viewport.PickRay(cursorPx),
+            Viewport = viewport,
+            Scene = Context.BuildInferenceScene(),
+            CursorPx = cursorPx,
+            Anchor = anchor,
+            Modifiers = Context.ResolveSnapModifiers((modifiers & ToolModifiers.Ctrl) != 0),
+        };
+
+        if ((modifiers & ToolModifiers.Shift) != 0 && CurrentSnap.Best is { } active)
+        {
+            request = request with { LockedCandidate = active };
+        }
+
+        SnapResult result = Context.Snap(request);
+        SetSnap(result);
+        return result.Best?.Point;
+    }
+
+    private void UpdateDrag(Vector2d positionPx, ToolModifiers modifiers)
+    {
+        Vector3d? snapped = ResolveSnapPoint(positionPx, BasePoint, modifiers);
+        if (snapped is not { } target || !TryUpdateOperationAt(target))
+        {
+            if (!TryUpdateOperation(positionPx))
+            {
+                return;
+            }
         }
 
         SetVcb(VcbKind, CurrentVcbValue, true);
         BuildPreview();
     }
 
-    private void UpdateHover(Vector2d positionPx)
+    private void UpdateHover(Vector2d positionPx, ToolModifiers modifiers)
     {
+        ResolveSnapPoint(positionPx, anchor: null, modifiers);
+
         if (!Context.TryPickFace(positionPx, out ToolFaceHit hit))
         {
             ClearHit();

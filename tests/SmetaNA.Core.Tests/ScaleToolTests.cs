@@ -57,9 +57,9 @@ public class ScaleToolTests
         var tool = new ScaleTool();
         tool.Activate(context);
 
-        // опорный радиус 4 мм (точка (1,10,30) от центроида (5,10,30)); курсор на 8 мм
-        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(1, 10, 30));
-        Vector2d dragPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(13, 10, 30));
+        // Опорный радиус 2 мм: точки дальше 8 px от рёбер, иначе сработает привязка.
+        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(3, 10, 30));
+        Vector2d dragPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(5, 14, 30));
         tool.OnPointer(PointerInput.Press(pressPixel, PointerButton.Left));
         tool.OnPointer(PointerInput.Move(dragPixel));
 

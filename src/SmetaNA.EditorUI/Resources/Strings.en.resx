@@ -681,4 +681,88 @@
   <data name="Error.Close" xml:space="preserve">
     <value>Close</value>
   </data>
+  <data name="Vcb.ErrorNotApplicable" xml:space="preserve">
+    <value>Value is not applicable to the current step</value>
+  </data>
+  <data name="Snap.Origin" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="Snap.InstanceOrigin" xml:space="preserve">
+    <value>Component Origin</value>
+  </data>
+  <data name="Snap.Endpoint" xml:space="preserve">
+    <value>Endpoint</value>
+  </data>
+  <data name="Snap.Midpoint" xml:space="preserve">
+    <value>Midpoint</value>
+  </data>
+  <data name="Snap.ArcMidpoint" xml:space="preserve">
+    <value>Arc Midpoint</value>
+  </data>
+  <data name="Snap.Center" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="Snap.Intersection" xml:space="preserve">
+    <value>Intersection</value>
+  </data>
+  <data name="Snap.OnFace" xml:space="preserve">
+    <value>On Face</value>
+  </data>
+  <data name="Snap.OnEdge" xml:space="preserve">
+    <value>On Edge</value>
+  </data>
+  <data name="Snap.Guide" xml:space="preserve">
+    <value>On Line</value>
+  </data>
+  <data name="Snap.GuidePoint" xml:space="preserve">
+    <value>Guide Point</value>
+  </data>
+  <data name="Snap.Grid" xml:space="preserve">
+    <value>Grid</value>
+  </data>
+  <data name="Snap.SnapPoint" xml:space="preserve">
+    <value>Snap</value>
+  </data>
+  <data name="Snap.AxisX" xml:space="preserve">
+    <value>On Red Axis</value>
+  </data>
+  <data name="Snap.AxisY" xml:space="preserve">
+    <value>On Green Axis</value>
+  </data>
+  <data name="Snap.AxisZ" xml:space="preserve">
+    <value>On Blue Axis</value>
+  </data>
+  <data name="Snap.AxisInstanceX" xml:space="preserve">
+    <value>On Context X Axis</value>
+  </data>
+  <data name="Snap.AxisInstanceY" xml:space="preserve">
+    <value>On Context Y Axis</value>
+  </data>
+  <data name="Snap.AxisInstanceZ" xml:space="preserve">
+    <value>On Context Z Axis</value>
+  </data>
+  <data name="Snap.Perpendicular" xml:space="preserve">
+    <value>Perpendicular</value>
+  </data>
+  <data name="Snap.PerpendicularToFace" xml:space="preserve">
+    <value>Perpendicular to Face</value>
+  </data>
+  <data name="Snap.Parallel" xml:space="preserve">
+    <value>Parallel</value>
+  </data>
+  <data name="Snap.Tangent" xml:space="preserve">
+    <value>Tangent</value>
+  </data>
+  <data name="Snap.TangentAtVertex" xml:space="preserve">
+    <value>Tangent at Vertex</value>
+  </data>
+  <data name="Snap.ExtendEdge" xml:space="preserve">
+    <value>Extend Edge</value>
+  </data>
+  <data name="Snap.FromPoint" xml:space="preserve">
+    <value>From Point</value>
+  </data>
+  <data name="Viewport.CursorCoordinates" xml:space="preserve">
+    <value>Coordinates: X {0}   Y {1}   Z {2} {3}</value>
+  </data>
 </root>

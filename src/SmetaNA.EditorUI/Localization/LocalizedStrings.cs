@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using SmetaNA.Core.Inference;
 
 namespace SmetaNA.EditorUI.Localization;
 
@@ -116,6 +117,12 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string VcbErrorNotPositive => _localization.Get(LocalizationKeys.VcbErrorNotPositive);
     public string VcbErrorUnknownUnit => _localization.Get(LocalizationKeys.VcbErrorUnknownUnit);
     public string VcbErrorComponentCount => _localization.Get(LocalizationKeys.VcbErrorComponentCount);
+
+    /// <summary>Подпись типа привязки для маркера inference.</summary>
+    public string GetSnapLabel(SnapType type) => _localization.Get(LocalizationKeys.ForSnapType(type));
+
+    /// <summary>Шаблон координатной строки: X, Y, Z и единица.</summary>
+    public string CursorCoordinatesTemplate => _localization.Get(LocalizationKeys.ViewportCursorCoordinates);
 
     public string UnitMillimeter => _localization.Get(LocalizationKeys.UnitMillimeter);
     public string UnitCentimeter => _localization.Get(LocalizationKeys.UnitCentimeter);

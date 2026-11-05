@@ -43,6 +43,7 @@ public sealed class LineTool : DrawingToolBase
             case PointerEventKind.Move:
                 if (_chain.Count == 0)
                 {
+                    PreviewSnapAt(input.PositionPx, input.Modifiers);
                     return false;
                 }
 
@@ -158,6 +159,30 @@ public sealed class LineTool : DrawingToolBase
 
         _lastDirection = (next - _chain[^1]).Normalized();
         AddPoint(next);
+        return true;
+    }
+
+    protected override bool TryApplyPointCore(Vector3d point, bool relative)
+    {
+        if (_chain.Count == 0)
+        {
+            if (relative)
+            {
+                return false;
+            }
+
+            AddPoint(point);
+            return true;
+        }
+
+        Vector3d target = relative ? _chain[^1] + point : point;
+        if ((target - _chain[^1]).Length() <= MinSegmentLengthMm)
+        {
+            return true;
+        }
+
+        _lastDirection = (target - _chain[^1]).Normalized();
+        AddPoint(target);
         return true;
     }
 

@@ -57,6 +57,12 @@ public sealed class Arc3PointTool : DrawingToolBase
         switch (input.Kind)
         {
             case PointerEventKind.Move:
+                if (!_hasStart)
+                {
+                    PreviewSnapAt(input.PositionPx, input.Modifiers);
+                    return false;
+                }
+
                 if (!_hasThrough)
                 {
                     return false;
@@ -171,6 +177,45 @@ public sealed class Arc3PointTool : DrawingToolBase
         return true;
     }
 
+    protected override bool TryApplyPointCore(Vector3d point, bool relative)
+    {
+        if (!_hasStart)
+        {
+            if (relative)
+            {
+                return false;
+            }
+
+            _start = point;
+            _hasStart = true;
+            SetVcb(ToolValueKind.None, null, true);
+            UpdatePreview();
+            return true;
+        }
+
+        if (!_hasThrough)
+        {
+            Vector3d through = relative ? _start + point : point;
+            if ((through - _start).Length() <= MinSegmentLengthMm)
+            {
+                return true;
+            }
+
+            _through = through;
+            _hasThrough = true;
+            SetVcb(ToolValueKind.Length, null, true);
+            return true;
+        }
+
+        UpdateEndAt(relative ? _through + point : point);
+        if (Radius > MinSegmentLengthMm)
+        {
+            Commit(DrawingShapes.ArcThrough3Points(_start, _through, _end));
+        }
+
+        return true;
+    }
+
     private bool OnRightPress()
     {
         if (!_hasStart)
@@ -199,7 +244,12 @@ public sealed class Arc3PointTool : DrawingToolBase
         [
             new(_start, _through),
         ];
-        _end = ResolvePoint(positionPx, _through, modifiers, circles, segments);
+        UpdateEndAt(ResolvePoint(positionPx, _through, modifiers, circles, segments));
+    }
+
+    private void UpdateEndAt(Vector3d end)
+    {
+        _end = end;
         _hasEnd = true;
         Radius = DrawingShapes.TryCircumcircle(_start, _through, _end, out _, out _, out double circumRadius)
             ? circumRadius

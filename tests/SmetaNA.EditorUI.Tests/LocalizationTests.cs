@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using SmetaNA.Core.Inference;
 using SmetaNA.Core.Model;
 using SmetaNA.EditorUI.Localization;
 using SmetaNA.EditorUI.Vcb;
@@ -55,6 +56,22 @@ public sealed class LocalizationTests
         {
             Assert.False(string.IsNullOrWhiteSpace(pair.Value), $"Пустое значение: {pair.Key}");
             Assert.NotEqual(pair.Value, english[pair.Key]);
+        }
+    }
+
+    [Fact]
+    public void ForSnapType_CoversEveryType_AndBothLocalesHaveNonEmptyLabel()
+    {
+        Dictionary<string, string> russian = LoadResx(RussianResxPath);
+        Dictionary<string, string> english = LoadResx(EnglishResxPath);
+
+        foreach (SnapType type in Enum.GetValues<SnapType>())
+        {
+            string key = LocalizationKeys.ForSnapType(type);
+            Assert.True(russian.ContainsKey(key), $"Нет RU-строки {key} для {type}.");
+            Assert.True(english.ContainsKey(key), $"Нет EN-строки {key} для {type}.");
+            Assert.False(string.IsNullOrWhiteSpace(russian[key]));
+            Assert.False(string.IsNullOrWhiteSpace(english[key]));
         }
     }
 

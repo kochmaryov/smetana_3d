@@ -46,6 +46,9 @@ public sealed class SnapGuide
 
     public SnapGuideKind Kind { get; }
 
+    /// <summary>Ссылка на направляющую для подсветки.</summary>
+    public SnapEntityRef Entity { get; init; } = new(null, SnapEntityKind.Guide, null, null);
+
     /// <summary>Ближайшая точка направляющей к заданной точке.</summary>
     public Vector3d ClosestPointTo(Vector3d point)
         => InferenceMath.ClosestPointOnLine(Point, Direction, point);

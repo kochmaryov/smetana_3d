@@ -27,4 +27,7 @@ public enum VcbError
     NotPositive,
     UnknownUnit,
     ComponentCount,
+
+    /// <summary>Значение корректно, но не применимо к текущему шагу инструмента.</summary>
+    NotApplicable,
 }

@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
+using SmetaNA.Core.Geometry;
 using SmetaNA.Core.Model;
 using SmetaNA.EditorUI.Localization;
 using SmetaNA.EditorUI.Sessions;
@@ -16,6 +18,7 @@ public sealed class ProjectTabViewModel : ViewModelBase
     private bool _showGrid = true;
     private bool _showAxes = true;
     private bool _isOrthographic;
+    private string _cursorCoordinates = string.Empty;
 
     public ProjectTabViewModel(
         ILocalizationService localization,
@@ -129,6 +132,39 @@ public sealed class ProjectTabViewModel : ViewModelBase
             InvalidateAll();
         }
     }
+
+    /// <summary>Координаты точки привязки под курсором в единицах сцены; пусто — привязки нет.</summary>
+    public string CursorCoordinates
+    {
+        get => _cursorCoordinates;
+        private set => SetField(ref _cursorCoordinates, value);
+    }
+
+    public bool HasCursorCoordinates => _cursorCoordinates.Length > 0;
+
+    /// <summary>Обновить координатную строку по точке привязки (мировые координаты, мм).</summary>
+    public void SetCursorPoint(Vector3d? point)
+    {
+        if (point is Vector3d world)
+        {
+            double scale = Scene.Unit.ToMillimeters();
+            CursorCoordinates = string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.CursorCoordinatesTemplate,
+                FormatCoordinate(world.X / scale),
+                FormatCoordinate(world.Y / scale),
+                FormatCoordinate(world.Z / scale),
+                _localization.Get(LocalizationKeys.ForUnit(Scene.Unit)));
+        }
+        else
+        {
+            CursorCoordinates = string.Empty;
+        }
+
+        OnPropertyChanged(nameof(HasCursorCoordinates));
+    }
+
+    private static string FormatCoordinate(double value) => value.ToString("0.##", CultureInfo.CurrentCulture);
 
     public string Title =>
         string.Format(_localization.Get(LocalizationKeys.ProjectName), Number);

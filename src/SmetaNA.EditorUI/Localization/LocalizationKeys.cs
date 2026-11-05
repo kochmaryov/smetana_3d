@@ -1,3 +1,4 @@
+using SmetaNA.Core.Inference;
 using SmetaNA.Core.Model;
 using SmetaNA.EditorUI.Vcb;
 
@@ -199,6 +200,36 @@ public static class LocalizationKeys
     public const string VcbErrorNotPositive = "Vcb.ErrorNotPositive";
     public const string VcbErrorUnknownUnit = "Vcb.ErrorUnknownUnit";
     public const string VcbErrorComponentCount = "Vcb.ErrorComponentCount";
+    public const string VcbErrorNotApplicable = "Vcb.ErrorNotApplicable";
+
+    public const string SnapOrigin = "Snap.Origin";
+    public const string SnapInstanceOrigin = "Snap.InstanceOrigin";
+    public const string SnapEndpoint = "Snap.Endpoint";
+    public const string SnapMidpoint = "Snap.Midpoint";
+    public const string SnapArcMidpoint = "Snap.ArcMidpoint";
+    public const string SnapCenter = "Snap.Center";
+    public const string SnapIntersection = "Snap.Intersection";
+    public const string SnapOnFace = "Snap.OnFace";
+    public const string SnapOnEdge = "Snap.OnEdge";
+    public const string SnapGuide = "Snap.Guide";
+    public const string SnapGuidePoint = "Snap.GuidePoint";
+    public const string SnapGrid = "Snap.Grid";
+    public const string SnapPoint = "Snap.SnapPoint";
+    public const string SnapAxisX = "Snap.AxisX";
+    public const string SnapAxisY = "Snap.AxisY";
+    public const string SnapAxisZ = "Snap.AxisZ";
+    public const string SnapAxisInstanceX = "Snap.AxisInstanceX";
+    public const string SnapAxisInstanceY = "Snap.AxisInstanceY";
+    public const string SnapAxisInstanceZ = "Snap.AxisInstanceZ";
+    public const string SnapPerpendicular = "Snap.Perpendicular";
+    public const string SnapPerpendicularToFace = "Snap.PerpendicularToFace";
+    public const string SnapParallel = "Snap.Parallel";
+    public const string SnapTangent = "Snap.Tangent";
+    public const string SnapTangentAtVertex = "Snap.TangentAtVertex";
+    public const string SnapExtendEdge = "Snap.ExtendEdge";
+    public const string SnapFromPoint = "Snap.FromPoint";
+
+    public const string ViewportCursorCoordinates = "Viewport.CursorCoordinates";
 
     public const string UnitMillimeter = "Unit.Millimeter";
     public const string UnitCentimeter = "Unit.Centimeter";
@@ -269,6 +300,7 @@ public static class LocalizationKeys
         VcbError.NotPositive => VcbErrorNotPositive,
         VcbError.UnknownUnit => VcbErrorUnknownUnit,
         VcbError.ComponentCount => VcbErrorComponentCount,
+        VcbError.NotApplicable => VcbErrorNotApplicable,
         _ => throw new ArgumentOutOfRangeException(nameof(error), error, null),
     };
 
@@ -280,6 +312,38 @@ public static class LocalizationKeys
         VcbInputKind.Angle => VcbPromptAngle,
         VcbInputKind.Coordinate => VcbPromptCoordinates,
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
+    };
+
+    /// <summary>Ключ подписи типа привязки для маркера inference.</summary>
+    public static string ForSnapType(SnapType type) => type switch
+    {
+        SnapType.Origin => SnapOrigin,
+        SnapType.InstanceOrigin => SnapInstanceOrigin,
+        SnapType.Endpoint => SnapEndpoint,
+        SnapType.Midpoint => SnapMidpoint,
+        SnapType.ArcMidpoint => SnapArcMidpoint,
+        SnapType.Center => SnapCenter,
+        SnapType.Intersection => SnapIntersection,
+        SnapType.OnFace => SnapOnFace,
+        SnapType.OnEdge => SnapOnEdge,
+        SnapType.Guide => SnapGuide,
+        SnapType.GuidePoint => SnapGuidePoint,
+        SnapType.Grid => SnapGrid,
+        SnapType.SnapPoint => SnapPoint,
+        SnapType.AxisX => SnapAxisX,
+        SnapType.AxisY => SnapAxisY,
+        SnapType.AxisZ => SnapAxisZ,
+        SnapType.AxisInstanceX => SnapAxisInstanceX,
+        SnapType.AxisInstanceY => SnapAxisInstanceY,
+        SnapType.AxisInstanceZ => SnapAxisInstanceZ,
+        SnapType.Perpendicular => SnapPerpendicular,
+        SnapType.PerpendicularToFace => SnapPerpendicularToFace,
+        SnapType.Parallel => SnapParallel,
+        SnapType.Tangent => SnapTangent,
+        SnapType.TangentAtVertex => SnapTangentAtVertex,
+        SnapType.ExtendEdge => SnapExtendEdge,
+        SnapType.FromPoint => SnapFromPoint,
+        _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
     };
 
     /// <summary>Ключ названия единицы длины.</summary>
