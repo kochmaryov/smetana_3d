@@ -23,7 +23,7 @@ public sealed class ToolIconTests
     public void GlyphResources_CoverAllToolIconIds()
     {
         ToolIconId[] iconIds = ContractIconIds();
-        Assert.Equal(24, iconIds.Length);
+        Assert.Equal(25, iconIds.Length);
 
         foreach (ToolIconId iconId in iconIds)
         {
@@ -92,7 +92,7 @@ public sealed class ToolIconTests
             .Select(field => (string)field.GetRawConstantValue()!)
             .ToArray();
 
-        Assert.Equal(25, toolCommands.Length); // 24 инструмента + «Дуга (3 точки)»; Зеркало ×3 входит
+        Assert.Equal(26, toolCommands.Length); // 25 инструментов + «Дуга (3 точки)»; Зеркало ×3 входит
         foreach (string commandId in toolCommands)
         {
             Assert.NotEqual(ToolIconId.None, ToolIconMap.ForCommand(commandId));

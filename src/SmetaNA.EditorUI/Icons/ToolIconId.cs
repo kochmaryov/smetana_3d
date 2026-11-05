@@ -34,6 +34,9 @@ public enum ToolIconId
     ScaleDim,
     Printer,
     Book,
+
+    /// <summary>Точка сборки (Snap): диск с центральной точкой.</summary>
+    Snap,
 }
 
 /// <summary>
@@ -69,6 +72,7 @@ public static class ToolIconMap
         ShortcutCatalog.ToolRevolve => ToolIconId.Revolve,
         ShortcutCatalog.ToolDimension => ToolIconId.Dimension,
         ShortcutCatalog.ToolScaleToDimension => ToolIconId.ScaleDim,
+        ShortcutCatalog.ToolSnap => ToolIconId.Snap,
         ToolPaletteCommandIds.PrintVolume => ToolIconId.Printer,
         ToolPaletteCommandIds.Tutorial => ToolIconId.Book,
         _ => ToolIconId.None,

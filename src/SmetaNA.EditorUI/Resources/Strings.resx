@@ -360,6 +360,12 @@
   <data name="Snap.HiddenGeometryOn" xml:space="preserve">
     <value>Скрытая геометрия (Ctrl+Shift)</value>
   </data>
+  <data name="Tool.Snap" xml:space="preserve">
+    <value>Точка сборки</value>
+  </data>
+  <data name="Tool.Hint.Snap" xml:space="preserve">
+    <value>Точка сборки: клик — центр диска, второй клик — ориентация, Enter — по синей оси.</value>
+  </data>
   <data name="Viewport.UnitLabel" xml:space="preserve">
     <value>Единицы</value>
   </data>

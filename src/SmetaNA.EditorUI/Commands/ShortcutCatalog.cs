@@ -38,6 +38,9 @@ public static class ShortcutCatalog
     public const string ToolMirrorFace = "tool.mirror.face";
     public const string ToolFollowMe = "tool.followme";
     public const string ToolRevolve = "tool.revolve";
+
+    /// <summary>«Точка сборки» (Snap, W5) — пользовательская ориентированная точка.</summary>
+    public const string ToolSnap = "tool.snap";
     public const string ViewToggleTheme = "view.toggleTheme";
     public const string ViewToggleLanguage = "view.toggleLanguage";
 
@@ -73,6 +76,7 @@ public static class ShortcutCatalog
         new(ToolMirrorFace, SmetaNA.EditorUI.Tools.M6.M6ToolStrings.MirrorFaceName, Shortcut.Parse("Alt+F")),
         new(ToolFollowMe, SmetaNA.EditorUI.Tools.M6.M6ToolStrings.FollowMeName, Shortcut.Parse("Alt+W")),
         new(ToolRevolve, SmetaNA.EditorUI.Tools.M6.M6ToolStrings.RevolveName, Shortcut.Parse("Alt+V")),
+        new(ToolSnap, Localization.LocalizationKeys.ToolSnap, Shortcut.Parse("K")),
         new(ViewToggleTheme, Localization.LocalizationKeys.CommandToggleTheme, Shortcut.Parse("Ctrl+Shift+T")),
         new(ViewToggleLanguage, Localization.LocalizationKeys.CommandToggleLanguage, Shortcut.Parse("Ctrl+Shift+L")),
     ];

@@ -30,7 +30,7 @@ public sealed class ToolGroupRegistryTests
             },
             ToolGroupRegistry.DefaultGroups.Select(group => group.Id));
 
-        Assert.Equal(7, ToolGroupRegistry.DefaultGroups[0].Buttons.Count); // Рисование (Дуга — 1 кнопка с вылетом)
+        Assert.Equal(8, ToolGroupRegistry.DefaultGroups[0].Buttons.Count); // Рисование (Дуга — 1 кнопка с вылетом, Точка сборки)
         Assert.Equal(8, ToolGroupRegistry.DefaultGroups[1].Buttons.Count); // Правка
         Assert.Equal(5, ToolGroupRegistry.DefaultGroups[2].Buttons.Count); // Операции (Зеркало — 1 кнопка с вылетом)
         Assert.Equal(2, ToolGroupRegistry.DefaultGroups[3].Buttons.Count); // Размеры
@@ -41,7 +41,7 @@ public sealed class ToolGroupRegistryTests
     public void AllDefinitions_AreUnique_AndCoverAllTools()
     {
         List<ToolDefinition> all = [.. ToolGroupRegistry.AllDefinitions()];
-        Assert.Equal(27, all.Count); // 24 инструмента + Выбор + 2 служебные команды
+        Assert.Equal(28, all.Count); // 25 инструментов + Выбор + 2 служебные команды
         Assert.Equal(all.Count, all.Select(definition => definition.CommandId).Distinct().Count());
 
         string[] expectedToolIds =
@@ -71,6 +71,7 @@ public sealed class ToolGroupRegistryTests
             ShortcutCatalog.ToolRevolve,
             ShortcutCatalog.ToolDimension,
             ShortcutCatalog.ToolScaleToDimension,
+            ShortcutCatalog.ToolSnap,
         ];
         foreach (string commandId in expectedToolIds)
         {

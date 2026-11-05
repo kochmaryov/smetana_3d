@@ -49,6 +49,7 @@ public static class RegisterDrawingTools
             () => new Arc3PointTool(),
             "Shift+A"),
         new(FreehandTool.ToolId, LocalizationKeys.ToolFreehand, null, () => new FreehandTool(), "F"),
+        new(SnapTool.ToolId, LocalizationKeys.ToolSnap, null, () => new SnapTool(), "K"),
     ];
 
     /// <summary>Инструменты рисования в порядке ленты.</summary>

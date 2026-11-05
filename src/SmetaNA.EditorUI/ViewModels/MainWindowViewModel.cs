@@ -49,6 +49,7 @@ public sealed class MainWindowViewModel : ViewModelBase
             LocalizationKeys.ToolArc3Point,
             LocalizationKeys.ToolHintArc3Point),
         new(ShortcutCatalog.ToolFreehand, LocalizationKeys.ToolFreehand, null, LocalizationKeys.ToolHintFreehand),
+        FromDrawingRibbon(SmetaNA.Core.Tools.Drawing.SnapTool.ToolId, LocalizationKeys.ToolSnap, LocalizationKeys.ToolHintSnap),
         new(ShortcutCatalog.ToolOffset, LocalizationKeys.ToolOffset, VcbInputKind.Length, LocalizationKeys.ToolHintOffset),
         new(ShortcutCatalog.ToolRotate, LocalizationKeys.ToolRotate, VcbInputKind.Angle, LocalizationKeys.ToolHintRotate),
         new(ShortcutCatalog.ToolScale, LocalizationKeys.ToolScale, VcbInputKind.Length, LocalizationKeys.ToolHintScale),

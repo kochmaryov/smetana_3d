@@ -193,6 +193,9 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
 
     /// <summary>Индикатор временного показа скрытой геометрии.</summary>
     public string SnapHiddenGeometryOn => _localization.Get(LocalizationKeys.SnapHiddenGeometryOn);
+
+    /// <summary>Имя инструмента «Точка сборки».</summary>
+    public string ToolSnap => _localization.Get(LocalizationKeys.ToolSnap);
     public string ViewportUnitLabel => _localization.Get(LocalizationKeys.ViewportUnitLabel);
     public string ViewportHudStats => _localization.Get(LocalizationKeys.ViewportHudStats);
     public string ViewportHudUnits => _localization.Get(LocalizationKeys.ViewportHudUnits);

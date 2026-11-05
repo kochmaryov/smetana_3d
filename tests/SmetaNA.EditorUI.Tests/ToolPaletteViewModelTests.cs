@@ -49,12 +49,12 @@ public sealed class ToolPaletteViewModelTests
     {
         ToolPaletteViewModel viewModel = Create();
 
-        Assert.Equal(24, viewModel.Groups.Sum(group => group.Buttons.Count));
+        Assert.Equal(25, viewModel.Groups.Sum(group => group.Buttons.Count));
         Assert.Equal(5, viewModel.Groups.Sum(group => group.Buttons.Sum(button => button.FlyoutItems.Count)));
-        Assert.Equal(29, viewModel.AllButtons.Count);
+        Assert.Equal(30, viewModel.AllButtons.Count);
 
         List<string> registryCommands = [.. ToolGroupRegistry.AllDefinitions().Select(definition => definition.CommandId)];
-        Assert.Equal(27, registryCommands.Count);
+        Assert.Equal(28, registryCommands.Count);
         Assert.Equal(registryCommands.Count, viewModel.AllButtons.Select(button => button.CommandId).Distinct().Count());
         foreach (string commandId in registryCommands)
         {
@@ -250,8 +250,8 @@ public sealed class ToolPaletteViewModelTests
         ToolPaletteViewModel viewModel = Create();
         ToolPaletteGroupViewModel drawing = viewModel.Groups[0];
 
-        // 7 кнопок группы, «Дуга» разворачивается в 2 варианта
-        Assert.Equal(8, drawing.RailItems.Count);
+        // 8 кнопок группы, «Дуга» разворачивается в 2 варианта
+        Assert.Equal(9, drawing.RailItems.Count);
         Assert.Single(drawing.RailItems, item => item.CommandId == ShortcutCatalog.ToolArc);
         Assert.Contains(drawing.RailItems, item => item.CommandId == ShortcutCatalog.ToolArc3Point);
     }

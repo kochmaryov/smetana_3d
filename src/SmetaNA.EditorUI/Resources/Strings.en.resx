@@ -360,6 +360,12 @@
   <data name="Snap.HiddenGeometryOn" xml:space="preserve">
     <value>Hidden geometry (Ctrl+Shift)</value>
   </data>
+  <data name="Tool.Snap" xml:space="preserve">
+    <value>Snap point</value>
+  </data>
+  <data name="Tool.Hint.Snap" xml:space="preserve">
+    <value>Snap point: click sets the disk centre, second click sets orientation, Enter keeps the blue axis.</value>
+  </data>
   <data name="Viewport.UnitLabel" xml:space="preserve">
     <value>Units</value>
   </data>

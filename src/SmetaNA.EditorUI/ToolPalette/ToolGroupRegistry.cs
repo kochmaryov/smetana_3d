@@ -76,6 +76,7 @@ public static class ToolGroupRegistry
                     Button(ShortcutCatalog.ToolArc3Point, LocalizationKeys.ToolArc3Point, Vcb.VcbInputKind.Radius, LocalizationKeys.ToolHintArc3Point),
                 ]),
             Button(ShortcutCatalog.ToolFreehand, LocalizationKeys.ToolFreehand, null, LocalizationKeys.ToolHintFreehand),
+            Button(ShortcutCatalog.ToolSnap, LocalizationKeys.ToolSnap, null, LocalizationKeys.ToolHintSnap),
         ]),
         new(EditingGroupId, ToolGroupStrings.GroupEditing,
         [

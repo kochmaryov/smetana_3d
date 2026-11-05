@@ -688,6 +688,8 @@ public partial class ViewportView : UserControl
     private void RedrawToolOverlay()
     {
         ToolOverlay.Children.Clear();
+        DrawUserSnaps();
+
         if (_tools is not { } tools)
         {
             return;
@@ -974,6 +976,90 @@ public partial class ViewportView : UserControl
         ToolOverlay.Children.Add(text);
         Canvas.SetLeft(text, pixel.X + 12);
         Canvas.SetTop(text, pixel.Y - 26);
+    }
+
+    /// <summary>
+    /// Пользовательские точки сборки (Snap, W5): диск с центральной точкой —
+    /// лицевая сторона белая, обратная синяя (видна по знаку скалярного
+    /// произведения нормали и направления камеры). Диаметр — постоянный на экране.
+    /// </summary>
+    private void DrawUserSnaps()
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        const double radiusPx = 11.0;
+        foreach (SnapNode snap in SnapQuery.FindInScene(_viewModel.Scene, _viewModel.IsHiddenGeometryPreview))
+        {
+            SnapFrame frame = snap.WorldFrame(WorldTransformOf(snap));
+            if (!TryProject(frame.Position, out Point center)
+                || !TryProject(frame.Position + frame.Right, out Point rightPx)
+                || !TryProject(frame.Position + frame.Up, out Point upPx))
+            {
+                continue;
+            }
+
+            double rx = rightPx.X - center.X, ry = rightPx.Y - center.Y;
+            double ux = upPx.X - center.X, uy = upPx.Y - center.Y;
+            double rightLen = Math.Sqrt(rx * rx + ry * ry);
+            double upLen = Math.Sqrt(ux * ux + uy * uy);
+            if (rightLen < 1e-6 || upLen < 1e-6)
+            {
+                continue;
+            }
+
+            rx *= radiusPx / rightLen;
+            ry *= radiusPx / rightLen;
+            ux *= radiusPx / upLen;
+            uy *= radiusPx / upLen;
+
+            var points = new AvaloniaList<Point>();
+            const int segments = 28;
+            for (int i = 0; i < segments; i++)
+            {
+                double angle = 2 * Math.PI * i / segments;
+                double cos = Math.Cos(angle), sin = Math.Sin(angle);
+                points.Add(new Point(
+                    center.X + rx * cos + ux * sin,
+                    center.Y + ry * cos + uy * sin));
+            }
+
+            bool frontFacing = Vector3d.Dot(frame.Direction, Viewport.Camera.Forward) < 0;
+            var disk = new Polygon
+            {
+                Points = points,
+                Fill = new SolidColorBrush(frontFacing
+                    ? Color.FromArgb(235, 245, 245, 245)
+                    : Color.FromArgb(200, 40, 90, 200)),
+                Stroke = new SolidColorBrush(Color.FromArgb(220, 25, 40, 60)),
+                StrokeThickness = 1.4,
+            };
+            ToolOverlay.Children.Add(disk);
+
+            var dot = new Ellipse
+            {
+                Width = 4,
+                Height = 4,
+                Fill = new SolidColorBrush(Color.FromArgb(235, 25, 40, 60)),
+            };
+            ToolOverlay.Children.Add(dot);
+            Canvas.SetLeft(dot, center.X - 2);
+            Canvas.SetTop(dot, center.Y - 2);
+        }
+    }
+
+    /// <summary>Мировая трансформация узла: произведение локальных трансформаций предков.</summary>
+    private static Transform3d WorldTransformOf(SceneNode node)
+    {
+        Transform3d world = node.LocalTransform;
+        for (SceneNode? parent = node.Parent; parent is not null; parent = parent.Parent)
+        {
+            world = Transform3d.Multiply(world, parent.LocalTransform);
+        }
+
+        return world;
     }
 
     private static bool IsAxis(SnapType type)

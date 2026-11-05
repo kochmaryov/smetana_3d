@@ -29,4 +29,5 @@
   <x:String x:Key="ToolIcon.ScaleDim">M5 5h6v6H5zM11 11l5 5M13 19h6M16 16v6M4 19v-3M4 19h3</x:String>
   <x:String x:Key="ToolIcon.Printer">M7 8V4h10v4M7 17H5a1 1 0 01-1-1v-6h16v6a1 1 0 01-1 1h-2M7 14h10v6H7z</x:String>
   <x:String x:Key="ToolIcon.Book">M4 5a2 2 0 012-2h12v18H6a2 2 0 01-2-2zM8 7.5h8M8 11.5h8</x:String>
+  <x:String x:Key="ToolIcon.Snap">M12 3.5a8.5 8.5 0 100 17 8.5 8.5 0 100-17M12 9.5a2.5 2.5 0 100 5 2.5 2.5 0 100-5M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4</x:String>
 </ResourceDictionary>

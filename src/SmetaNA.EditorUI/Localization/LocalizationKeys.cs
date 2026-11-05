@@ -229,6 +229,12 @@ public static class LocalizationKeys
     public const string SnapExtendEdge = "Snap.ExtendEdge";
     public const string SnapFromPoint = "Snap.FromPoint";
 
+    /// <summary>Инструмент «Точка сборки» (Snap, W5).</summary>
+    public const string ToolSnap = "Tool.Snap";
+
+    /// <summary>Подсказка инструмента «Точка сборки».</summary>
+    public const string ToolHintSnap = "Tool.Hint.Snap";
+
     /// <summary>Меню «Вид»: показ скрытой геометрии (R-10).</summary>
     public const string ViewShowHiddenGeometry = "View.ShowHiddenGeometry";
 
