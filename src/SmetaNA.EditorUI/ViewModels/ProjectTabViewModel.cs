@@ -23,6 +23,8 @@ public sealed class ProjectTabViewModel : ViewModelBase
     private bool _showHiddenGeometry;
     private bool _gridSnapping;
     private double _gridStep = InferenceSettings.DefaultGridStep;
+    private double _tolerance = SnapRequest.DefaultTolerancePx;
+    private int _categoryPresetIndex;
     private bool _showSnapLabels = true;
     private bool _lengthSnapping;
     private bool _isHiddenGeometryPreview;
@@ -54,6 +56,19 @@ public sealed class ProjectTabViewModel : ViewModelBase
         {
             double next = GridStepPresets.FirstOrDefault(preset => preset > _gridStep + 1e-9);
             GridStep = next > 0 ? next : GridStepPresets[0];
+        });
+
+        CycleToleranceCommand = new RelayCommand(() =>
+        {
+            double next = TolerancePresets.FirstOrDefault(preset => preset > _tolerance + 1e-9);
+            Tolerance = next > 0 ? next : TolerancePresets[0];
+        });
+
+        CycleCategoriesCommand = new RelayCommand(() =>
+        {
+            _categoryPresetIndex = (_categoryPresetIndex + 1) % CategoryPresets.Count;
+            OnPropertyChanged(nameof(CategoriesMenuLabel));
+            PushInferenceSettings();
         });
 
         _localization.CultureChanged += InvalidateAll;
@@ -135,8 +150,7 @@ public sealed class ProjectTabViewModel : ViewModelBase
     }
 
     /// <summary>Шаг сетки привязки в единицах сцены.</summary>
-    public double GridStep
-    {
+    public double GridStep    {
         get => _gridStep;
         set
         {
@@ -157,6 +171,37 @@ public sealed class ProjectTabViewModel : ViewModelBase
 
     /// <summary>Пресеты шага сетки: 0,1 / 1 / 10 / 100 единиц сцены.</summary>
     public static IReadOnlyList<double> GridStepPresets { get; } = [0.1, 1, 10, 100];
+
+    /// <summary>Пресеты толеранса привязки в пикселях.</summary>
+    public static IReadOnlyList<double> TolerancePresets { get; } = [6, 8, 12];
+
+    /// <summary>Подпись пункта меню: текущий толеранс привязки, пикселей.</summary>
+    public string ToleranceMenuLabel => string.Format(
+        CultureInfo.CurrentCulture,
+        Strings.ViewTolerance,
+        _tolerance.ToString("0.##", CultureInfo.CurrentCulture));
+
+    /// <summary>Переключить толеранс на следующий пресет.</summary>
+    public ICommand CycleToleranceCommand { get; }
+
+    /// <summary>Пресеты категорий привязок (R-35 / настройки §6.5) с ключами имён.</summary>
+    public static IReadOnlyList<(SnapFilter Filter, string NameKey)> CategoryPresets { get; } =
+    [
+        (SnapFilter.All, LocalizationKeys.ViewCategoriesAll),
+        (SnapFilter.Points | SnapFilter.Axes, LocalizationKeys.ViewCategoriesPointsAndAxes),
+        (SnapFilter.All & ~(SnapFilter.Axes | SnapFilter.InstanceAxes), LocalizationKeys.ViewCategoriesNoAxes),
+        (SnapFilter.Endpoints | SnapFilter.Midpoints | SnapFilter.Centers | SnapFilter.Intersections
+            | SnapFilter.OnFace | SnapFilter.OnEdges, LocalizationKeys.ViewCategoriesGeometry),
+    ];
+
+    /// <summary>Подпись пункта меню: текущий набор категорий.</summary>
+    public string CategoriesMenuLabel => string.Format(
+        CultureInfo.CurrentCulture,
+        Strings.ViewCategories,
+        Strings.Get(CategoryPresets[_categoryPresetIndex].NameKey));
+
+    /// <summary>Переключить набор категорий привязок на следующий пресет.</summary>
+    public ICommand CycleCategoriesCommand { get; }
 
     /// <summary>Переключить шаг сетки на следующий пресет (после 100 — снова 0,1).</summary>
     public ICommand CycleGridStepCommand { get; }
@@ -193,6 +238,21 @@ public sealed class ProjectTabViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Толеранс привязки в пикселях (R-31, настройки).</summary>
+    public double Tolerance
+    {
+        get => _tolerance;
+        set
+        {
+            double tolerance = double.IsFinite(value) && value > 0 ? value : SnapRequest.DefaultTolerancePx;
+            if (SetField(ref _tolerance, tolerance))
+            {
+                OnPropertyChanged(nameof(ToleranceMenuLabel));
+                PushInferenceSettings();
+            }
+        }
+    }
+
     /// <summary>Действующие настройки привязок вкладки (переживают смену вкладки).</summary>
     public InferenceSettings InferenceSettings { get; private set; } = InferenceSettings.Default;
 
@@ -218,6 +278,8 @@ public sealed class ProjectTabViewModel : ViewModelBase
         _showHiddenGeometry = normalized.ShowHiddenGeometry;
         _gridSnapping = normalized.GridEnabled;
         _gridStep = normalized.GridStep;
+        _tolerance = normalized.TolerancePx;
+        _categoryPresetIndex = ResolveCategoryPresetIndex(normalized.Categories);
         _showSnapLabels = normalized.ShowLabels;
         _lengthSnapping = normalized.LengthSnappingEnabled;
         InferenceSettings = Tools.Context.Inference = normalized;
@@ -225,9 +287,25 @@ public sealed class ProjectTabViewModel : ViewModelBase
         OnPropertyChanged(nameof(ShowHiddenGeometry));
         OnPropertyChanged(nameof(GridSnapping));
         OnPropertyChanged(nameof(GridStep));
+        OnPropertyChanged(nameof(Tolerance));
+        OnPropertyChanged(nameof(CategoriesMenuLabel));
         OnPropertyChanged(nameof(ShowSnapLabels));
         OnPropertyChanged(nameof(LengthSnapping));
         InferenceSettingsChanged?.Invoke();
+    }
+
+    /// <summary>Индекс пресета категорий, совпадающего с набором; иначе — «Всё».</summary>
+    private static int ResolveCategoryPresetIndex(SnapFilter filter)
+    {
+        for (int i = 0; i < CategoryPresets.Count; i++)
+        {
+            if (CategoryPresets[i].Filter == filter)
+            {
+                return i;
+            }
+        }
+
+        return 0;
     }
 
     private void PushInferenceSettings()
@@ -237,6 +315,8 @@ public sealed class ProjectTabViewModel : ViewModelBase
             ShowHiddenGeometry = _showHiddenGeometry,
             GridEnabled = _gridSnapping,
             GridStep = _gridStep,
+            TolerancePx = _tolerance,
+            Categories = CategoryPresets[_categoryPresetIndex].Filter,
             ShowLabels = _showSnapLabels,
             LengthSnappingEnabled = _lengthSnapping,
         };

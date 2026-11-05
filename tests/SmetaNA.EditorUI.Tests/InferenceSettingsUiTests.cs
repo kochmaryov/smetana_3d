@@ -160,6 +160,64 @@ public sealed class InferenceSettingsUiTests
     }
 
     [Fact]
+    public void Tolerance_CyclesThroughPresets_AndPushesIntoContext()
+    {
+        ProjectTabViewModel viewModel = CreateViewModel();
+        Assert.Equal(SnapRequest.DefaultTolerancePx, viewModel.Tolerance);
+
+        viewModel.CycleToleranceCommand.Execute(null);
+        Assert.Equal(12, viewModel.Tolerance);
+        Assert.Equal(12, viewModel.Tools.Context.Inference.TolerancePx);
+
+        viewModel.CycleToleranceCommand.Execute(null);
+        Assert.Equal(6, viewModel.Tolerance);
+        Assert.Contains("6", viewModel.ToleranceMenuLabel);
+    }
+
+    [Fact]
+    public void Categories_CycleThroughPresets_AndPushFilters()
+    {
+        ProjectTabViewModel viewModel = CreateViewModel();
+        Assert.Equal(SnapFilter.All, viewModel.Tools.Context.Inference.Categories);
+
+        viewModel.CycleCategoriesCommand.Execute(null);
+        Assert.Equal(
+            SnapFilter.Points | SnapFilter.Axes,
+            viewModel.Tools.Context.Inference.Categories);
+
+        viewModel.CycleCategoriesCommand.Execute(null);
+        Assert.Equal(
+            SnapFilter.All & ~(SnapFilter.Axes | SnapFilter.InstanceAxes),
+            viewModel.Tools.Context.Inference.Categories);
+        Assert.Contains("ос", viewModel.CategoriesMenuLabel);
+
+        viewModel.CycleCategoriesCommand.Execute(null);
+        Assert.False(viewModel.Tools.Context.Inference.Categories.HasFlag(SnapFilter.Axes));
+        Assert.True(viewModel.Tools.Context.Inference.Categories.HasFlag(SnapFilter.Endpoints));
+
+        viewModel.CycleCategoriesCommand.Execute(null);
+        Assert.Equal(SnapFilter.All, viewModel.Tools.Context.Inference.Categories);
+    }
+
+    [Fact]
+    public void ApplyInferenceSettings_RestoresToleranceAndCategoriesPreset()
+    {
+        ProjectTabViewModel viewModel = CreateViewModel();
+        var settings = new InferenceSettings
+        {
+            TolerancePx = 12,
+            Categories = SnapFilter.All & ~(SnapFilter.Axes | SnapFilter.InstanceAxes),
+        };
+
+        viewModel.ApplyInferenceSettings(settings);
+
+        Assert.Equal(12, viewModel.Tolerance);
+        Assert.Equal(settings.Categories, viewModel.Tools.Context.Inference.Categories);
+        // Подпись показывает пресет, совпадающий с набором.
+        Assert.Contains("ос", viewModel.CategoriesMenuLabel);
+    }
+
+    [Fact]
     public void MainWindow_AppliesStoredSettingsToNewProject()
     {
         string directory = Path.Combine(Path.GetTempPath(), "smetana-inference-" + Guid.NewGuid().ToString("N"));

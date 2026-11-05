@@ -63,6 +63,12 @@
                         IsEnabled="{Binding HasProjects}"
                         ToggleType="CheckBox"
                         IsChecked="{Binding SelectedProject.LengthSnapping, Mode=TwoWay}" />
+              <MenuItem Header="{Binding SelectedProject.ToleranceMenuLabel}"
+                        IsEnabled="{Binding HasProjects}"
+                        Command="{Binding SelectedProject.CycleToleranceCommand}" />
+              <MenuItem Header="{Binding SelectedProject.CategoriesMenuLabel}"
+                        IsEnabled="{Binding HasProjects}"
+                        Command="{Binding SelectedProject.CycleCategoriesCommand}" />
               <MenuItem Header="{Binding Strings.ViewSnapLabels}"
                         IsEnabled="{Binding HasProjects}"
                         ToggleType="CheckBox"

@@ -366,6 +366,30 @@
   <data name="Tool.Hint.Snap" xml:space="preserve">
     <value>Точка сборки: клик — центр диска, второй клик — ориентация, Enter — по синей оси.</value>
   </data>
+  <data name="Shape.Square" xml:space="preserve">
+    <value>Квадрат</value>
+  </data>
+  <data name="Shape.GoldenRatio" xml:space="preserve">
+    <value>Золотое сечение</value>
+  </data>
+  <data name="View.Tolerance" xml:space="preserve">
+    <value>Толеранс привязки: {0} px (изменить)</value>
+  </data>
+  <data name="View.Categories" xml:space="preserve">
+    <value>Категории привязок: {0} (изменить)</value>
+  </data>
+  <data name="View.Categories.All" xml:space="preserve">
+    <value>все</value>
+  </data>
+  <data name="View.Categories.PointsAndAxes" xml:space="preserve">
+    <value>точки и оси</value>
+  </data>
+  <data name="View.Categories.NoAxes" xml:space="preserve">
+    <value>без осей</value>
+  </data>
+  <data name="View.Categories.Geometry" xml:space="preserve">
+    <value>только геометрия</value>
+  </data>
   <data name="Viewport.UnitLabel" xml:space="preserve">
     <value>Единицы</value>
   </data>

@@ -196,6 +196,15 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
 
     /// <summary>Имя инструмента «Точка сборки».</summary>
     public string ToolSnap => _localization.Get(LocalizationKeys.ToolSnap);
+
+    /// <summary>Строка по ключу (динамические подсказки инструментов).</summary>
+    public string Get(string key) => _localization.Get(key);
+
+    /// <summary>Подпись меню «Толеранс привязки».</summary>
+    public string ViewTolerance => _localization.Get(LocalizationKeys.ViewTolerance);
+
+    /// <summary>Подпись меню «Категории привязок».</summary>
+    public string ViewCategories => _localization.Get(LocalizationKeys.ViewCategories);
     public string ViewportUnitLabel => _localization.Get(LocalizationKeys.ViewportUnitLabel);
     public string ViewportHudStats => _localization.Get(LocalizationKeys.ViewportHudStats);
     public string ViewportHudUnits => _localization.Get(LocalizationKeys.ViewportHudUnits);

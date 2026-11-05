@@ -279,6 +279,12 @@ public sealed class InferenceScene
     }
 
     public IReadOnlyList<SnapSegment> Segments => _segments;
+
+    /// <summary>
+    /// Массив сегментов для горячих циклов движка: обращение через интерфейс
+    /// <see cref="Segments"/> на сотнях тысяч рёбер дороже индексации массива.
+    /// </summary>
+    internal SnapSegment[] SegmentsArray => _segments;
     public IReadOnlyList<SnapFace> Faces => _faces;
     public IReadOnlyList<SnapCircle> Circles => _circles;
 

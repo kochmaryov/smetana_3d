@@ -31,6 +31,15 @@ public sealed class RectangleTool : DrawingToolBase
     private double? _sizeV;
     private bool _vcbOnV;
 
+    /// <summary>Допуск shape inference: отклонение пропорции, при котором она доводится до точной.</summary>
+    public const double ShapeTolerance = 0.02;
+
+    /// <summary>Золотое сечение для подсказки «Золотое сечение» (R-35).</summary>
+    public const double GoldenRatio = 1.6180339887498949;
+
+    /// <summary>Подсказка формы по текущим размерам (квадрат/золотое сечение).</summary>
+    public ShapeHintKind ShapeHint { get; private set; }
+
     public override string Id => ToolId;
 
     public override bool IsInteracting => _started;
@@ -231,9 +240,51 @@ public sealed class RectangleTool : DrawingToolBase
 
     private (double U, double V) CoordinatesOf(Vector3d point) => Plane.Coordinates(point);
 
-    private double SignedSizeU() => _sizeU ?? CursorDelta().U;
+    private double SignedSizeU() => _sizeU ?? Shapes().U;
 
-    private double SignedSizeV() => _sizeV ?? CursorDelta().V;
+    private double SignedSizeV() => _sizeV ?? Shapes().V;
+
+    /// <summary>
+    /// Размеры прямоугольника по курсору с shape inference (R-35): почти квадрат
+    /// доводится до точного квадрата, почти золотое сечение — до точного.
+    /// Числовой ввод VCB inference не проходит (там размер задан явно).
+    /// </summary>
+    private (double U, double V) Shapes()
+    {
+        (double U, double V) delta = CursorDelta();
+        if (Math.Abs(delta.U) <= MinSegmentLengthMm || Math.Abs(delta.V) <= MinSegmentLengthMm)
+        {
+            ShapeHint = ShapeHintKind.None;
+            return delta;
+        }
+
+        double magnitudeU = Math.Abs(delta.U);
+        double magnitudeV = Math.Abs(delta.V);
+        double largest = Math.Max(magnitudeU, magnitudeV);
+
+        if (Math.Abs(magnitudeU - magnitudeV) <= largest * ShapeTolerance)
+        {
+            ShapeHint = ShapeHintKind.Square;
+            magnitudeV = magnitudeU;
+        }
+        else if (Math.Abs((magnitudeU / magnitudeV) - GoldenRatio) <= GoldenRatio * ShapeTolerance)
+        {
+            ShapeHint = ShapeHintKind.GoldenRatio;
+            magnitudeV = magnitudeU / GoldenRatio;
+        }
+        else if (Math.Abs((magnitudeV / magnitudeU) - GoldenRatio) <= GoldenRatio * ShapeTolerance)
+        {
+            ShapeHint = ShapeHintKind.GoldenRatio;
+            magnitudeU = magnitudeV / GoldenRatio;
+        }
+        else
+        {
+            ShapeHint = ShapeHintKind.None;
+            return delta;
+        }
+
+        return (Signed(magnitudeU, USign()), Signed(magnitudeV, VSign()));
+    }
 
     private (double U, double V) CursorDelta()
     {
@@ -270,6 +321,18 @@ public sealed class RectangleTool : DrawingToolBase
                 "{0:0.###}×{1:0.###} mm",
                 Math.Abs(u2 - anchor.U),
                 Math.Abs(v2 - anchor.V))));
+
+            // Shape inference (R-35): пропорция доведена до квадрата/золотого сечения.
+            string? shapeKey = ShapeHint switch
+            {
+                ShapeHintKind.Square => "Shape.Square",
+                ShapeHintKind.GoldenRatio => "Shape.GoldenRatio",
+                _ => null,
+            };
+            if (shapeKey is not null)
+            {
+                labels.Add(new ToolPreviewLabel(ring[0], string.Empty, shapeKey));
+            }
         }
 
         SetPreview(new ToolPreview(lines, [new ToolPreviewPoint(_corner, ToolPreviewStyle.Default)], labels));

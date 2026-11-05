@@ -58,6 +58,29 @@ public abstract class TransformToolBase : ToolBase
     /// <summary>Режим копии объекта (Ctrl при старте перетаскивания).</summary>
     public bool IsCopyMode => _copyMode;
 
+    /// <summary>
+    /// Включить штамп (Stamp mode): оригинал остаётся на месте, при фиксации
+    /// добавляется копия с текущим преобразованием. Работает только в режиме
+    /// объекта; <c>false</c> — штамп недоступен (правка грани).
+    /// </summary>
+    public bool EnableStamp()
+    {
+        if (_subjectNode is not { Parent: not null } node)
+        {
+            return false;
+        }
+
+        if (_copyMode && _copy is not null)
+        {
+            return true;
+        }
+
+        _copy = NodeCloner.DeepCopy(node);
+        _copyMode = true;
+        RaiseStateChanged();
+        return true;
+    }
+
     /// <summary>Тип значения VCB инструмента.</summary>
     protected abstract ToolValueKind VcbKind { get; }
 
@@ -73,8 +96,15 @@ public abstract class TransformToolBase : ToolBase
     /// <summary>Зафиксировать опорные данные операции по точке базы (world); <c>false</c> — вырождено.</summary>
     protected abstract bool TryBeginOperation(ToolFaceHit hit);
 
-    /// <summary>Обновить операцию по курсору (пиксели); <c>false</c> — курсор вне рабочей плоскости.</summary>
+    /// <summary>
+    /// Обновить операцию по курсору (пиксели); <c>false</c> — курсор вне рабочей плоскости.
+    /// </summary>
     protected abstract bool TryUpdateOperation(Vector2d cursorPx);
+
+    /// <summary>Модификаторы события указателя изменились (Ctrl/Shift/Alt во время жеста).</summary>
+    protected virtual void OnModifiersChanged(ToolModifiers modifiers)
+    {
+    }
 
     /// <summary>Обновить операцию по привязанной точке; <c>false</c> — инструмент не поддерживает.</summary>
     protected virtual bool TryUpdateOperationAt(Vector3d point) => false;
@@ -352,6 +382,7 @@ public abstract class TransformToolBase : ToolBase
 
     private void UpdateDrag(Vector2d positionPx, ToolModifiers modifiers)
     {
+        OnModifiersChanged(modifiers);
         Vector3d? snapped = ResolveSnapPoint(positionPx, BasePoint, modifiers);
         if (snapped is not { } target || !TryUpdateOperationAt(target))
         {

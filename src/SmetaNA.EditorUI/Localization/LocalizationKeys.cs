@@ -235,6 +235,30 @@ public static class LocalizationKeys
     /// <summary>Подсказка инструмента «Точка сборки».</summary>
     public const string ToolHintSnap = "Tool.Hint.Snap";
 
+    /// <summary>Shape inference: пропорция прямоугольника — квадрат (R-35).</summary>
+    public const string ShapeSquare = "Shape.Square";
+
+    /// <summary>Shape inference: пропорция прямоугольника — золотое сечение (R-35).</summary>
+    public const string ShapeGoldenRatio = "Shape.GoldenRatio";
+
+    /// <summary>Меню «Вид»: циклический толеранс привязки.</summary>
+    public const string ViewTolerance = "View.Tolerance";
+
+    /// <summary>Меню «Вид»: циклические категории привязок.</summary>
+    public const string ViewCategories = "View.Categories";
+
+    /// <summary>Пресет категорий: все привязки.</summary>
+    public const string ViewCategoriesAll = "View.Categories.All";
+
+    /// <summary>Пресет категорий: точки и оси.</summary>
+    public const string ViewCategoriesPointsAndAxes = "View.Categories.PointsAndAxes";
+
+    /// <summary>Пресет категорий: всё, кроме осей.</summary>
+    public const string ViewCategoriesNoAxes = "View.Categories.NoAxes";
+
+    /// <summary>Пресет категорий: только геометрия.</summary>
+    public const string ViewCategoriesGeometry = "View.Categories.Geometry";
+
     /// <summary>Меню «Вид»: показ скрытой геометрии (R-10).</summary>
     public const string ViewShowHiddenGeometry = "View.ShowHiddenGeometry";
 

@@ -53,6 +53,38 @@ public static class SnapQuery
             && (a.Up - b.Up).Length() <= tolerance;
     }
 
+    /// <summary>
+    /// Snap'ы, соединённые с данным «лицевая к лицевой» (пункт `Connected by Snaps`).
+    /// Кадры берутся в мировых координатах; скрытые поддеревья пропускаются без
+    /// <paramref name="includeHidden"/>.
+    /// </summary>
+    public static IReadOnlyList<SnapNode> FindConnected(
+        Scene scene,
+        SnapNode snap,
+        bool includeHidden = false,
+        double tolerance = ConnectionTolerance)
+    {
+        ArgumentNullException.ThrowIfNull(scene);
+        ArgumentNullException.ThrowIfNull(snap);
+
+        SnapFrame source = snap.WorldFrame(snap.WorldTransform());
+        var connected = new List<SnapNode>();
+        foreach (SnapNode candidate in FindInScene(scene, includeHidden))
+        {
+            if (ReferenceEquals(candidate, snap))
+            {
+                continue;
+            }
+
+            if (AreConnected(source, candidate.WorldFrame(candidate.WorldTransform()), tolerance))
+            {
+                connected.Add(candidate);
+            }
+        }
+
+        return connected;
+    }
+
     private static void Collect(SceneNode node, bool includeHidden, HashSet<SceneNode> visited, List<SnapNode> result)
     {
         if (!includeHidden && !node.IsVisible)

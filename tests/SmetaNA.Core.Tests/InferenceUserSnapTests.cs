@@ -221,4 +221,21 @@ public sealed class InferenceUserSnapTests
             front,
             back with { Position = new Vector3d(11, 0, 0) }));
     }
+
+    [Fact]
+    public void SnapQuery_FindConnected_ReturnsFrontToFrontNeighbours()
+    {
+        var scene = new Scene();
+        SnapFrame front = new(new Vector3d(10, 0, 0), Vector3d.UnitZ, Vector3d.UnitY);
+        SnapFrame back = new(new Vector3d(10, 0, 0), -Vector3d.UnitZ, Vector3d.UnitY);
+        var first = new SnapNode { Name = "Перед", Frame = front };
+        var second = new SnapNode { Name = "Зад", Frame = back };
+        var lonely = new SnapNode { Name = "Один", Frame = new SnapFrame(new Vector3d(50, 0, 0), Vector3d.UnitZ, Vector3d.UnitY) };
+        scene.Root.AddChild(first);
+        scene.Root.AddChild(second);
+        scene.Root.AddChild(lonely);
+
+        Assert.Same(second, Assert.Single(SnapQuery.FindConnected(scene, first)));
+        Assert.Empty(SnapQuery.FindConnected(scene, lonely));
+    }
 }

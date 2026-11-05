@@ -24,8 +24,11 @@ public sealed record ToolPreviewLine(Vector3d Start, Vector3d End, ToolPreviewSt
 /// <summary>Точка предпросмотра в мировых координатах.</summary>
 public sealed record ToolPreviewPoint(Vector3d Position, ToolPreviewStyle Style = ToolPreviewStyle.Default);
 
-/// <summary>Подпись предпросмотра у мировой точки.</summary>
-public sealed record ToolPreviewLabel(Vector3d Anchor, string Text);
+/// <summary>
+/// Подпись предпросмотра у мировой точки. Текст либо готовый, либо задаётся
+/// ключом локализации (<see cref="LocalizationKey"/>) — Core не хранит переводы.
+/// </summary>
+public sealed record ToolPreviewLabel(Vector3d Anchor, string Text, string? LocalizationKey = null);
 
 /// <summary>
 /// Результат инструмента для отрисовки в UI: линии, точки и подписи

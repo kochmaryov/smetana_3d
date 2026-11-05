@@ -97,6 +97,15 @@ public sealed class MoveTool : TransformToolBase
     /// <summary>Кадр кандидата, если привязка — пользовательская точка сборки (или комбинированная через неё).</summary>
     private static SnapFrame? UserSnapFrame(SnapCandidate? candidate) => candidate?.Frame;
 
+    /// <summary>Ctrl во время перетаскивания превращает перенос в штамп: оригинал остаётся.</summary>
+    protected override void OnModifiersChanged(ToolModifiers modifiers)
+    {
+        if ((modifiers & ToolModifiers.Ctrl) != 0 && !IsCopyMode)
+        {
+            EnableStamp();
+        }
+    }
+
     /// <summary>
     /// Точная точка из VCB: абсолютная координата — куда переместить захваченную
     /// точку, относительная — сразу смещение.

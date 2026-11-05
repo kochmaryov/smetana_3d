@@ -222,23 +222,36 @@ public static class InferenceEngine
                 TryAddPoint(SnapType.Origin, Vector3d.Zero);
             }
 
-            if ((filter & SnapFilter.Endpoints) != 0)
+            bool wantEndpoints = (filter & SnapFilter.Endpoints) != 0;
+            bool wantMidpoints = (filter & SnapFilter.Midpoints) != 0;
+            if (wantEndpoints || wantMidpoints)
             {
-                foreach (SnapSegment segment in scene.Segments)
+                // Одна дешёвая проверка сегмента на оба конца и середину: дорогая
+                // проекция в пиксели выполняется только для сегментов у курсора
+                // (на 200k рёбер иначе сотни тысяч проекций на событие).
+                foreach (SnapSegment segment in scene.SegmentsArray)
                 {
-                    SnapEntityRef vertex = segment.Entity with { Kind = SnapEntityKind.Vertex };
-                    TryAddPoint(SnapType.Endpoint, segment.Start, vertex);
-                    TryAddPoint(SnapType.Endpoint, segment.End, vertex);
+                    if (!IsProjectedSegmentNearCursor(segment))
+                    {
+                        continue;
+                    }
+
+                    if (wantEndpoints)
+                    {
+                        SnapEntityRef vertex = segment.Entity with { Kind = SnapEntityKind.Vertex };
+                        TryAddPoint(SnapType.Endpoint, segment.Start, vertex);
+                        TryAddPoint(SnapType.Endpoint, segment.End, vertex);
+                    }
+
+                    if (wantMidpoints)
+                    {
+                        TryAddPoint(SnapType.Midpoint, segment.Midpoint, segment.Entity);
+                    }
                 }
             }
 
             if ((filter & SnapFilter.Midpoints) != 0)
             {
-                foreach (SnapSegment segment in scene.Segments)
-                {
-                    TryAddPoint(SnapType.Midpoint, segment.Midpoint, segment.Entity);
-                }
-
                 foreach (SnapArcPoint arc in scene.ArcPoints)
                 {
                     TryAddPoint(SnapType.ArcMidpoint, arc.Point, arc.Entity);
@@ -336,7 +349,7 @@ public static class InferenceEngine
             // лишь если оба сегмента проходят рядом с курсором. Без отсечки перебор пар
             // O(n²) над сценой с сотнями тысяч рёбер намертво вешает UI.
             List<SnapSegment> segments = new();
-            foreach (SnapSegment segment in _request.Scene.Segments)
+            foreach (SnapSegment segment in _request.Scene.SegmentsArray)
             {
                 if (IsProjectedSegmentNearCursor(segment))
                 {
@@ -352,17 +365,21 @@ public static class InferenceEngine
 
             for (int i = 0; i < segments.Count; i++)
             {
+                SnapSegment a = segments[i];
+                // Допуск считается один раз на сегмент: WorldTolerance — дорогая
+                // операция (проекция), а пар до 32k.
+                double tolerance = WorldTolerance(a.Midpoint);
+
                 for (int j = i + 1; j < segments.Count; j++)
                 {
-                    SnapSegment a = segments[i];
                     SnapSegment b = segments[j];
-                    if (SharesEndpoint(a, b))
+                    if (!BoundsOverlap(a, b, tolerance) || SharesEndpoint(a, b))
                     {
                         continue;
                     }
 
                     if (InferenceMath.TryIntersectSegmentSegment(
-                        a.Start, a.End, b.Start, b.End, WorldTolerance(a.Midpoint), out Vector3d point))
+                        a.Start, a.End, b.Start, b.End, tolerance, out Vector3d point))
                     {
                         TryAddPoint(SnapType.Intersection, point);
                     }
@@ -370,10 +387,9 @@ public static class InferenceEngine
 
                 foreach (SnapGuide guide in guides)
                 {
-                    SnapSegment segment = segments[i];
                     if (InferenceMath.TryIntersectSegmentLine(
-                        segment.Start, segment.End, guide.Point, guide.Direction,
-                        WorldTolerance(segment.Midpoint), out Vector3d point))
+                        a.Start, a.End, guide.Point, guide.Direction,
+                        tolerance, out Vector3d point))
                     {
                         TryAddPoint(SnapType.Intersection, point);
                     }
@@ -453,7 +469,7 @@ public static class InferenceEngine
 
             if (_allowedLinear.Contains(SnapType.Perpendicular))
             {
-                foreach (SnapSegment segment in _request.Scene.Segments)
+                foreach (SnapSegment segment in _request.Scene.SegmentsArray)
                 {
                     TryAddPerpendicular(segment.Start, segment.Direction, anchor);
                 }
@@ -594,7 +610,7 @@ public static class InferenceEngine
         {
             bool withDirection = _allowedLinear.Count > 0;
             int added = 0;
-            foreach (SnapSegment segment in _request.Scene.Segments)
+            foreach (SnapSegment segment in _request.Scene.SegmentsArray)
             {
                 if (added >= MaxEdgeCandidates)
                 {
@@ -647,7 +663,7 @@ public static class InferenceEngine
         private void CollectExtendEdgeCandidates()
         {
             int added = 0;
-            foreach (SnapSegment segment in _request.Scene.Segments)
+            foreach (SnapSegment segment in _request.Scene.SegmentsArray)
             {
                 if (added >= MaxEdgeCandidates)
                 {
@@ -995,7 +1011,7 @@ public static class InferenceEngine
                 }
             }
 
-            foreach (SnapSegment segment in _request.Scene.Segments)
+            foreach (SnapSegment segment in _request.Scene.SegmentsArray)
             {
                 Vector3d direction = segment.Direction;
                 if (!seen.Add(DirectionKey(direction)))
@@ -1220,8 +1236,21 @@ public static class InferenceEngine
             allowedLinear.Add(SnapType.FromPoint);
         }
 
-        private static bool SharesEndpoint(SnapSegment a, SnapSegment b)
+        /// <summary>
+        /// Быстрый отсев пар для пересечений: если AABB сегментов не пересекаются
+        /// с запасом допуска, точного пересечения быть не может.
+        /// </summary>
+        private static bool BoundsOverlap(SnapSegment a, SnapSegment b, double tolerance)
         {
+            return Math.Min(a.Start.X, a.End.X) - tolerance <= Math.Max(b.Start.X, b.End.X)
+                && Math.Min(b.Start.X, b.End.X) - tolerance <= Math.Max(a.Start.X, a.End.X)
+                && Math.Min(a.Start.Y, a.End.Y) - tolerance <= Math.Max(b.Start.Y, b.End.Y)
+                && Math.Min(b.Start.Y, b.End.Y) - tolerance <= Math.Max(a.Start.Y, a.End.Y)
+                && Math.Min(a.Start.Z, a.End.Z) - tolerance <= Math.Max(b.Start.Z, b.End.Z)
+                && Math.Min(b.Start.Z, b.End.Z) - tolerance <= Math.Max(a.Start.Z, a.End.Z);
+        }
+
+        private static bool SharesEndpoint(SnapSegment a, SnapSegment b)        {
             const double epsilonSquared = 1e-18;
             return (a.Start - b.Start).LengthSquared() <= epsilonSquared
                 || (a.Start - b.End).LengthSquared() <= epsilonSquared

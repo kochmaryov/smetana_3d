@@ -761,7 +761,9 @@ public partial class ViewportView : UserControl
 
             var text = new TextBlock
             {
-                Text = label.Text,
+                Text = label.LocalizationKey is { } key
+                    ? _viewModel?.Strings.Get(key) ?? label.Text
+                    : label.Text,
                 Foreground = Brushes.White,
                 Background = new SolidColorBrush(Color.FromArgb(160, 0, 0, 0)),
                 Padding = new Thickness(4, 2),

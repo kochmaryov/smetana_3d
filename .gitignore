@@ -31,3 +31,6 @@ Thumbs.db
 
 # Spike native binaries (regenerate: spikes/Spike.Manifold/build-native.ps1)
 spikes/**/native/
+
+# Временные материалы (скриншоты багрепортов, варианты макетов) — не проектный контент
+data/temp/

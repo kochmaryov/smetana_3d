@@ -187,6 +187,48 @@ public class MoveToolTests
     }
 
     [Fact]
+    public void Tool_ObjectStamp_CtrlDuringDragKeepsOriginalAndAddsCopy()
+    {
+        (ToolContext context, UndoStack undo) = Setup(out _, out MeshNode node);
+        context.Selection.SetNode(node);
+        var tool = new MoveTool();
+        tool.Activate(context);
+
+        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(2, 5, 10));
+        Vector2d dragPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(7, 5, 10));
+
+        // Ctrl не при старте, а во время перетаскивания — включается штамп.
+        tool.OnPointer(PointerInput.Press(pressPixel, PointerButton.Left));
+        Assert.False(tool.IsCopyMode);
+        tool.OnPointer(PointerInput.Move(dragPixel, ToolModifiers.Ctrl));
+        Assert.True(tool.IsCopyMode);
+        Assert.True(tool.OnPointer(PointerInput.Release(dragPixel, PointerButton.Left, ToolModifiers.Ctrl)));
+
+        SceneNode parent = node.Parent!;
+        Assert.Equal(2, parent.Children.Count);
+        SceneNode copy = parent.Children[^1];
+        Assert.True(ToolsTestSupport.NearlyEqual(new Vector3d(5, 0, 0), copy.LocalTransform.TransformPoint(Vector3d.Zero)));
+        Assert.True(ToolsTestSupport.NearlyEqual(Vector3d.Zero, node.LocalTransform.TransformPoint(Vector3d.Zero)));
+
+        undo.Undo();
+        Assert.Single(parent.Children);
+    }
+
+    [Fact]
+    public void Tool_StampUnavailable_InFaceMode()
+    {
+        (ToolContext context, _) = Setup(out _, out _);
+        var tool = new MoveTool();
+        tool.Activate(context);
+
+        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport!, new Vector3d(2, 5, 10));
+        tool.OnPointer(PointerInput.Press(pressPixel, PointerButton.Left));
+
+        Assert.False(tool.EnableStamp());
+        Assert.False(tool.IsCopyMode);
+    }
+
+    [Fact]
     public void Tool_ObjectCopy_CtrlAddsDuplicate()
     {
         (ToolContext context, UndoStack undo) = Setup(out _, out MeshNode node);
