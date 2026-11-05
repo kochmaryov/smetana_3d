@@ -28,7 +28,8 @@ public class ToolIcon : Control
     public const double StrokeDesignThickness = 1.7;
 
     private const string ActiveClass = "active";
-    private const string AccentResourceKey = "SystemAccentColor";
+    private const string AccentResourceKey = "ThemeAccentBrush";
+    private const string FallbackAccentResourceKey = "SystemAccentColor";
 
     /// <summary>Глиф для отрисовки (<see cref="ToolIconId.None"/> — пусто).</summary>
     public static readonly StyledProperty<ToolIconId> IconIdProperty =
@@ -115,7 +116,7 @@ public class ToolIcon : Control
     }
 
     /// <summary>
-    /// Кисть глифа: акцент — на активной кнопке (макет variant_a,
+    /// Кисть глифа: акцент темы на активной кнопке (макет variant_a,
     /// .icon-btn.active), иначе currentColor (унаследованный Foreground).
     /// </summary>
     private IBrush? ResolveBrush()
@@ -145,7 +146,12 @@ public class ToolIcon : Control
 
     private IBrush? ResolveAccent()
     {
-        return this.TryFindResource(AccentResourceKey, out var resource)
+        return ResolveResource(AccentResourceKey) ?? ResolveResource(FallbackAccentResourceKey);
+    }
+
+    private IBrush? ResolveResource(string key)
+    {
+        return this.TryFindResource(key, out var resource)
             ? resource switch
             {
                 IBrush brush => brush,

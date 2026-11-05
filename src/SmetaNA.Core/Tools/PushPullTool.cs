@@ -11,10 +11,12 @@ namespace SmetaNA.Core.Tools;
 /// на расстояние вдоль её нормали — мышью (перетаскивание) или числовым вводом
 /// VCB (подтверждение точного расстояния).
 /// <para>
-/// Склеивание (stickiness) выполняется в <see cref="MeshEditOps"/>: переносятся
-/// вершины кольца грани и все позиционно склеенные с ними вершины соседних граней
-/// и объектов того же контекста — прилегающие грани тянутся за деформируемой,
-/// угол остаётся замкнутым.
+/// Грань со свободной границей (нарисованная фигура) выдавливается в тело:
+/// строится призма со стенками и второй крышкой (<see cref="ExtrudeFaceCommand"/>).
+/// Для грани внутри замкнутого тела склеивание (stickiness) выполняет
+/// <see cref="MeshEditOps"/>: переносятся вершины кольца грани и все позиционно
+/// склеенные с ними вершины соседних граней и объектов того же контекста —
+/// прилегающие грани тянутся за деформируемой, угол остаётся замкнутым.
 /// </para>
 /// <para>
 /// Во время перетаскивания меш не изменяется: рисуется предпросмотр. Изменение
@@ -47,7 +49,6 @@ public sealed class PushPullTool : ToolBase
     private Vector3d _anchor;
     private Vector3d _normal;
     private IReadOnlyList<MeshVertex> _ring = [];
-    private IReadOnlyList<MeshFace> _dependentFaces = [];
     private double _distance;
 
     public override string Id => ToolId;
@@ -201,14 +202,23 @@ public sealed class PushPullTool : ToolBase
 
         if (_hasFace && Math.Abs(distance) >= MinCommitDistance)
         {
-            IReadOnlyList<VertexMove> moves = MeshEditOps.PlanMove(
-                _ring,
-                CollectGlueScope(),
-                _normal * distance,
-                MeshEditOps.DefaultToleranceMm);
-            string description = string.Format(
-                CultureInfo.InvariantCulture, "Push/Pull {0:0.###} mm", distance);
-            Context.Execute(new MoveVerticesCommand(description, moves));
+            if (MeshEditOps.IsBoundaryFace(_face.Face))
+            {
+                // свободная граница (нарисованная фигура) — строим призму со стенками
+                Context.Execute(new ExtrudeFaceCommand(
+                    _face.Node.Mesh, _face.Face, distance, CollectGlueScope()));
+            }
+            else
+            {
+                IReadOnlyList<VertexMove> moves = MeshEditOps.PlanMove(
+                    _ring,
+                    CollectGlueScope(),
+                    _normal * distance,
+                    MeshEditOps.DefaultToleranceMm);
+                string description = string.Format(
+                    CultureInfo.InvariantCulture, "Push/Pull {0:0.###} mm", distance);
+                Context.Execute(new MoveVerticesCommand(description, moves));
+            }
         }
 
         // грань остаётся выбранной — можно продолжить выдавливание или ввести значение
@@ -266,7 +276,6 @@ public sealed class PushPullTool : ToolBase
         _world = hit.WorldTransform;
         _normal = MeshNormals.ComputeFaceNormal(hit.Face).Normalized();
         _ring = hit.Node.Mesh.GetRing(hit.Face);
-        _dependentFaces = MeshEditOps.CollectDependentFaces(hit.Node.Mesh, _ring);
         Context.Selection.SetFace(_face);
     }
 
@@ -276,7 +285,6 @@ public sealed class PushPullTool : ToolBase
         _face = default;
         _distance = 0;
         _ring = [];
-        _dependentFaces = [];
         if (IsActive)
         {
             Context.Selection.Clear();
@@ -331,7 +339,10 @@ public sealed class PushPullTool : ToolBase
         var lines = new List<ToolPreviewLine>();
         var points = new List<ToolPreviewPoint>();
 
-        AppendRingLines(lines, _ring, Vector3d.Zero, ToolPreviewStyle.Default);
+        // Показываем только смещаемую грань («крышку» выдавливания) и следы
+        // переноса её вершин. Исходное положение и соседние грани остаются
+        // видимыми как настоящая геометрия — их дубли в предпросмотре читались
+        // как вторая, противоположная грань, и операция выглядела переносом.
         AppendRingLines(lines, _ring, offset, ToolPreviewStyle.Highlight);
 
         foreach (MeshVertex vertex in _ring)
@@ -340,17 +351,6 @@ public sealed class PushPullTool : ToolBase
                 ToWorld(vertex.Position),
                 ToWorld(vertex.Position + offset),
                 ToolPreviewStyle.Guide));
-        }
-
-        // каскад: контуры соседних граней, которые растянутся вместе с деформируемой
-        foreach (MeshFace face in _dependentFaces)
-        {
-            if (ReferenceEquals(face, _face.Face))
-            {
-                continue;
-            }
-
-            AppendRingLines(lines, FaceRing(face), offset, ToolPreviewStyle.Guide);
         }
 
         Vector3d anchor = ToWorld(_anchor);
@@ -365,8 +365,6 @@ public sealed class PushPullTool : ToolBase
 
         SetPreview(new ToolPreview(lines, points, labels));
     }
-
-    private IReadOnlyList<MeshVertex> FaceRing(MeshFace face) => _face.Node.Mesh.GetRing(face);
 
     private void AppendRingLines(
         List<ToolPreviewLine> lines,

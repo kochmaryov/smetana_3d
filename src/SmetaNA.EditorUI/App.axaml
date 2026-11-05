@@ -17,11 +17,80 @@
       <Setter Property="BorderThickness" Value="2" />
       <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
-    <!-- Активная кнопка инструмента в палитре (волна 0 палитры tool-palette) -->
+    <!-- Активная кнопка инструмента в палитре (волна 0 палитры tool-palette).
+         Рамка 1 px: толщина не меняется при выборе, кнопка не «дёргается». -->
     <Style Selector="Button.active">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeAccentBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.tool.active /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource ThemeAccentSoftBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
-      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="Button.tool.active:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
+    </Style>
+    <Style Selector="Button.tool.active:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
+    </Style>
+    <!-- Кнопка инструмента (палитра, плавающие группы, краевые лотки):
+         прозрачная поверхность, скругление 7, подсветка при наведении. -->
+    <Style Selector="Button.tool">
+      <Setter Property="Width" Value="38" />
+      <Setter Property="Height" Value="38" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="7" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.tool:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundTertiary}" />
+    </Style>
+    <Style Selector="Button.tool:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackground}" />
+    </Style>
+    <!-- Уголок вылета: метка «есть под-инструменты» в правом нижнем углу -->
+    <Style Selector="Button.flyoutCorner">
+      <Setter Property="Width" Value="14" />
+      <Setter Property="Height" Value="14" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Right" />
+      <Setter Property="VerticalAlignment" Value="Bottom" />
+      <Setter Property="HorizontalContentAlignment" Value="Right" />
+      <Setter Property="VerticalContentAlignment" Value="Bottom" />
+      <Setter Property="ZIndex" Value="1" />
+    </Style>
+    <Style Selector="Button.flyoutCorner:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundTertiary}" />
+    </Style>
+    <Style Selector="Path.flyMark">
+      <Setter Property="Fill" Value="{DynamicResource ThemeForegroundFaintBrush}" />
+    </Style>
+    <Style Selector="Grid.toolCell:pointerover Path.flyMark">
+      <Setter Property="Fill" Value="{DynamicResource ThemeForegroundDimBrush}" />
+    </Style>
+    <!-- Пункт вылета: иконка + имя + жест -->
+    <Style Selector="Button.flyRow">
+      <Setter Property="Padding" Value="8,5" />
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="Button.flyRow:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundTertiary}" />
     </Style>
     <!-- Кнопка-иконка icon-pack (главное окно, вьюпорт, панели) -->
     <Style Selector="Button.icon">

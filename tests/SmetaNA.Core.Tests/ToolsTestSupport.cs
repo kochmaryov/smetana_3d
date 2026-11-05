@@ -66,6 +66,27 @@ internal static class ToolsTestSupport
         return mesh;
     }
 
+    /// <summary>
+    /// Меш нарисованной фигуры: проволочный контур + грань на нём
+    /// (<see cref="HalfEdgeMesh.AddWireEdge"/> + <see cref="HalfEdgeMesh.FillLoop"/>).
+    /// </summary>
+    public static (HalfEdgeMesh Mesh, MeshFace Face) DrawnQuad(double sizeX, double sizeY)
+    {
+        var mesh = new HalfEdgeMesh();
+        MeshVertex v0 = mesh.AddVertex(new Vector3d(0, 0, 0));
+        MeshVertex v1 = mesh.AddVertex(new Vector3d(sizeX, 0, 0));
+        MeshVertex v2 = mesh.AddVertex(new Vector3d(sizeX, sizeY, 0));
+        MeshVertex v3 = mesh.AddVertex(new Vector3d(0, sizeY, 0));
+        var wire = new List<MeshHalfEdge>
+        {
+            mesh.AddWireEdge(v0, v1).Forward,
+            mesh.AddWireEdge(v1, v2).Forward,
+            mesh.AddWireEdge(v2, v3).Forward,
+            mesh.AddWireEdge(v3, v0).Forward,
+        };
+        return (mesh, mesh.FillLoop(wire));
+    }
+
     /// <summary>L-образный контур (ступенька) с угловым ребром в точке (5, 5).</summary>
     public static IReadOnlyList<Vector3d> StepFootprint =>
     [

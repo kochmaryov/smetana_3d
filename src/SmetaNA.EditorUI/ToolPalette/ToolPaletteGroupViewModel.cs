@@ -22,6 +22,9 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
     /// <summary>Отступ после группы.</summary>
     public const double GroupSpacing = 8;
 
+    /// <summary>Высота блока-разделителя перед группой (линия + отступ).</summary>
+    public const double DividerHeight = 5;
+
     private readonly ILocalizationService _localization;
     private bool _isExpanded = true;
     private bool _isFlyoutOpen;
@@ -51,6 +54,13 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
         DetachCommand = new RelayCommand(_ => RequestDetach());
         ReturnToPaletteCommand = new RelayCommand(_ => RequestReturnToPalette());
         _localization.CultureChanged += OnCultureChanged;
+
+        // Режим рейла не показывает кнопки инструментов: активный инструмент
+        // отмечается на кнопке группы, поэтому группа слушает свои кнопки.
+        foreach (ToolPaletteButtonViewModel button in AllGroupButtons(Buttons))
+        {
+            button.PropertyChanged += OnButtonPropertyChanged;
+        }
     }
 
     /// <summary>Стабильный идентификатор группы (для раскладки).</summary>
@@ -99,6 +109,30 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
 
     private bool _isDetached;
 
+    /// <summary>
+    /// Показывать разделитель над группой: так секции отделяются друг от друга
+    /// без рамок вокруг подписи. Снимается у первой группы палитры.
+    /// </summary>
+    public bool ShowDivider
+    {
+        get => _showDivider;
+        internal set => SetField(ref _showDivider, value);
+    }
+
+    private bool _showDivider = true;
+
+    /// <summary>
+    /// Показывать в шапке стрелку свёртки и ручку отрыва. В режиме одной колонки
+    /// (узкая палитра) места хватает только на подпись группы.
+    /// </summary>
+    public bool ShowHeaderControls
+    {
+        get => _showHeaderControls;
+        internal set => SetField(ref _showHeaderControls, value);
+    }
+
+    private bool _showHeaderControls = true;
+
     /// <summary>Запрос отрыва группы от палитры (клик по «⠿»).</summary>
     public event Action<ToolPaletteGroupViewModel>? DetachRequested;
 
@@ -127,6 +161,24 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
     public RelayCommand OpenFlyoutCommand { get; }
 
     /// <summary>
+    /// В группе есть активный инструмент (включая под-инструменты вылетов):
+    /// в режиме рейла это единственный индикатор текущего инструмента.
+    /// </summary>
+    public bool IsActive => AllGroupButtons(Buttons).Any(button => button.IsActive);
+
+    private static IEnumerable<ToolPaletteButtonViewModel> AllGroupButtons(
+        IEnumerable<ToolPaletteButtonViewModel> buttons) =>
+        buttons.SelectMany(button => AllGroupButtons(button.FlyoutItems).Prepend(button));
+
+    private void OnButtonPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ToolPaletteButtonViewModel.IsActive))
+        {
+            OnPropertyChanged(nameof(IsActive));
+        }
+    }
+
+    /// <summary>
     /// Оценка высоты группы при заданном числе колонок (свёртка, R2):
     /// шапка + отступ StackPanel + строки кнопок + нижний отступ группы.
     /// Занижение оценки давало ложное «всё влезло» → появлялся вертикальный
@@ -136,7 +188,8 @@ public sealed class ToolPaletteGroupViewModel : ViewModelBase
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(columns, 1);
         double rows = Math.Ceiling(Buttons.Count / (double)columns);
-        return HeaderHeight
+        return (ShowDivider ? DividerHeight : 0)
+            + HeaderHeight
             + (IsExpanded ? HeaderSpacing + (rows * ButtonCellHeight) : 0)
             + GroupSpacing;
     }

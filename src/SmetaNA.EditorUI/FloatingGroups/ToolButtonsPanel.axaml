@@ -4,43 +4,25 @@
              xmlns:icons="using:SmetaNA.EditorUI.Icons"
              x:Class="SmetaNA.EditorUI.FloatingGroups.ToolButtonsPanel"
              x:DataType="tp:ToolPaletteGroupViewModel">
-  <!-- Сетка кнопок группы (38×38 + вылеты) — общий вид для палитры,
-       плавающих окон и краевых лотков (спека ui-redesign T3). -->
-  <UserControl.Styles>
-    <Style Selector="Button.tool">
-      <Setter Property="Width" Value="38" />
-      <Setter Property="Height" Value="38" />
-      <Setter Property="Margin" Value="1" />
-      <Setter Property="Padding" Value="0" />
-      <Setter Property="HorizontalContentAlignment" Value="Center" />
-      <Setter Property="VerticalContentAlignment" Value="Center" />
-    </Style>
-    <Style Selector="Button.flyoutCorner">
-      <Setter Property="Width" Value="13" />
-      <Setter Property="Height" Value="13" />
-      <Setter Property="Margin" Value="0" />
-      <Setter Property="Padding" Value="0" />
-      <Setter Property="HorizontalAlignment" Value="Right" />
-      <Setter Property="VerticalAlignment" Value="Bottom" />
-      <Setter Property="ZIndex" Value="1" />
-    </Style>
-    <Style Selector="Button.flyRow">
-      <Setter Property="Padding" Value="8,4" />
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
-      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-    </Style>
-  </UserControl.Styles>
-
+  <!-- Сетка кнопок группы (38×38 + метка вылета) — общий вид для палитры,
+       плавающих окон и краевых лотков (спека ui-redesign T3). Стили кнопки,
+       уголка вылета и пункта вылета — общие, в App.axaml. -->
   <ItemsControl ItemsSource="{Binding Buttons}">
     <ItemsControl.ItemsPanel>
       <ItemsPanelTemplate>
-        <WrapPanel ItemWidth="40" ItemHeight="40" />
+        <WrapPanel ItemWidth="40"
+                   ItemHeight="40"
+                   HorizontalAlignment="Center" />
       </ItemsPanelTemplate>
     </ItemsControl.ItemsPanel>
     <ItemsControl.ItemTemplate>
       <DataTemplate x:DataType="tp:ToolPaletteButtonViewModel">
-        <Grid Width="38" Height="38" Margin="1">
+        <Grid Classes="toolCell"
+              Width="40"
+              Height="40">
           <Button Classes="tool"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
                   Command="{Binding ActivateCommand}"
                   ToolTip.Tip="{Binding ToolTip}"
                   Classes.active="{Binding IsActive}"
@@ -53,14 +35,18 @@
                   IsVisible="{Binding HasFlyout}"
                   Command="{Binding OpenFlyoutCommand}"
                   ToolTip.Tip="{Binding ToolTip}">
-            <Path Data="M 0,0 L 6,0 L 3,4 Z"
-                  Fill="{Binding $parent[Button].Foreground}"
-                  VerticalAlignment="Bottom" />
+            <Path Classes="flyMark"
+                  Data="M 6,0 L 6,6 L 0,6 Z"
+                  Width="5"
+                  Height="5"
+                  Stretch="Uniform"
+                  Margin="0,0,3,3" />
           </Button>
           <Popup IsOpen="{Binding IsFlyoutOpen, Mode=TwoWay}"
                  Placement="RightEdgeAlignedTop"
                  IsLightDismissEnabled="True">
-            <FlyoutPresenter Padding="4">
+            <FlyoutPresenter Padding="6"
+                             MinWidth="200">
               <ItemsControl ItemsSource="{Binding FlyoutItems}" MinWidth="180">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="tp:ToolPaletteButtonViewModel">

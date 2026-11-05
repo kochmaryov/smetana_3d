@@ -5,55 +5,74 @@
              xmlns:icons="using:SmetaNA.EditorUI.Icons"
              x:Class="SmetaNA.EditorUI.ToolPalette.ToolPaletteControl"
              x:DataType="tp:ToolPaletteViewModel">
-  <!-- Палитра инструментов (макет variant_a): кнопки 38×38, группы-разделы,
-       вылеты по треугольнику в углу; адаптив 2 колонки / 1 колонка / рейл. -->
+  <!-- Палитра инструментов (макет variant_a): две колонки кнопок 38×38,
+       подписи-капс групп с разделителями, метка вылета в углу кнопки;
+       адаптив 2 колонки / 1 колонка / рейл, свёртка групп при переполнении. -->
   <UserControl.Styles>
-    <Style Selector="Button.tool">
-      <Setter Property="Width" Value="38" />
-      <Setter Property="Height" Value="38" />
-      <Setter Property="Margin" Value="1" />
-      <Setter Property="Padding" Value="0" />
-      <Setter Property="HorizontalContentAlignment" Value="Center" />
-      <Setter Property="VerticalContentAlignment" Value="Center" />
-    </Style>
-    <Style Selector="Button.flyoutCorner">
-      <Setter Property="Width" Value="13" />
-      <Setter Property="Height" Value="13" />
-      <Setter Property="Margin" Value="0" />
-      <Setter Property="Padding" Value="0" />
-      <Setter Property="HorizontalAlignment" Value="Right" />
-      <Setter Property="VerticalAlignment" Value="Bottom" />
-      <Setter Property="ZIndex" Value="1" />
-    </Style>
+    <!-- Шапка группы: не кнопка «пилюлей», а тихая подпись-капс -->
     <Style Selector="Button.groupHeader">
-      <Setter Property="Padding" Value="2" />
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
-      <Setter Property="HorizontalContentAlignment" Value="Center" />
-    </Style>
-    <!-- Ручка «⠿» отрыва группы из палитры (T3) -->
-    <Style Selector="Button.grip">
-      <Setter Property="Width" Value="16" />
-      <Setter Property="Height" Value="18" />
-      <Setter Property="Padding" Value="0" />
+      <Setter Property="Height" Value="20" />
+      <Setter Property="Padding" Value="1" />
+      <Setter Property="CornerRadius" Value="5" />
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Opacity" Value="0.45" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundDimBrush}" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.groupHeader:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundTertiary}" />
+    </Style>
+    <Style Selector="Button.groupHeader:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    </Style>
+    <Style Selector="TextBlock.groupCaption">
+      <Setter Property="FontSize" Value="9.5" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="LetterSpacing" Value="0.7" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <!-- Ручка «⠿» отрыва группы из палитры (T3): проявляется при наведении -->
+    <Style Selector="Button.grip">
+      <Setter Property="Width" Value="14" />
+      <Setter Property="Height" Value="14" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundFaintBrush}" />
+      <Setter Property="Opacity" Value="0.25" />
+    </Style>
+    <Style Selector="Grid.groupHeaderRow:pointerover Button.grip">
+      <Setter Property="Opacity" Value="0.9" />
     </Style>
     <Style Selector="Button.grip:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundTertiary}" />
     </Style>
     <Style Selector="Button.railGroup">
       <Setter Property="Width" Value="44" />
-      <Setter Property="Height" Value="38" />
-      <Setter Property="Margin" Value="1" />
-      <Setter Property="Padding" Value="2" />
+      <Setter Property="Height" Value="44" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
-    <Style Selector="Button.flyRow">
-      <Setter Property="Padding" Value="8,4" />
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
-      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Style Selector="Button.railGroup:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlBackgroundTertiary}" />
+    </Style>
+    <Style Selector="Button.railGroup.active /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
+    </Style>
+    <Style Selector="Button.railGroup.active:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}" />
     </Style>
     <Style Selector="Path.chevron">
       <Setter Property="RenderTransformOrigin" Value="50%,50%" />
@@ -69,9 +88,10 @@
   </UserControl.Styles>
 
   <Border Width="{Binding PaletteWidth}"
+          Background="{DynamicResource ThemeControlBackgroundSecondary}"
           BorderBrush="{DynamicResource ThemeBorderMidBrush}"
           BorderThickness="0,0,1,0"
-          Padding="6">
+          Padding="0,8,0,10">
     <Panel>
       <!-- Обычный и компактный режимы: 2 колонки → 1 колонка (≤ 960 px).
            Вертикальный скроллбар скрыт: переполнение отрабатывает свёртка групп
@@ -83,44 +103,52 @@
         <ItemsControl ItemsSource="{Binding Groups}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="tp:ToolPaletteGroupViewModel">
-              <StackPanel Spacing="4" Margin="0,0,0,8"
+              <StackPanel Margin="0,0,0,8"
                           IsVisible="{Binding !IsDetached}">
-                <!-- Шапка группы: свёртка-аккордеон + ручка «⠿» отрыва (T3).
+                <!-- Разделитель секций вместо рамки вокруг подписи -->
+                <Border Height="1"
+                        Margin="9,0,9,4"
+                        IsVisible="{Binding ShowDivider}"
+                        Background="{DynamicResource ThemeBorderSoftBrush}" />
+                <!-- Шапка группы: подпись-капс со свёрткой + ручка «⠿» отрыва (T3).
                      Имя — одна строка с многоточием: длинные названия не должны
                      разворачиваться в «большие надписи» и съедать рабочее место. -->
-                <Grid>
-                  <Button Classes="groupHeader"
-                          Classes.expanded="{Binding IsExpanded}"
+                <Grid Classes="groupHeaderRow"
+                      Margin="5,0"
+                      ColumnDefinitions="*,Auto">
+                  <Button Grid.Column="0"
+                          Classes="groupHeader"
                           Command="{Binding ToggleExpandedCommand}"
                           ToolTip.Tip="{Binding Name}">
-                    <StackPanel Orientation="Horizontal" Spacing="4">
+                    <Grid ColumnDefinitions="Auto,*">
                       <Path Classes="chevron"
                             Classes.expanded="{Binding IsExpanded}"
-                            Data="M 0,0 L 4,4 L 8,0"
+                            IsVisible="{Binding ShowHeaderControls}"
+                            Data="M 0,0 L 3.5,3.5 L 7,0"
                             Stroke="{Binding $parent[Button].Foreground}"
-                            StrokeThickness="1.5"
-                            VerticalAlignment="Center" />
-                      <TextBlock Text="{Binding Name}"
-                                 FontSize="10"
-                                 FontWeight="SemiBold"
-                                 Opacity="0.7"
-                                 TextTrimming="CharacterEllipsis"
-                                 VerticalAlignment="Center" />
-                    </StackPanel>
+                            StrokeThickness="1.4"
+                            VerticalAlignment="Center"
+                            Margin="0,0,5,0" />
+                      <TextBlock Grid.Column="1"
+                                 Classes="groupCaption"
+                                 Text="{Binding Name}"
+                                 Foreground="{Binding $parent[Button].Foreground}" />
+                    </Grid>
                   </Button>
-                  <Button Classes="grip"
-                          HorizontalAlignment="Right"
-                          VerticalAlignment="Center"
+                  <Button Grid.Column="1"
+                          Classes="grip"
+                          IsVisible="{Binding ShowHeaderControls}"
                           Command="{Binding DetachCommand}"
                           ToolTip.Tip="{Binding DetachHint}">
-                    <Path Data="M0,0 h2 v2 h-2 z M4,0 h2 v2 h-2 z M0,4 h2 v2 h-2 z M4,4 h2 v2 h-2 z"
+                    <Path Data="M0,0 h1.6 v1.6 h-1.6 z M3.4,0 h1.6 v1.6 h-1.6 z M0,3.4 h1.6 v1.6 h-1.6 z M3.4,3.4 h1.6 v1.6 h-1.6 z"
                           Fill="{Binding $parent[Button].Foreground}"
-                          Width="6"
-                          Height="6"
+                          Width="5"
+                          Height="5"
                           Stretch="Uniform" />
                   </Button>
                 </Grid>
                 <fg:ToolButtonsPanel DataContext="{Binding}"
+                                     Margin="0,4,0,0"
                                      IsVisible="{Binding IsExpanded}" />
               </StackPanel>
             </DataTemplate>
@@ -135,28 +163,34 @@
         <ItemsControl ItemsSource="{Binding Groups}">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
-              <WrapPanel ItemWidth="46" ItemHeight="40" />
+              <WrapPanel ItemWidth="48"
+                         ItemHeight="46"
+                         HorizontalAlignment="Center" />
             </ItemsPanelTemplate>
           </ItemsControl.ItemsPanel>
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="tp:ToolPaletteGroupViewModel">
-              <Grid Width="44" Height="38" Margin="1">
+              <Grid Width="44"
+                    Height="44"
+                    Margin="2,1"
+                    IsVisible="{Binding !IsDetached}">
                 <Button Classes="railGroup"
+                        Classes.active="{Binding IsActive}"
                         Command="{Binding OpenFlyoutCommand}"
                         ToolTip.Tip="{Binding Name}">
                   <icons:ToolIcon IconId="{Binding LeadIconId}"
-                                   Width="20"
-                                   Height="20" />
+                                  Width="20"
+                                  Height="20" />
                 </Button>
                 <Popup IsOpen="{Binding IsFlyoutOpen, Mode=TwoWay}"
                        Placement="RightEdgeAlignedTop"
                        IsLightDismissEnabled="True">
-                  <FlyoutPresenter Padding="6">
-                    <StackPanel MinWidth="190" Spacing="2">
-                      <TextBlock Text="{Binding Name}"
-                                 FontSize="10"
-                                 Opacity="0.7"
-                                 Margin="4,2" />
+                  <FlyoutPresenter Padding="6"
+                                   MinWidth="200">
+                    <StackPanel>
+                      <TextBlock Classes="sectionLabel"
+                                 Text="{Binding Name}"
+                                 Margin="6,2,6,4" />
                       <ItemsControl ItemsSource="{Binding RailItems}">
                         <ItemsControl.ItemTemplate>
                           <DataTemplate x:DataType="tp:ToolPaletteButtonViewModel">

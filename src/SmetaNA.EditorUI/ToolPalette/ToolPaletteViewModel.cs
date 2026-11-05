@@ -8,13 +8,13 @@ namespace SmetaNA.EditorUI.ToolPalette;
 /// <summary>Режим раскладки палитры по ширине окна (спека §4 «Адаптивность»).</summary>
 public enum PaletteLayoutMode
 {
-    /// <summary>Две колонки кнопок 38×38 (ширина палитры 92 px).</summary>
+    /// <summary>Две колонки кнопок 38×38 (ширина палитры 96 px).</summary>
     TwoColumns,
 
-    /// <summary>Одна колонка, окно ≤ 960 px (ширина палитры 52 px).</summary>
+    /// <summary>Одна колонка, окно ≤ 960 px (ширина палитры 76 px).</summary>
     SingleColumn,
 
-    /// <summary>Рейл с вылетами групп, окно ≤ 768 px (ширина палитры 56 px).</summary>
+    /// <summary>Рейл с вылетами групп, окно ≤ 768 px (ширина палитры 60 px).</summary>
     Rail,
 }
 
@@ -33,13 +33,13 @@ public sealed class ToolPaletteViewModel : ViewModelBase
     public const double RailMaxWindowWidth = 768;
 
     /// <summary>Ширина палитры в две колонки (макет variant_a).</summary>
-    public const double WidePaletteWidth = 92;
+    public const double WidePaletteWidth = 96;
 
     /// <summary>Ширина палитры в одну колонку.</summary>
-    public const double CompactPaletteWidth = 52;
+    public const double CompactPaletteWidth = 76;
 
     /// <summary>Ширина палитры-рейла (наработка варианта C).</summary>
-    public const double RailPaletteWidth = 56;
+    public const double RailPaletteWidth = 60;
 
     /// <summary>Ширина сетки кнопок: две колонки 38×38.</summary>
     public const double WideButtonsPanelWidth = 80;
@@ -92,6 +92,12 @@ public sealed class ToolPaletteViewModel : ViewModelBase
                 RegisterButton(button);
             }
         }
+
+        // Первая секция палитры идёт без разделителя — линия над ней не нужна.
+        if (Groups.Count > 0)
+        {
+            Groups[0].ShowDivider = false;
+        }
     }
 
     /// <summary>Группы палитры в порядке по умолчанию.</summary>
@@ -117,6 +123,14 @@ public sealed class ToolPaletteViewModel : ViewModelBase
             OnPropertyChanged(nameof(IsRailMode));
             OnPropertyChanged(nameof(ButtonsPanelWidth));
             OnPropertyChanged(nameof(PaletteWidth));
+
+            // В одну колонку шапка группы не вмещает стрелку и ручку отрыва:
+            // остаётся только подпись (иначе получается «Р…» вместо «Рисование»).
+            bool detailedHeader = value != PaletteLayoutMode.SingleColumn;
+            foreach (ToolPaletteGroupViewModel group in Groups)
+            {
+                group.ShowHeaderControls = detailedHeader;
+            }
         }
     }
 
@@ -130,7 +144,7 @@ public sealed class ToolPaletteViewModel : ViewModelBase
     public double ButtonsPanelWidth =>
         LayoutMode == PaletteLayoutMode.SingleColumn ? CompactButtonsPanelWidth : WideButtonsPanelWidth;
 
-    /// <summary>Ширина палитры: 92 px → 52 px (≤ 960 px) → 56 px (рейл ≤ 768 px).</summary>
+    /// <summary>Ширина палитры: 96 px → 76 px (≤ 960 px) → 60 px (рейл ≤ 768 px).</summary>
     public double PaletteWidth => LayoutMode switch
     {
         PaletteLayoutMode.SingleColumn => CompactPaletteWidth,

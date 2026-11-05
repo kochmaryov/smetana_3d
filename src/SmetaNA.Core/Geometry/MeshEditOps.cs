@@ -92,6 +92,25 @@ public static class MeshEditOps
         => PlanMove(seeds, Array.Empty<MeshVertex>(), delta, 0);
 
     /// <summary>
+    /// Грань со свободной границей: ни одно её ребро не разделено со смежной
+    /// гранью. Выдавливание такой грани строит призму (стенки + вторая крышка),
+    /// а не просто переносит вершины.
+    /// </summary>
+    public static bool IsBoundaryFace(MeshFace face)
+    {
+        ArgumentNullException.ThrowIfNull(face);
+        foreach (MeshHalfEdge edge in MeshTraversal.EnumerateRing(face))
+        {
+            if (edge.Twin is { Face: not null })
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// План переноса грани вдоль её нормали на расстояние (push/pull) со склеиванием:
     /// кольцо грани — семена, склеенные вершины берутся из <paramref name="glueScope"/>
     /// (по умолчанию — весь меш).

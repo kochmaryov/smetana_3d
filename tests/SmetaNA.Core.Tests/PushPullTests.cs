@@ -217,6 +217,138 @@ public class PushPullTests
     }
 
     [Fact]
+    public void Tool_DragPreview_ShowsOnlyMovingFace()
+    {
+        HalfEdgeMesh mesh = ToolsTestSupport.Box(10, 10, 10);
+        (Scene scene, MeshNode node) = ToolsTestSupport.SceneWith(mesh);
+        (ToolContext context, UndoStack undo) = ToolsTestSupport.ContextFor(scene);
+        context.Viewport = ToolsTestSupport.ViewportFrom(new Vector3d(5, -40, 25), new Vector3d(5, 5, 10));
+        var tool = new PushPullTool();
+        tool.Activate(context);
+
+        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport, new Vector3d(5, 5, 10));
+        tool.OnPointer(PointerInput.Press(pressPixel, PointerButton.Left));
+        Vector2d dragPixel = ToolsTestSupport.PixelOf(context.Viewport, new Vector3d(5, 5, 15));
+        tool.OnPointer(PointerInput.Move(dragPixel));
+
+        // только смещаемая грань (4 ребра) + ось выдавливания (Highlight),
+        // следы вершин (Guide) и ни одного контура соседних/противоположной граней
+        int ringCount = mesh.GetRing(ToolsTestSupport.FaceWithNormal(mesh, Vector3d.UnitZ)).Count;
+        Assert.Equal(ringCount + 1, tool.Preview.Lines.Count(line => line.Style == ToolPreviewStyle.Highlight));
+        Assert.Equal(ringCount, tool.Preview.Lines.Count(line => line.Style == ToolPreviewStyle.Guide));
+        Assert.DoesNotContain(tool.Preview.Lines, line => line.Style == ToolPreviewStyle.Default);
+        Assert.Single(tool.Preview.Points);
+        Assert.Single(tool.Preview.Labels);
+    }
+
+    [Fact]
+    public void Tool_DragBoundaryFace_BuildsWatertightSolid()
+    {
+        // замкнутый контур без соседних граней — как нарисованный прямоугольник
+        var mesh = new HalfEdgeMesh();
+        MeshVertex v0 = mesh.AddVertex(new Vector3d(0, 0, 0));
+        MeshVertex v1 = mesh.AddVertex(new Vector3d(10, 0, 0));
+        MeshVertex v2 = mesh.AddVertex(new Vector3d(10, 10, 0));
+        MeshVertex v3 = mesh.AddVertex(new Vector3d(0, 10, 0));
+        MeshFace face = mesh.AddFace([v0, v1, v2, v3]);
+        face.MaterialIndex = 3;
+
+        (Scene scene, MeshNode node) = ToolsTestSupport.SceneWith(mesh);
+        (ToolContext context, UndoStack undo) = ToolsTestSupport.ContextFor(scene);
+        context.Viewport = ToolsTestSupport.ViewportFrom(new Vector3d(5, -40, 25), new Vector3d(5, 5, 0));
+        var tool = new PushPullTool();
+        tool.Activate(context);
+
+        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport, new Vector3d(5, 5, 0));
+        Assert.True(tool.OnPointer(PointerInput.Press(pressPixel, PointerButton.Left)));
+        Vector2d dragPixel = ToolsTestSupport.PixelOf(context.Viewport, new Vector3d(5, 5, 5));
+        Assert.True(tool.OnPointer(PointerInput.Move(dragPixel)));
+        Assert.Equal(5, tool.Distance, 6);
+        Assert.True(tool.OnPointer(PointerInput.Release(dragPixel, PointerButton.Left)));
+
+        Assert.Equal(6, mesh.Faces.Count);
+        Assert.Equal(8, mesh.Vertices.Count);
+        Assert.True(mesh.IsWatertight);
+        Assert.Equal(10 * 10 * 5, ToolsTestSupport.SignedVolume(mesh), 6);
+
+        // исходная грань — верхняя крышка (перенесена на 5 мм), основание в z = 0
+        double topZ = double.MinValue;
+        double bottomZ = double.MaxValue;
+        foreach (MeshVertex vertex in mesh.Vertices)
+        {
+            topZ = Math.Max(topZ, vertex.Position.Z);
+            bottomZ = Math.Min(bottomZ, vertex.Position.Z);
+        }
+
+        Assert.Equal(5, topZ, 9);
+        Assert.Equal(0, bottomZ, 9);
+        Assert.True(undo.CanUndo);
+        foreach (MeshFace created in mesh.Faces)
+        {
+            Assert.Equal(3, created.MaterialIndex);
+        }
+
+        undo.Undo();
+        Assert.Single(mesh.Faces);
+        Assert.Equal(4, mesh.Vertices.Count);
+        Assert.Equal(0, mesh.GetRing(face)[0].Position.Z, 9);
+    }
+
+    [Fact]
+    public void Tool_VcbBoundaryFace_BuildsSolid_UndoRedoRestores()
+    {
+        (HalfEdgeMesh mesh, MeshFace face) = ToolsTestSupport.DrawnQuad(10, 10);
+        (Scene scene, MeshNode node) = ToolsTestSupport.SceneWith(mesh);
+        (ToolContext context, UndoStack undo) = ToolsTestSupport.ContextFor(scene);
+        context.Viewport = ToolsTestSupport.ViewportFrom(new Vector3d(5, -40, 25), new Vector3d(5, 5, 0));
+        var tool = new PushPullTool();
+        tool.Activate(context);
+
+        Vector2d pixel = ToolsTestSupport.PixelOf(context.Viewport, new Vector3d(5, 5, 0));
+        tool.OnPointer(PointerInput.Move(pixel));
+        Assert.True(tool.TryApplyValue(12.5));
+
+        Assert.True(mesh.IsWatertight);
+        Assert.Equal(6, mesh.Faces.Count);
+        Assert.Equal(10 * 10 * 12.5, ToolsTestSupport.SignedVolume(mesh), 6);
+
+        undo.Undo();
+        Assert.Single(mesh.Faces);
+        Assert.Equal(4, mesh.Vertices.Count);
+        Assert.False(mesh.IsWatertight);
+        Assert.Equal(8, mesh.HalfEdges.Count);
+        Assert.Equal(0, mesh.GetRing(face)[1].Position.Z, 9);
+
+        undo.Redo();
+        Assert.True(mesh.IsWatertight);
+        Assert.Equal(6, mesh.Faces.Count);
+        Assert.Equal(10 * 10 * 12.5, ToolsTestSupport.SignedVolume(mesh), 6);
+    }
+
+    [Fact]
+    public void ExtrudeBoundaryFace_NegativeDistance_BuildsSolidBelow()
+    {
+        (HalfEdgeMesh mesh, MeshFace face) = ToolsTestSupport.DrawnQuad(10, 10);
+        (Scene scene, MeshNode node) = ToolsTestSupport.SceneWith(mesh);
+        (ToolContext context, UndoStack undo) = ToolsTestSupport.ContextFor(scene);
+
+        var command = new ExtrudeFaceCommand(mesh, face, -4);
+        undo.Push(command);
+
+        Assert.True(mesh.IsWatertight);
+        Assert.Equal(6, mesh.Faces.Count);
+        Assert.Equal(10 * 10 * 4, ToolsTestSupport.SignedVolume(mesh), 6);
+        foreach (MeshVertex vertex in mesh.GetRing(face))
+        {
+            Assert.Equal(0, vertex.Position.Z, 9);
+        }
+
+        undo.Undo();
+        Assert.Single(mesh.Faces);
+        Assert.Equal(0, mesh.GetRing(face)[0].Position.Z, 9);
+    }
+
+    [Fact]
     public void Tool_ZeroDistance_CreatesNoHistoryEntry()
     {
         HalfEdgeMesh mesh = ToolsTestSupport.Box(10, 10, 10);

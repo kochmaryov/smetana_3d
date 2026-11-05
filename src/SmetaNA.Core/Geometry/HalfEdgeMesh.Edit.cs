@@ -215,6 +215,84 @@ public sealed partial class HalfEdgeMesh
         RefreshVertexHalfEdge(reverse.Origin);
     }
 
+    /// <summary>
+    /// Пара «полуребро грани — снятое обратное проволочное полуребро» границы:
+    /// снимок для <see cref="RestoreBoundary"/>.
+    /// </summary>
+    /// <param name="FaceEdge">Полуребро кольца грани.</param>
+    /// <param name="WireEdge">Обратное проволочное полуребро (внешняя граница).</param>
+    public readonly record struct BoundaryEdgePair(MeshHalfEdge FaceEdge, MeshHalfEdge WireEdge);
+
+    /// <summary>
+    /// Снять с грани свободную границу: обратные проволочные полуребра кольца
+    /// убираются из меша, освобождая обратные направления рёбер. Нужно для
+    /// выдавливания: стенки занимают обратные направления, поэтому висящая
+    /// проволочная граница нарисованной фигуры более не нужна.
+    /// </summary>
+    /// <returns>Снятые пары — для восстановления (<see cref="RestoreBoundary"/>).</returns>
+    public IReadOnlyList<BoundaryEdgePair> DetachBoundary(MeshFace face)
+    {
+        ArgumentNullException.ThrowIfNull(face);
+        var pairs = new List<BoundaryEdgePair>();
+        foreach (MeshHalfEdge edge in MeshTraversal.EnumerateRing(face))
+        {
+            if (edge.Twin is not { } twin)
+            {
+                continue;
+            }
+
+            if (twin.Face is not null)
+            {
+                throw new InvalidOperationException("Ребро грани разделено со смежной гранью — граница не свободна.");
+            }
+
+            var key = (twin.Origin, edge.Origin);
+            if (_directedEdges.TryGetValue(key, out MeshHalfEdge? registered) && ReferenceEquals(registered, twin))
+            {
+                _directedEdges.Remove(key);
+            }
+
+            if (!_halfEdges.Remove(twin))
+            {
+                throw new ArgumentException("Проволочное полуребро границы не принадлежит мешу.", nameof(face));
+            }
+
+            edge.Twin = null;
+            RefreshVertexHalfEdge(twin.Origin);
+            pairs.Add(new BoundaryEdgePair(edge, twin));
+        }
+
+        return pairs;
+    }
+
+    /// <summary>
+    /// Вернуть снятую границу грани (обратная операция к <see cref="DetachBoundary"/>).
+    /// Обратные направления рёбер должны быть свободны (стенки выдавливания уже удалены).
+    /// </summary>
+    public void RestoreBoundary(IReadOnlyList<BoundaryEdgePair> pairs)
+    {
+        ArgumentNullException.ThrowIfNull(pairs);
+        foreach (BoundaryEdgePair pair in pairs)
+        {
+            MeshHalfEdge faceEdge = pair.FaceEdge;
+            MeshHalfEdge wire = pair.WireEdge;
+            var key = (wire.Origin, faceEdge.Origin);
+            if (_directedEdges.ContainsKey(key))
+            {
+                throw new InvalidOperationException("Обратное направление ребра занято — меш невалиден.");
+            }
+
+            _directedEdges[key] = wire;
+            _halfEdges.Add(wire);
+            faceEdge.Twin = wire;
+            wire.Twin = faceEdge;
+            if (wire.Origin.HalfEdge is null)
+            {
+                wire.Origin.HalfEdge = wire;
+            }
+        }
+    }
+
     /// <summary>Исходящее полуребро вершины после удалений (или <c>null</c>).</summary>
     private void RefreshVertexHalfEdge(MeshVertex vertex)
     {

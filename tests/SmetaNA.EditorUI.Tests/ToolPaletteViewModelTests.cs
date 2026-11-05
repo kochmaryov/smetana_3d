@@ -139,6 +139,39 @@ public sealed class ToolPaletteViewModelTests
         Assert.False(line.IsActive);
     }
 
+    [Fact]
+    public void ActiveCommand_MarksGroup_EvenForFlyoutVariant()
+    {
+        // В режиме рейла кнопок инструментов нет — текущий инструмент виден
+        // только на кнопке группы, поэтому группа считает себя активной и для
+        // под-инструментов вылета.
+        ToolPaletteViewModel viewModel = Create();
+        ToolPaletteGroupViewModel drawing = viewModel.Groups[0];
+        ToolPaletteGroupViewModel editing = viewModel.Groups[1];
+        ToolPaletteButtonViewModel arc = viewModel.FindButton(ShortcutCatalog.ToolArc)!;
+        List<string> changed = [];
+        drawing.PropertyChanged += (_, args) => changed.Add(args.PropertyName ?? string.Empty);
+
+        arc.FlyoutItems[1].ActivateCommand.Execute(null);
+
+        Assert.True(drawing.IsActive);
+        Assert.False(editing.IsActive);
+        Assert.Contains(nameof(ToolPaletteGroupViewModel.IsActive), changed);
+
+        viewModel.ActiveCommandId = null;
+
+        Assert.False(drawing.IsActive);
+    }
+
+    [Fact]
+    public void Divider_ShowsForAllGroupsExceptFirst()
+    {
+        ToolPaletteViewModel viewModel = Create();
+
+        Assert.False(viewModel.Groups[0].ShowDivider);
+        Assert.All(viewModel.Groups.Skip(1), group => Assert.True(group.ShowDivider));
+    }
+
     // --- B1: подсветка шага урока (T7) ---------------------------------
 
     [Fact]
@@ -354,7 +387,9 @@ public sealed class ToolPaletteViewModelTests
         viewModel.ApplyViewportHeight(1000);
         Assert.All(viewModel.Groups, group => Assert.True(group.IsExpanded));
 
-        viewModel.ApplyViewportHeight(600);
+        // 620 px: хватает первым трём группам (с разделителями секций ~612 px),
+        // остальные сворачиваются.
+        viewModel.ApplyViewportHeight(620);
 
         Assert.True(viewModel.Groups[0].IsExpanded); // Рисование — базовые инструменты
         Assert.True(viewModel.Groups[1].IsExpanded); // Правка — базовые инструменты
