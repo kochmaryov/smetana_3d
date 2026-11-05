@@ -1,2 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SmetaNA.Core.Tests" />
+  </ItemGroup>
+
 </Project>

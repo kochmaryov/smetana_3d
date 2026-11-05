@@ -294,6 +294,24 @@ public sealed class InferenceScene
     /// <see cref="Segments"/> на сотнях тысяч рёбер дороже индексации массива.
     /// </summary>
     internal SnapSegment[] SegmentsArray => _segments;
+
+    internal SnapFace[] FacesArray => _faces;
+
+    /// <summary>
+    /// Базовый снимок цепочки <see cref="WithExtra"/>: его сегменты — префикс
+    /// <see cref="SegmentsArray"/>, поэтому пространственный индекс строится по
+    /// базе и не перестраивается на каждом кадре предпросмотра (S11).
+    /// </summary>
+    internal InferenceScene? BaseScene { get; private init; }
+
+    /// <summary>Сегменты, добавленные <see cref="WithExtra"/> поверх базы.</summary>
+    internal IReadOnlyList<SnapSegment> ExtraSegments { get; private init; } = [];
+
+    /// <summary>Ленивый BVH базы по рёбрам.</summary>
+    internal InferenceSpatialIndex? SegmentIndex { get; set; }
+
+    /// <summary>Ленивый BVH базы по граням.</summary>
+    internal InferenceSpatialIndex? FaceIndex { get; set; }
     public IReadOnlyList<SnapFace> Faces => _faces;
     public IReadOnlyList<SnapCircle> Circles => _circles;
 
@@ -319,9 +337,10 @@ public sealed class InferenceScene
         IEnumerable<SnapCircle>? extraCircles = null)
     {
         List<SnapSegment> segments = [.. _segments];
-        if (extraSegments is not null)
+        var added = extraSegments is null ? [] : extraSegments.ToArray();
+        if (added.Length > 0)
         {
-            segments.AddRange(extraSegments);
+            segments.AddRange(added);
         }
 
         List<SnapCircle> circles = [.. _circles];
@@ -337,6 +356,10 @@ public sealed class InferenceScene
             _arcPoints,
             _instanceOrigins,
             _userSnaps,
-            _arcTangents);
+            _arcTangents)
+        {
+            BaseScene = BaseScene ?? this,
+            ExtraSegments = [.. ExtraSegments, .. added],
+        };
     }
 }

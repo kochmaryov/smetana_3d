@@ -81,6 +81,10 @@ public static class InferenceEngine
         private readonly List<SnapCandidate> _pointCandidates = [];
         private readonly List<SnapCandidate> _linearCandidates = [];
         private IReadOnlyList<Vector3d>? _referenceDirections;
+        private readonly List<int> _indexHits = [];
+
+        private List<SnapSegment>? _nearSegments;
+        private List<SnapFace>? _nearFaces;
 
         public Solver(SnapRequest request)
         {
@@ -282,7 +286,7 @@ public static class InferenceEngine
                 // Одна дешёвая проверка сегмента на оба конца и середину: дорогая
                 // проекция в пиксели выполняется только для сегментов у курсора
                 // (на 200k рёбер иначе сотни тысяч проекций на событие).
-                foreach (SnapSegment segment in scene.SegmentsArray)
+                foreach (SnapSegment segment in NearSegments())
                 {
                     if (!IsProjectedSegmentNearCursor(segment))
                     {
@@ -338,7 +342,7 @@ public static class InferenceEngine
                     TryAddPoint(SnapType.Center, circle.Center, circle.Entity);
                 }
 
-                foreach (SnapFace face in scene.Faces)
+                foreach (SnapFace face in NearFaces())
                 {
                     TryAddPoint(SnapType.Center, face.Centroid, face.Entity);
                 }
@@ -362,7 +366,7 @@ public static class InferenceEngine
 
             if ((filter & SnapFilter.OnFace) != 0)
             {
-                foreach (SnapFace face in scene.Faces)
+                foreach (SnapFace face in NearFaces())
                 {
                     if (!face.TryIntersect(_ray, out Vector3d hit))
                     {
@@ -402,7 +406,7 @@ public static class InferenceEngine
             // лишь если оба сегмента проходят рядом с курсором. Без отсечки перебор пар
             // O(n²) над сценой с сотнями тысяч рёбер намертво вешает UI.
             List<SnapSegment> segments = new();
-            foreach (SnapSegment segment in _request.Scene.SegmentsArray)
+            foreach (SnapSegment segment in NearSegments())
             {
                 if (IsProjectedSegmentNearCursor(segment))
                 {
@@ -479,7 +483,7 @@ public static class InferenceEngine
             }
 
             List<SnapFace> faces = new();
-            foreach (SnapFace face in _request.Scene.Faces)
+            foreach (SnapFace face in NearFaces())
             {
                 if (IsProjectedFaceNearCursor(face))
                 {
@@ -588,6 +592,9 @@ public static class InferenceEngine
 
             if (_allowedLinear.Contains(SnapType.Perpendicular))
             {
+                // Кандидат — основание перпендикуляра на бесконечной прямой ребра,
+                // оно может лежать вне самого ребра, поэтому индекс по AABB рёбер
+                // здесь неприменим: отбор только по дешёвому мировому тесту.
                 foreach (SnapSegment segment in _request.Scene.SegmentsArray)
                 {
                     TryAddPerpendicular(segment.Start, segment.Direction, anchor);
@@ -626,7 +633,7 @@ public static class InferenceEngine
             // bbox грани: дальше рассматриваются только грани вблизи курсора — перебор
             // «направление × все грани» недопустим для сцен с сотнями тысяч треугольников.
             List<SnapFace> faces = new();
-            foreach (SnapFace face in _request.Scene.Faces)
+            foreach (SnapFace face in NearFaces())
             {
                 if (IsProjectedFaceNearCursor(face))
                 {
@@ -729,7 +736,7 @@ public static class InferenceEngine
         {
             bool withDirection = _allowedLinear.Count > 0;
             int added = 0;
-            foreach (SnapSegment segment in _request.Scene.SegmentsArray)
+            foreach (SnapSegment segment in NearSegments())
             {
                 if (added >= MaxEdgeCandidates)
                 {
@@ -818,7 +825,7 @@ public static class InferenceEngine
 
             SnapFace? hovered = null;
             double closestDepth = double.PositiveInfinity;
-            foreach (SnapFace face in _request.Scene.Faces)
+            foreach (SnapFace face in NearFaces())
             {
                 if (!face.TryIntersect(_ray, out Vector3d hit))
                 {
@@ -855,7 +862,7 @@ public static class InferenceEngine
         private void CollectExtendEdgeCandidates()
         {
             int added = 0;
-            foreach (SnapSegment segment in _request.Scene.SegmentsArray)
+            foreach (SnapSegment segment in NearSegments())
             {
                 if (added >= MaxEdgeCandidates)
                 {
@@ -1274,6 +1281,93 @@ public static class InferenceEngine
         /// </summary>
         private bool IsProjectedSegmentNearCursor(SnapSegment segment)
             => IsWithinSnapRadius(segment.Midpoint, segment.Length * 0.5);
+
+        /// <summary>
+        /// Рёбра вблизи курсора: BVH базового снимка (S11) плюс сегменты
+        /// предпросмотра, добавленные <see cref="InferenceScene.WithExtra"/>.
+        /// Надмножество прежнего полного перебора — точные фильтры ниже не меняются.
+        /// </summary>
+        private List<SnapSegment> NearSegments()
+        {
+            if (_nearSegments is { } cached)
+            {
+                return cached;
+            }
+
+            InferenceScene scene = _request.Scene;
+            InferenceScene root = scene.BaseScene ?? scene;
+            InferenceSpatialIndex index = root.SegmentIndex ??= BuildSegmentIndex(root);
+
+            _indexHits.Clear();
+            index.Query(_ray, _snapRadiusPerDepth, _snapRadiusWorld, _indexHits);
+
+            SnapSegment[] segments = root.SegmentsArray;
+            var result = new List<SnapSegment>(_indexHits.Count + scene.ExtraSegments.Count);
+            foreach (int position in _indexHits)
+            {
+                result.Add(segments[position]);
+            }
+
+            result.AddRange(scene.ExtraSegments);
+            _nearSegments = result;
+            return result;
+        }
+
+        /// <summary>Грани вблизи курсора: BVH базового снимка (S11).</summary>
+        private List<SnapFace> NearFaces()
+        {
+            if (_nearFaces is { } cached)
+            {
+                return cached;
+            }
+
+            InferenceScene scene = _request.Scene;
+            InferenceScene root = scene.BaseScene ?? scene;
+            InferenceSpatialIndex index = root.FaceIndex ??= BuildFaceIndex(root);
+
+            _indexHits.Clear();
+            index.Query(_ray, _snapRadiusPerDepth, _snapRadiusWorld, _indexHits);
+
+            SnapFace[] faces = root.FacesArray;
+            var result = new List<SnapFace>(_indexHits.Count);
+            foreach (int position in _indexHits)
+            {
+                result.Add(faces[position]);
+            }
+
+            _nearFaces = result;
+            return result;
+        }
+
+        private static InferenceSpatialIndex BuildSegmentIndex(InferenceScene scene)
+        {
+            SnapSegment[] segments = scene.SegmentsArray;
+            var boxes = new BoundingBox3d[segments.Length];
+            for (int i = 0; i < segments.Length; i++)
+            {
+                boxes[i] = BoundingBox3d.Empty.Union(segments[i].Start).Union(segments[i].End);
+            }
+
+            return InferenceSpatialIndex.Build(boxes);
+        }
+
+        private static InferenceSpatialIndex BuildFaceIndex(InferenceScene scene)
+        {
+            SnapFace[] faces = scene.FacesArray;
+            var boxes = new BoundingBox3d[faces.Length];
+            for (int i = 0; i < faces.Length; i++)
+            {
+                var box = BoundingBox3d.Empty;
+                foreach (Vector3d vertex in faces[i].Ring)
+                {
+                    box = box.Union(vertex);
+                }
+
+                boxes[i] = box;
+            }
+
+            return InferenceSpatialIndex.Build(boxes);
+        }
 
         /// <summary>
         /// Грань подходит курсору: точка, принадлежащая грани, лежит в пределах
