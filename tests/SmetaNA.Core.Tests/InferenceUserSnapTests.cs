@@ -130,6 +130,27 @@ public sealed class InferenceUserSnapTests
     }
 
     [Fact]
+    public void Engine_CarriesSnapFrame_ThroughCombinedPromotion()
+    {
+        (Scene scene, _) = ToolsTestSupport.SceneWith(ToolsTestSupport.Box(10, 10, 10));
+        Assert.True(SnapFrame.TryCreate(new Vector3d(2, 5, 10), Vector3d.UnitZ, Vector3d.UnitY, out SnapFrame source));
+        Assert.True(SnapFrame.TryCreate(new Vector3d(20, 5, 10), Vector3d.UnitX, Vector3d.UnitZ, out SnapFrame target));
+        scene.Root.AddChild(new SnapNode { Name = "Источник", Frame = source });
+        scene.Root.AddChild(new SnapNode { Name = "Цель", Frame = target });
+
+        SnapResult result = InferenceEngine.Solve(InferenceTestSupport.Request(
+            InferenceTestSupport.TopDown(),
+            InferenceSceneBuilder.FromScene(scene),
+            target.Position,
+            anchor: source.Position));
+
+        // Комбинированная привязка (точка + направление) поднимает ось выше точки,
+        // но кадр snap'а должен переехать вместе с ней — иначе Move не довернётся.
+        Assert.NotNull(result.Best?.Frame);
+        Assert.Contains(result.Candidates, c => c.Type == SnapType.SnapPoint && c.Frame is not null);
+    }
+
+    [Fact]
     public void ToolContext_SnapScene_IncludesUserSnaps()
     {
         Scene scene = SceneWithSnapInsideGroup(new Vector3d(5, 5, 5), out _);

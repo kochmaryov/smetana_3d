@@ -80,4 +80,35 @@ public readonly record struct SnapFrame(Vector3d Position, Vector3d Direction, V
         Up.X, Up.Y, Up.Z, 0,
         Direction.X, Direction.Y, Direction.Z, 0,
         Position.X, Position.Y, Position.Z, 1);
+
+    /// <summary>
+    /// Преобразование, совмещающее этот кадр с целевым: позиция переходит в позицию
+    /// цели, оси — в оси цели (поворот + перенос). Используется для доворота
+    /// объекта при snap-to-snap.
+    /// </summary>
+    public Transform3d DeltaTo(SnapFrame target)
+    {
+        SnapFrame from = Normalized();
+        SnapFrame to = target.Normalized();
+
+        Transform3d rotation = Transform3d.Multiply(
+            to.Basis(),
+            TransposeBasis(from.Basis()));
+        Vector3d translation = to.Position - rotation.TransformVector(from.Position);
+        return Transform3d.Multiply(rotation, Transform3d.CreateTranslation(translation));
+    }
+
+    /// <summary>Ориентация кадра без переноса (для композиции поворотов).</summary>
+    private Transform3d Basis() => new(
+        Right.X, Right.Y, Right.Z, 0,
+        Up.X, Up.Y, Up.Z, 0,
+        Direction.X, Direction.Y, Direction.Z, 0,
+        0, 0, 0, 1);
+
+    /// <summary>Транспонированная линейная часть (обратный поворот ортонормального базиса).</summary>
+    private static Transform3d TransposeBasis(Transform3d matrix) => new(
+        matrix.M11, matrix.M21, matrix.M31, 0,
+        matrix.M12, matrix.M22, matrix.M32, 0,
+        matrix.M13, matrix.M23, matrix.M33, 0,
+        0, 0, 0, 1);
 }

@@ -27,6 +27,66 @@ public class MoveToolTests
         => mesh.Vertices.ToDictionary(vertex => vertex, vertex => vertex.Position);
 
     [Fact]
+    public void Tool_MoveToForeignSnap_RotatesSelectionFrontToFront()
+    {
+        HalfEdgeMesh mesh = ToolsTestSupport.Box(10, 10, 10);
+        (Scene scene, _) = ToolsTestSupport.SceneWith(mesh);
+        (ToolContext context, _) = ToolsTestSupport.ContextFor(scene);
+        context.Viewport = InferenceTestSupport.TopDown();
+
+        Assert.True(SnapFrame.TryCreate(new Vector3d(2, 5, 10), Vector3d.UnitZ, Vector3d.UnitY, out SnapFrame source));
+        Assert.True(SnapFrame.TryCreate(new Vector3d(20, 5, 10), Vector3d.UnitX, Vector3d.UnitZ, out SnapFrame target));
+        scene.Root.AddChild(new SnapNode { Name = "Источник", Frame = source });
+        scene.Root.AddChild(new SnapNode { Name = "Цель", Frame = target });
+
+        MeshFace face = ToolsTestSupport.FaceWithNormal(mesh, Vector3d.UnitZ);
+        IReadOnlyList<MeshVertex> ring = mesh.GetRing(face);
+        Vector3d centroidBefore = ring.Aggregate(Vector3d.Zero, (sum, v) => sum + v.Position) * (1.0 / ring.Count);
+        Vector3d[] before = [.. ring.Select(v => v.Position)];
+
+        var tool = new MoveTool();
+        tool.Activate(context);
+
+        Vector2d pressPixel = ToolsTestSupport.PixelOf(context.Viewport!, source.Position);
+        Vector2d dragPixel = ToolsTestSupport.PixelOf(context.Viewport!, target.Position);
+
+        Assert.True(tool.OnPointer(PointerInput.Press(pressPixel, PointerButton.Left)));
+        Assert.True(
+            tool.CurrentSnap.Best?.Frame is not null,
+            $"press: лучший кандидат без кадра ({tool.CurrentSnap.Best?.Type.ToString() ?? "null"})");
+        tool.OnPointer(PointerInput.Move(dragPixel));
+        Assert.True(
+            tool.CurrentSnap.Best?.Frame is not null,
+            $"move: лучший кандидат без кадра ({tool.CurrentSnap.Best?.Type.ToString() ?? "null"})");
+        Assert.True(tool.IsOrientationAttached);
+
+        // Кадр источника совмещён с целью «лицевая к лицевой».
+        Transform3d delta = tool.WorldDelta;
+        Assert.True(ToolsTestSupport.NearlyEqual(target.Position, delta.TransformPoint(source.Position), 1e-6));
+        InferenceAssert.DirectionEqual(-target.Direction, delta.TransformVector(Vector3d.UnitZ));
+
+        Assert.True(tool.OnPointer(PointerInput.Release(dragPixel, PointerButton.Left)));
+
+        // Кольцо повернулось жёстко: расстояния между вершинами сохранены,
+        // плоскость грани совпала с плоскостью цели.
+        for (int i = 0; i < ring.Count; i++)
+        {
+            for (int j = i + 1; j < ring.Count; j++)
+            {
+                double beforeDistance = (before[i] - before[j]).Length();
+                double afterDistance = (ring[i].Position - ring[j].Position).Length();
+                Assert.Equal(beforeDistance, afterDistance, 6);
+            }
+
+            Assert.Equal(0, Vector3d.Dot(ring[i].Position - target.Position, target.Direction), 6);
+        }
+
+        Vector3d centroidAfter = ring.Aggregate(Vector3d.Zero, (sum, v) => sum + v.Position) * (1.0 / ring.Count);
+        Assert.Equal((centroidBefore - source.Position).Length(), (centroidAfter - target.Position).Length(), 6);
+        Assert.True(mesh.IsWatertight);
+    }
+
+    [Fact]
     public void Tool_FaceMove_VcbMovesRingExactly()
     {
         (ToolContext context, UndoStack undo) = Setup(out HalfEdgeMesh mesh, out _);

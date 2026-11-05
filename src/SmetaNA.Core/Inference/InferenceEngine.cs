@@ -553,6 +553,7 @@ public static class InferenceEngine
                 int promotedPriority = linear.Priority;
                 int promotedDof = linear.DegreesOfFreedom;
                 bool promoted = false;
+                SnapCandidate? promotedFrom = null;
 
                 foreach (SnapCandidate point in _pointCandidates)
                 {
@@ -562,17 +563,28 @@ public static class InferenceEngine
                     }
 
                     promoted = true;
-                    promotedPriority = Math.Max(promotedPriority, point.Priority + 1);
                     promotedDof = Math.Min(promotedDof, point.DegreesOfFreedom);
+                    if (promotedFrom is null || point.Priority > promotedFrom.Priority)
+                    {
+                        promotedFrom = point;
+                    }
+
+                    promotedPriority = Math.Max(promotedPriority, point.Priority + 1);
                 }
 
                 if (promoted)
                 {
+                    // Комбинированная привязка наследует источник и кадр точки:
+                    // оверлею нужна подсветка, а snap-to-snap — ориентация.
                     _linearCandidates[i] = linear with
                     {
                         Priority = promotedPriority,
                         Marker = SnapMarkerKind.LineAndPoint,
                         DegreesOfFreedom = promotedDof,
+                        Entity = promotedFrom is { } source && !source.Entity.IsEmpty
+                            ? source.Entity
+                            : linear.Entity,
+                        Frame = promotedFrom?.Frame,
                     };
                 }
             }
