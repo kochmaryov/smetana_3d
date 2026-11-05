@@ -342,6 +342,24 @@
   <data name="Viewport.ShowAxes" xml:space="preserve">
     <value>Оси</value>
   </data>
+  <data name="View.ShowHiddenGeometry" xml:space="preserve">
+    <value>Показать скрытую геометрию</value>
+  </data>
+  <data name="View.GridSnapping" xml:space="preserve">
+    <value>Привязка к сетке</value>
+  </data>
+  <data name="View.GridStep" xml:space="preserve">
+    <value>Шаг сетки: {0} (изменить)</value>
+  </data>
+  <data name="View.LengthSnapping" xml:space="preserve">
+    <value>Привязка длины к точности</value>
+  </data>
+  <data name="View.SnapLabels" xml:space="preserve">
+    <value>Показывать подписи привязок</value>
+  </data>
+  <data name="Snap.HiddenGeometryOn" xml:space="preserve">
+    <value>Скрытая геометрия (Ctrl+Shift)</value>
+  </data>
   <data name="Viewport.UnitLabel" xml:space="preserve">
     <value>Единицы</value>
   </data>

@@ -24,6 +24,8 @@ public sealed class ToolController
     /// <summary>Активный инструмент или <c>null</c>.</summary>
     public ITool? ActiveTool { get; private set; }
 
+    private PointerInput? _lastPointer;
+
     public bool IsActive => ActiveTool is not null;
 
     /// <summary>Активный инструмент, его предпросмотр или VCB изменились.</summary>
@@ -66,12 +68,19 @@ public sealed class ToolController
             ActiveTool?.ResetSnap();
         }
 
+        if (input.Kind == PointerEventKind.Move)
+        {
+            // Указатель сдвинулся — перебор кандидатов Tab начинается заново.
+            Context.ResetSnapCandidateOffset();
+            _lastPointer = input;
+        }
+
         return ActiveTool?.OnPointer(input) ?? false;
     }
 
     /// <summary>
     /// Событие клавиши: стрелки фиксируют оси, Alt переключает режим привязок,
-    /// Esc снимает фиксацию; остальное — активному инструменту.
+    /// Tab перебирает кандидатов, Esc снимает фиксацию; остальное — активному инструменту.
     /// </summary>
     public bool RouteKey(KeyInput input)
     {
@@ -94,12 +103,31 @@ public sealed class ToolController
                 Context.CycleInferenceMode();
                 Changed?.Invoke();
                 return true;
+            case ToolKey.Tab:
+                return CycleSnapCandidate();
             case ToolKey.Escape:
                 Context.ResetSnapLocks();
                 break;
         }
 
         return ActiveTool.OnKey(input);
+    }
+
+    /// <summary>
+    /// Следующий кандидат привязки (Tab): пересчитать привязку под курсором, не
+    /// сбрасывая выбранный индекс.
+    /// </summary>
+    private bool CycleSnapCandidate()
+    {
+        if (_lastPointer is not { } pointer)
+        {
+            return false;
+        }
+
+        Context.CycleSnapCandidate();
+        ActiveTool?.OnPointer(pointer with { Kind = PointerEventKind.Move });
+        Changed?.Invoke();
+        return true;
     }
 
     private bool ToggleSnapLock(SnapModifiers lockModifiers)

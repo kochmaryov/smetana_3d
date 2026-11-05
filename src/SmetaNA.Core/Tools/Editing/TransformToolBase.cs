@@ -330,19 +330,19 @@ public abstract class TransformToolBase : ToolBase
             return null;
         }
 
-        SnapRequest request = new()
+        SnapCandidate? locked = (modifiers & ToolModifiers.Shift) != 0 ? CurrentSnap.Best : null;
+        SnapRequest? request = Context.BuildSnapRequest(
+            cursorPx,
+            anchor,
+            modifiers,
+            locked,
+            grid: Context.GroundGridAt(anchor ?? Vector3d.Zero),
+            previousBest: CurrentSnap.Best,
+            previousBestAgeMs: SnapBestAgeMs);
+        if (request is null)
         {
-            Ray = viewport.PickRay(cursorPx),
-            Viewport = viewport,
-            Scene = Context.BuildInferenceScene(),
-            CursorPx = cursorPx,
-            Anchor = anchor,
-            Modifiers = Context.ResolveSnapModifiers((modifiers & ToolModifiers.Ctrl) != 0),
-        };
-
-        if ((modifiers & ToolModifiers.Shift) != 0 && CurrentSnap.Best is { } active)
-        {
-            request = request with { LockedCandidate = active };
+            SetSnap(SnapResult.Empty);
+            return null;
         }
 
         SnapResult result = Context.Snap(request);

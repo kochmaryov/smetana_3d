@@ -28,14 +28,24 @@ public readonly record struct ToolFaceHit(
 public static class SceneFacePicker
 {
     /// <summary>Найти ближайшую грань, пересекаемую лучом.</summary>
-    public static bool TryPick(Scene scene, Ray3d worldRay, out ToolFaceHit hit, double maxDistance = double.PositiveInfinity)
+    /// <param name="scene">Сцена.</param>
+    /// <param name="worldRay">Луч выбора в мировых координатах.</param>
+    /// <param name="hit">Попадание.</param>
+    /// <param name="maxDistance">Ограничение расстояния.</param>
+    /// <param name="includeHidden">Учитывать скрытые узлы (режим скрытой геометрии).</param>
+    public static bool TryPick(
+        Scene scene,
+        Ray3d worldRay,
+        out ToolFaceHit hit,
+        double maxDistance = double.PositiveInfinity,
+        bool includeHidden = false)
     {
         ArgumentNullException.ThrowIfNull(scene);
         hit = default;
 
         bool found = false;
         double bestDistance = maxDistance;
-        foreach (PlacedNode placed in SceneFlattener.Expand(scene))
+        foreach (PlacedNode placed in SceneFlattener.Expand(scene, includeHidden))
         {
             if (placed.Node is not MeshNode meshNode)
             {

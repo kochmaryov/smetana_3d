@@ -63,6 +63,17 @@ public sealed record SnapRequest
     public SnapCandidate? LockedCandidate { get; init; }
 
     /// <summary>
+    /// Лучший кандидат предыдущего запроса — для гистерезиса (R-31).
+    /// </summary>
+    public SnapCandidate? PreviousBest { get; init; }
+
+    /// <summary>
+    /// Сколько миллисекунд назад <see cref="PreviousBest"/> стал лучшим; отрицательное
+    /// значение — давность неизвестна (гистерезис не применяется).
+    /// </summary>
+    public double PreviousBestAgeMs { get; init; } = -1;
+
+    /// <summary>
     /// Запрос по пиксельному положению курсора: луч строится через
     /// <see cref="InferenceViewport.PickRay"/>.
     /// </summary>

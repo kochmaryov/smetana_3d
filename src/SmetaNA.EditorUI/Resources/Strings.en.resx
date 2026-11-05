@@ -342,6 +342,24 @@
   <data name="Viewport.ShowAxes" xml:space="preserve">
     <value>Axes</value>
   </data>
+  <data name="View.ShowHiddenGeometry" xml:space="preserve">
+    <value>Show hidden geometry</value>
+  </data>
+  <data name="View.GridSnapping" xml:space="preserve">
+    <value>Grid snapping</value>
+  </data>
+  <data name="View.GridStep" xml:space="preserve">
+    <value>Grid step: {0} (change)</value>
+  </data>
+  <data name="View.LengthSnapping" xml:space="preserve">
+    <value>Length snapping to precision</value>
+  </data>
+  <data name="View.SnapLabels" xml:space="preserve">
+    <value>Show snap labels</value>
+  </data>
+  <data name="Snap.HiddenGeometryOn" xml:space="preserve">
+    <value>Hidden geometry (Ctrl+Shift)</value>
+  </data>
   <data name="Viewport.UnitLabel" xml:space="preserve">
     <value>Units</value>
   </data>

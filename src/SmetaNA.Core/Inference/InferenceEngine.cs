@@ -139,7 +139,50 @@ public static class InferenceEngine
                 .ThenBy(c => c.ScreenDistancePx)
                 .ToList();
 
-            return new SnapResult(Dedupe(ordered));
+            return new SnapResult(ApplyHysteresis(Dedupe(ordered)));
+        }
+
+        /// <summary>
+        /// Антимерцание (R-31): «свежий» кандидат удерживается, пока курсор рядом
+        /// (1,5× толеранса) и новый лучший не лучше заметно — иначе привязки мигают
+        /// при дрожании курсора у стыка рёбер.
+        /// </summary>
+        private List<SnapCandidate> ApplyHysteresis(List<SnapCandidate> ordered)
+        {
+            if (ordered.Count == 0
+                || _request.PreviousBest is not { } previous
+                || _request.PreviousBestAgeMs < 0
+                || _request.PreviousBestAgeMs >= SnapDefaults.DwellMs)
+            {
+                return ordered;
+            }
+
+            SnapCandidate current = ordered[0];
+            if (current.Type == previous.Type && current.DegreesOfFreedom == previous.DegreesOfFreedom)
+            {
+                return ordered;
+            }
+
+            if (_viewport.TryProject(previous.Point) is not { } previousPx)
+            {
+                return ordered;
+            }
+
+            double previousDistancePx = (previousPx - _cursor).Length();
+            if (previousDistancePx > _tolerancePx * SnapDefaults.DwellToleranceFactor)
+            {
+                return ordered;
+            }
+
+            bool substantiallyBetter = current.Priority >= previous.Priority + SnapDefaults.HysteresisPriorityDelta
+                || current.ScreenDistancePx < previousDistancePx - SnapDefaults.SwitchDistancePx;
+            if (substantiallyBetter)
+            {
+                return ordered;
+            }
+
+            ordered.Insert(0, previous);
+            return ordered;
         }
 
         /// <summary>

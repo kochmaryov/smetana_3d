@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using SmetaNA.Core.Geometry;
+using SmetaNA.Core.Inference;
 using SmetaNA.Core.Model;
 using SmetaNA.Core.Tools;
 using SmetaNA.EditorUI.Commands;
@@ -102,6 +103,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly ThemeService _theme;
     private readonly EditorSession _session;
     private readonly ToolLayoutService _toolLayout;
+    private readonly SmetaNA.EditorUI.Settings.InferenceSettingsStore _inferenceSettingsStore;
+    private InferenceSettings _inferenceSettings;
 
     private ToolStubViewModel? _activeTool;
     private string _statusText;
@@ -111,7 +114,11 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string _gestureInput = string.Empty;
     private LanguageOption? _selectedLanguage;
 
-    public MainWindowViewModel(ILocalizationService localization, ThemeService theme, EditorSession session)
+    public MainWindowViewModel(
+        ILocalizationService localization,
+        ThemeService theme,
+        EditorSession session,
+        SmetaNA.EditorUI.Settings.InferenceSettingsStore? inferenceSettingsStore = null)
     {
         ArgumentNullException.ThrowIfNull(localization);
         ArgumentNullException.ThrowIfNull(theme);
@@ -119,6 +126,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         _localization = localization;
         _theme = theme;
         _session = session;
+        _inferenceSettingsStore = inferenceSettingsStore ?? new SmetaNA.EditorUI.Settings.InferenceSettingsStore();
+        _inferenceSettings = _inferenceSettingsStore.Load();
         SeedStartScene(session);
 
         Strings = new LocalizedStrings(localization);
@@ -601,9 +610,18 @@ public sealed class MainWindowViewModel : ViewModelBase
             document ?? _session.CreateDocument(),
             Projects.Count + 1);
         project.ActivateToolById = ActivateToolById;
+        project.ApplyInferenceSettings(_inferenceSettings);
+        project.InferenceSettingsChanged += () => SaveInferenceSettings(project.InferenceSettings);
 
         Projects.Add(project);
         SelectedProject = project;
+    }
+
+    /// <summary>Сохранить настройки привязок в каталог настроек приложения.</summary>
+    private void SaveInferenceSettings(InferenceSettings settings)
+    {
+        _inferenceSettings = settings;
+        _inferenceSettingsStore.Save(settings);
     }
 
     /// <summary>

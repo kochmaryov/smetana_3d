@@ -41,6 +41,8 @@ public partial class ViewportView : UserControl
     private readonly HashSet<Key> _heldToolKeys = [];
     private long _lastToolHoverTicks;
     private Point? _toolRightPress;
+    private bool _ctrlHeld;
+    private bool _shiftHeld;
 
     /// <summary>Вьюпорт в визуальном дереве (иначе подписки модели не нужны).</summary>
     private bool _isAttached;
@@ -213,6 +215,7 @@ public partial class ViewportView : UserControl
         Viewport.RenderMode = _viewModel.SelectedRenderMode.Mode;
         Viewport.ShowGrid = _viewModel.ShowGrid;
         Viewport.ShowAxes = _viewModel.ShowAxes;
+        Viewport.IncludeHidden = _viewModel.ShowHiddenGeometry;
 
         ProjectionMode projection = _viewModel.IsOrthographic
             ? ProjectionMode.Orthographic
@@ -333,13 +336,19 @@ public partial class ViewportView : UserControl
             return;
         }
 
-        // Shift+ЛКМ — панорама камеры, инструменту не передаётся
-        if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        // Shift+ЛКМ — панорама камеры, инструменту не передаётся.
+        // Shift+Alt (фиксация плоскости) и Ctrl+Shift (скрытая геометрия) — модификаторы
+        // инструмента, панораму не включают.
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Shift)
+            && !e.KeyModifiers.HasFlag(KeyModifiers.Control)
+            && !e.KeyModifiers.HasFlag(KeyModifiers.Alt))
         {
             return;
         }
 
         UpdateToolViewport();
+        SyncHeldModifiers(e.KeyModifiers);
+        ApplyTemporaryHiddenGeometry(tools);
         bool handled = tools.RoutePointer(PointerInputFactory.Create(
             point.Position.X,
             point.Position.Y,
@@ -399,6 +408,8 @@ public partial class ViewportView : UserControl
         }
 
         UpdateToolViewport();
+        SyncHeldModifiers(e.KeyModifiers);
+        ApplyTemporaryHiddenGeometry(_tools);
         bool handled = tools.RoutePointer(PointerInputFactory.Create(
             position.X,
             position.Y,
@@ -479,6 +490,8 @@ public partial class ViewportView : UserControl
 
         Point position = e.GetPosition(Viewport);
         UpdateToolViewport();
+        SyncHeldModifiers(e.KeyModifiers);
+        ApplyTemporaryHiddenGeometry(tools);
         bool handled = tools.RoutePointer(PointerInputFactory.Create(
             position.X,
             position.Y,
@@ -537,6 +550,11 @@ public partial class ViewportView : UserControl
 
     private void OnToolKeyDown(object? sender, KeyEventArgs e)
     {
+        // Модификаторы отслеживаются и без активного инструмента: Ctrl+Shift —
+        // временный показ скрытой геометрии (R-10).
+        TrackModifierKey(e.Key, down: true);
+        ApplyTemporaryHiddenGeometry(_tools);
+
         if (_tools is not { IsActive: true } tools)
         {
             return;
@@ -559,6 +577,7 @@ public partial class ViewportView : UserControl
             Key.Up => ToolKey.Up,
             Key.Down => ToolKey.Down,
             Key.LeftAlt or Key.RightAlt => ToolKey.Alt,
+            Key.Tab => ToolKey.Tab,
             _ => null,
         };
         if (key is null)
@@ -577,7 +596,72 @@ public partial class ViewportView : UserControl
         }
     }
 
-    private void OnToolKeyUp(object? sender, KeyEventArgs e) => _heldToolKeys.Remove(e.Key);
+    private void OnToolKeyUp(object? sender, KeyEventArgs e)
+    {
+        _heldToolKeys.Remove(e.Key);
+        TrackModifierKey(e.Key, down: false);
+        ApplyTemporaryHiddenGeometry(_tools);
+    }
+
+    private void SyncHeldModifiers(KeyModifiers modifiers)
+    {
+        _ctrlHeld = modifiers.HasFlag(KeyModifiers.Control);
+        _shiftHeld = modifiers.HasFlag(KeyModifiers.Shift);
+    }
+
+    private void TrackModifierKey(Key key, bool down)
+    {
+        switch (key)
+        {
+            case Key.LeftShift or Key.RightShift:
+                _shiftHeld = down;
+                break;
+            case Key.LeftCtrl or Key.RightCtrl:
+                _ctrlHeld = down;
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Удержание Ctrl+Shift временно включает скрытую геометрию в привязках и
+    /// выборе граней; после смены режима привязка под курсором пересчитывается.
+    /// </summary>
+    private void ApplyTemporaryHiddenGeometry(ToolController? tools)
+    {
+        if (tools is null)
+        {
+            return;
+        }
+
+        bool hidden = _ctrlHeld && _shiftHeld;
+        if (tools.Context.TemporaryIncludeHiddenGeometry == hidden)
+        {
+            return;
+        }
+
+        tools.Context.TemporaryIncludeHiddenGeometry = hidden;
+        if (_viewModel is not null)
+        {
+            _viewModel.IsHiddenGeometryPreview = hidden;
+        }
+
+        if (_lastPointerPx is not { } pointer)
+        {
+            return;
+        }
+
+        UpdateToolViewport();
+        tools.RoutePointer(PointerInputFactory.Create(
+            pointer.X,
+            pointer.Y,
+            PointerEventKind.Move,
+            PointerButton.None,
+            _shiftHeld,
+            _ctrlHeld,
+            false));
+        RedrawToolOverlay();
+        UpdateCursorCoordinates();
+    }
 
     private static bool IsRepeatableToolKey(Key key)
         => key is Key.Left or Key.Right or Key.Up or Key.Down or Key.LeftAlt or Key.RightAlt;
@@ -699,7 +783,10 @@ public partial class ViewportView : UserControl
         if (best is not null)
         {
             DrawSnapMarker(best);
-            DrawSnapLabel(best);
+            if (_viewModel?.ShowSnapLabels ?? true)
+            {
+                DrawSnapLabel(best);
+            }
         }
     }
 

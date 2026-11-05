@@ -171,7 +171,7 @@ public sealed class DimensionTool : ToolBase
 
     private bool Click(Vector2d positionPx)
     {
-        InferenceScene scene = Context.BuildInferenceScene();
+        InferenceScene scene = Context.SnapScene;
         bool hasAnchor = _state == DimensionToolState.StartPicked;
         if (!DimensionPickSupport.TryPickPoint(Context, scene, positionPx, hasAnchor ? _start : null, out DimensionPickResult pick))
         {
@@ -278,7 +278,7 @@ public sealed class DimensionTool : ToolBase
 
     private void UpdateCursor(Vector2d positionPx)
     {
-        InferenceScene scene = Context.BuildInferenceScene();
+        InferenceScene scene = Context.SnapScene;
         bool hasAnchor = _state == DimensionToolState.StartPicked;
         if (!DimensionPickSupport.TryPickPoint(Context, scene, positionPx, hasAnchor ? _start : null, out DimensionPickResult pick))
         {

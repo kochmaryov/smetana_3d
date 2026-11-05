@@ -229,6 +229,24 @@ public static class LocalizationKeys
     public const string SnapExtendEdge = "Snap.ExtendEdge";
     public const string SnapFromPoint = "Snap.FromPoint";
 
+    /// <summary>Меню «Вид»: показ скрытой геометрии (R-10).</summary>
+    public const string ViewShowHiddenGeometry = "View.ShowHiddenGeometry";
+
+    /// <summary>Меню «Вид»: привязка к сетке (наше расширение, R-14).</summary>
+    public const string ViewGridSnapping = "View.GridSnapping";
+
+    /// <summary>Меню «Вид»: подменю шага сетки.</summary>
+    public const string ViewGridStep = "View.GridStep";
+
+    /// <summary>Меню «Вид»: привязка длины к точности (аналог Enable Length Snapping).</summary>
+    public const string ViewLengthSnapping = "View.LengthSnapping";
+
+    /// <summary>Меню «Вид»: показывать подписи привязок (R-27).</summary>
+    public const string ViewSnapLabels = "View.SnapLabels";
+
+    /// <summary>Статус-строка: временный показ скрытой геометрии (Ctrl+Shift).</summary>
+    public const string SnapHiddenGeometryOn = "Snap.HiddenGeometryOn";
+
     public const string ViewportCursorCoordinates = "Viewport.CursorCoordinates";
 
     public const string UnitMillimeter = "Unit.Millimeter";

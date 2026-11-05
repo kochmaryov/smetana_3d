@@ -67,4 +67,28 @@ public sealed record SnapResult(IReadOnlyList<SnapCandidate> Candidates)
 
     /// <summary>Лучший кандидат (первый в списке) или <c>null</c>, если привязок нет.</summary>
     public SnapCandidate? Best => Candidates.Count > 0 ? Candidates[0] : null;
+
+    /// <summary>
+    /// Результат с выбранным по индексу кандидатом (перебор Tab): кандидат
+    /// поднимается в начало, порядок остальных сохраняется.
+    /// </summary>
+    public SnapResult WithBest(int index)
+    {
+        if (Candidates.Count <= 1)
+        {
+            return this;
+        }
+
+        int normalized = ((index % Candidates.Count) + Candidates.Count) % Candidates.Count;
+        if (normalized == 0)
+        {
+            return this;
+        }
+
+        List<SnapCandidate> candidates = [.. Candidates];
+        SnapCandidate chosen = candidates[normalized];
+        candidates.RemoveAt(normalized);
+        candidates.Insert(0, chosen);
+        return new SnapResult(candidates);
+    }
 }

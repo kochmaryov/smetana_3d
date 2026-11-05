@@ -190,8 +190,25 @@ public enum SnapMarkerKind
 /// </summary>
 public static class SnapDefaults
 {
-    public const int SnapPointPriority = 950;
-    public const int EndpointPriority = 900;
+    /// <summary>
+    /// Окно антимерцания (R-31): пока кандидат стал лучшим менее 150 мс назад,
+    /// новый кандидат не перехватывает его без веской причины.
+    /// </summary>
+    public const double DwellMs = 150.0;
+
+    /// <summary>Во сколько раз может отъехать курсор, чтобы «свежий» кандидат удержался.</summary>
+    public const double DwellToleranceFactor = 1.5;
+
+    /// <summary>Перехват удержанного кандидата, только если новый ближе на 2 px.</summary>
+    public const double SwitchDistancePx = 2.0;
+
+    /// <summary>
+    /// Насколько новый кандидат должен быть приоритетнее удержанного, чтобы
+    /// перехватить привязку раньше окна антимерцания.
+    /// </summary>
+    public const int HysteresisPriorityDelta = 100;
+
+    public const int SnapPointPriority = 950;    public const int EndpointPriority = 900;
     public const int InstanceOriginPriority = 860;
     public const int OriginPriority = 850;
     public const int IntersectionPriority = 800;

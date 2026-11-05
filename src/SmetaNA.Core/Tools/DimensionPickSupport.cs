@@ -61,7 +61,8 @@ public static class DimensionPickSupport
             Viewport = viewport,
             Scene = scene,
             CursorPx = cursorPx,
-            TolerancePx = TolerancePx,
+            TolerancePx = context.Inference.TolerancePx,
+            Filter = context.Inference.Categories,
             Anchor = anchor,
         });
 

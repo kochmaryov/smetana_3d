@@ -1,3 +1,4 @@
+using SmetaNA.Core.Geometry;
 using SmetaNA.Core.Inference;
 using SmetaNA.Core.Model;
 using SmetaNA.Core.Undo;
@@ -36,6 +37,78 @@ public sealed class ToolContext
     /// <summary>Решатель привязок; <c>null</c> — <see cref="InferenceEngine.Solve"/>.</summary>
     public Func<SnapRequest, SnapResult>? SnapSolver { get; set; }
 
+    private InferenceSettings _inference = InferenceSettings.Default;
+
+    /// <summary>
+    /// Настройки привязок (допуск, сетка, категории, подписи, скрытая геометрия).
+    /// Значения нормализуются при присваивании.
+    /// </summary>
+    public InferenceSettings Inference
+    {
+        get => _inference;
+        set
+        {
+            InferenceSettings normalized = (value ?? InferenceSettings.Default).Normalize();
+            if (_inference == normalized)
+            {
+                return;
+            }
+
+            _inference = normalized;
+            InferenceChanged?.Invoke();
+        }
+    }
+
+    /// <summary>Настройки привязок изменились (UI обновляет оверлей и снимок сцены).</summary>
+    public event Action? InferenceChanged;
+
+    /// <summary>
+    /// Временный показ скрытой геометрии — удержание Ctrl+Shift (R-10). Выставляет UI
+    /// по состоянию клавиш; действует, пока модификатор нажат.
+    /// </summary>
+    public bool TemporaryIncludeHiddenGeometry { get; set; }
+
+    /// <summary>Скрытая геометрия участвует в привязках: постоянный режим или Ctrl+Shift.</summary>
+    public bool IncludeHiddenGeometry => Inference.ShowHiddenGeometry || TemporaryIncludeHiddenGeometry;
+
+    /// <summary>
+    /// Снимок сцены для привязок с учётом показа скрытой геометрии. Все инструменты
+    /// берут снимок отсюда, чтобы режим скрытого действовал одинаково.
+    /// </summary>
+    public InferenceScene SnapScene => BuildInferenceScene(IncludeHiddenGeometry);
+
+    /// <summary>Сетка привязки в плоскости построения; <c>null</c> — сетка выключена.</summary>
+    public SnapGrid? GridFor(DrawingPlane plane)
+    {
+        if (!Inference.GridEnabled)
+        {
+            return null;
+        }
+
+        return new SnapGrid(plane.Origin, plane.U, plane.V, Inference.GridStep)
+        {
+            TolerancePx = InferenceSettings.DefaultGridTolerancePx,
+        };
+    }
+
+    /// <summary>Сетка привязки на плоскости XY через точку (перемещения и размеры).</summary>
+    public SnapGrid? GroundGridAt(Vector3d point)
+    {
+        if (!Inference.GridEnabled)
+        {
+            return null;
+        }
+
+        return new SnapGrid(
+            new Vector3d(0, 0, point.Z),
+            Vector3d.UnitX,
+            Vector3d.UnitY,
+            Inference.GridStep)
+        {
+            TolerancePx = InferenceSettings.DefaultGridTolerancePx,
+        };
+    }
+
     /// <summary>Активная фиксация направления стрелками (переключатель).</summary>
     public SnapModifiers LockModifiers { get; private set; }
 
@@ -63,6 +136,17 @@ public sealed class ToolContext
         SnapInferenceMode.PointsOnly => SnapInferenceMode.ParallelPerpendicularOnly,
         _ => SnapInferenceMode.All,
     };
+
+    /// <summary>
+    /// Модификаторы привязок с учётом фиксации и режима Alt. Ctrl без Shift — только
+    /// точечные привязки; Ctrl+Shift — показ скрытой геометрии (на категории не влияет).
+    /// </summary>
+    public SnapModifiers ResolveSnapModifiers(ToolModifiers modifiers)
+    {
+        bool ctrl = (modifiers & ToolModifiers.Ctrl) != 0;
+        bool shift = (modifiers & ToolModifiers.Shift) != 0;
+        return ResolveSnapModifiers(ctrl && !shift);
+    }
 
     /// <summary>Модификаторы привязок с учётом фиксации и режима Alt; <paramref name="ctrl"/> — только точки.</summary>
     public SnapModifiers ResolveSnapModifiers(bool ctrl = false)
@@ -96,8 +180,21 @@ public sealed class ToolContext
     public SnapResult Snap(SnapRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return (SnapSolver ?? InferenceEngine.Solve)(request);
+        SnapResult result = (SnapSolver ?? InferenceEngine.Solve)(request);
+        return SnapCandidateOffset == 0 ? result : result.WithBest(SnapCandidateOffset);
     }
+
+    /// <summary>
+    /// Выбранный Tab кандидат (0 — лучший по приоритету). Перебор сбрасывается
+    /// движением указателя.
+    /// </summary>
+    public int SnapCandidateOffset { get; private set; }
+
+    /// <summary>Перейти к следующему кандидату (Tab, R-25).</summary>
+    public void CycleSnapCandidate() => SnapCandidateOffset++;
+
+    /// <summary>Сбросить перебор кандидатов (указатель сдвинулся).</summary>
+    public void ResetSnapCandidateOffset() => SnapCandidateOffset = 0;
 
     /// <summary>
     /// Снимок сцены для запросов привязок. Кэшируется: построение снимка — O(числа
@@ -121,6 +218,50 @@ public sealed class ToolContext
         _inferenceSceneWithHidden = null;
     }
 
+    /// <summary>
+    /// Запрос привязок с текущими настройками: снимок сцены (включая скрытую
+    /// геометрию по режиму или Ctrl+Shift), толеранс, категории, сетка и фиксация.
+    /// <c>null</c> — нет вьюпорта (инструмент без UI).
+    /// </summary>
+    /// <param name="cursorPx">Курсор, пиксели вьюпорта.</param>
+    /// <param name="anchor">Опорная точка построения.</param>
+    /// <param name="modifiers">Модификаторы события указателя.</param>
+    /// <param name="locked">Зафиксированный Shift кандидат.</param>
+    /// <param name="grid">Сетка; <c>null</c> — без сетки.</param>
+    /// <param name="scene">Снимок; <c>null</c> — <see cref="SnapScene"/>.</param>
+    public SnapRequest? BuildSnapRequest(
+        Vector2d cursorPx,
+        Vector3d? anchor,
+        ToolModifiers modifiers,
+        SnapCandidate? locked = null,
+        SnapGrid? grid = null,
+        InferenceScene? scene = null,
+        SnapCandidate? previousBest = null,
+        double previousBestAgeMs = -1)
+    {
+        if (Viewport is not { } viewport)
+        {
+            return null;
+        }
+
+        SnapRequest request = new()
+        {
+            Ray = viewport.PickRay(cursorPx),
+            Viewport = viewport,
+            Scene = scene ?? SnapScene,
+            CursorPx = cursorPx,
+            TolerancePx = Inference.TolerancePx,
+            Filter = Inference.Categories,
+            Anchor = anchor,
+            Grid = grid,
+            Modifiers = ResolveSnapModifiers(modifiers),
+            PreviousBest = previousBest,
+            PreviousBestAgeMs = previousBestAgeMs,
+        };
+
+        return locked is { } candidate ? request with { LockedCandidate = candidate } : request;
+    }
+
     /// <summary>Выбрать грань под курсором (пиксели вьюпорта).</summary>
     public bool TryPickFace(Vector2d cursorPx, out ToolFaceHit hit)
     {
@@ -130,7 +271,7 @@ public sealed class ToolContext
             return false;
         }
 
-        return SceneFacePicker.TryPick(Scene, viewport.PickRay(cursorPx), out hit);
+        return SceneFacePicker.TryPick(Scene, viewport.PickRay(cursorPx), out hit, includeHidden: IncludeHiddenGeometry);
     }
 
     /// <summary>Выполнить команду редактирования (в стек истории) и оповестить UI.</summary>

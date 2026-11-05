@@ -278,4 +278,28 @@ public sealed class InferenceScene
 
     /// <summary>Начала координат групп и инстансов компонентов.</summary>
     public IReadOnlyList<SnapInstanceOrigin> InstanceOrigins => _instanceOrigins;
+
+    /// <summary>
+    /// Копия снимка с добавленными сущностями строящейся фигуры (рёбра, окружности).
+    /// Середины дуг и начала координат контейнеров сохраняются — новый
+    /// <see cref="InferenceScene"/> собирайте только через этот метод.
+    /// </summary>
+    public InferenceScene WithExtra(
+        IEnumerable<SnapSegment>? extraSegments = null,
+        IEnumerable<SnapCircle>? extraCircles = null)
+    {
+        List<SnapSegment> segments = [.. _segments];
+        if (extraSegments is not null)
+        {
+            segments.AddRange(extraSegments);
+        }
+
+        List<SnapCircle> circles = [.. _circles];
+        if (extraCircles is not null)
+        {
+            circles.AddRange(extraCircles);
+        }
+
+        return new InferenceScene(segments, _faces, circles, _arcPoints, _instanceOrigins);
+    }
 }

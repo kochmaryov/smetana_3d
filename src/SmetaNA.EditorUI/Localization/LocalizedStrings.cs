@@ -175,6 +175,24 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     public string ViewportZoomExtents => _localization.Get(LocalizationKeys.ViewportZoomExtents);
     public string ViewportShowGrid => _localization.Get(LocalizationKeys.ViewportShowGrid);
     public string ViewportShowAxes => _localization.Get(LocalizationKeys.ViewportShowAxes);
+
+    /// <summary>Пункт меню «Показать скрытую геометрию».</summary>
+    public string ViewShowHiddenGeometry => _localization.Get(LocalizationKeys.ViewShowHiddenGeometry);
+
+    /// <summary>Пункт меню «Привязка к сетке».</summary>
+    public string ViewGridSnapping => _localization.Get(LocalizationKeys.ViewGridSnapping);
+
+    /// <summary>Подменю «Шаг сетки».</summary>
+    public string ViewGridStep => _localization.Get(LocalizationKeys.ViewGridStep);
+
+    /// <summary>Пункт меню «Привязка длины к точности».</summary>
+    public string ViewLengthSnapping => _localization.Get(LocalizationKeys.ViewLengthSnapping);
+
+    /// <summary>Пункт меню «Показывать подписи привязок».</summary>
+    public string ViewSnapLabels => _localization.Get(LocalizationKeys.ViewSnapLabels);
+
+    /// <summary>Индикатор временного показа скрытой геометрии.</summary>
+    public string SnapHiddenGeometryOn => _localization.Get(LocalizationKeys.SnapHiddenGeometryOn);
     public string ViewportUnitLabel => _localization.Get(LocalizationKeys.ViewportUnitLabel);
     public string ViewportHudStats => _localization.Get(LocalizationKeys.ViewportHudStats);
     public string ViewportHudUnits => _localization.Get(LocalizationKeys.ViewportHudUnits);

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using SmetaNA.Core.Geometry;
 using SmetaNA.Core.Inference;
 
@@ -14,6 +15,8 @@ public abstract class ToolBase : ITool
     private ToolPreview _preview = ToolPreview.Empty;
     private SnapResult _snap = SnapResult.Empty;
     private ToolVcbState _vcb = ToolVcbState.Inactive;
+    private long _snapBestSince;
+    private SnapType? _snapBestType;
 
     public abstract string Id { get; }
 
@@ -98,8 +101,23 @@ public abstract class ToolBase : ITool
     protected void SetSnap(SnapResult snap)
     {
         ArgumentNullException.ThrowIfNull(snap);
+        SnapType? type = snap.Best?.Type;
+        if (type != _snapBestType)
+        {
+            _snapBestType = type;
+            _snapBestSince = Stopwatch.GetTimestamp();
+        }
+
         _snap = snap;
     }
+
+    /// <summary>
+    /// Сколько миллисекунд лучший кандидат остаётся лучшим; отрицательное значение —
+    /// кандидата нет, гистерезис не применяется (R-31).
+    /// </summary>
+    protected double SnapBestAgeMs => _snapBestType is null || _snapBestSince == 0
+        ? -1
+        : (Stopwatch.GetTimestamp() - _snapBestSince) * 1000.0 / Stopwatch.Frequency;
 
     protected void SetVcb(ToolValueKind kind, double? value, bool isActive)
     {

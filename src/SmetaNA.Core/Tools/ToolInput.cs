@@ -75,6 +75,9 @@ public enum ToolKey
 
     /// <summary>Alt — цикл режимов линейных привязок.</summary>
     Alt,
+
+    /// <summary>Tab — следующий кандидат привязки при нескольких (R-25).</summary>
+    Tab,
 }
 
 /// <summary>Событие клавиши с модификаторами.</summary>

@@ -112,6 +112,27 @@ public sealed partial class GlViewportControl : OpenGlControlBase
 
     public bool ShowAxes { get; set; } = true;
 
+    private bool _includeHidden;
+
+    /// <summary>
+    /// Показывать скрытую геометрию (режим «Показать скрытую геометрию», R-10).
+    /// Смена перестраивает модель сцены.
+    /// </summary>
+    public bool IncludeHidden
+    {
+        get => _includeHidden;
+        set
+        {
+            if (_includeHidden == value)
+            {
+                return;
+            }
+
+            _includeHidden = value;
+            RefreshScene();
+        }
+    }
+
     /// <summary>Батч размеров/меток (M4) для оверлея вьюпорта; null — не рисуются.</summary>
     public Annotations.DimensionBatch? AnnotationBatch { get; set; }
 
@@ -155,7 +176,7 @@ public sealed partial class GlViewportControl : OpenGlControlBase
     /// </summary>
     public void RefreshScene()
     {
-        SceneRenderModel? model = _scene is null ? null : SceneRenderModel.Build(_scene);
+        SceneRenderModel? model = _scene is null ? null : SceneRenderModel.Build(_scene, _includeHidden);
         _model = model;
         _batch = model is null ? null : SceneBatcher.Build(model.Objects);
 

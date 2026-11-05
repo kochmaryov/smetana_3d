@@ -47,6 +47,26 @@
             <MenuItem Header="{Binding Strings.MenuView}">
               <MenuItem Header="{Binding Strings.CommandToggleTheme}" Command="{Binding ThemeToggleCommand}" />
               <MenuItem Header="{Binding ToolLayoutMenuLabel}" Command="{Binding OpenToolLayoutCommand}" />
+              <Separator />
+              <MenuItem Header="{Binding Strings.ViewShowHiddenGeometry}"
+                        IsEnabled="{Binding HasProjects}"
+                        ToggleType="CheckBox"
+                        IsChecked="{Binding SelectedProject.ShowHiddenGeometry, Mode=TwoWay}" />
+              <MenuItem Header="{Binding Strings.ViewGridSnapping}"
+                        IsEnabled="{Binding HasProjects}"
+                        ToggleType="CheckBox"
+                        IsChecked="{Binding SelectedProject.GridSnapping, Mode=TwoWay}" />
+              <MenuItem Header="{Binding SelectedProject.GridStepMenuLabel}"
+                        IsEnabled="{Binding HasProjects}"
+                        Command="{Binding SelectedProject.CycleGridStepCommand}" />
+              <MenuItem Header="{Binding Strings.ViewLengthSnapping}"
+                        IsEnabled="{Binding HasProjects}"
+                        ToggleType="CheckBox"
+                        IsChecked="{Binding SelectedProject.LengthSnapping, Mode=TwoWay}" />
+              <MenuItem Header="{Binding Strings.ViewSnapLabels}"
+                        IsEnabled="{Binding HasProjects}"
+                        ToggleType="CheckBox"
+                        IsChecked="{Binding SelectedProject.ShowSnapLabels, Mode=TwoWay}" />
             </MenuItem>
             <MenuItem Header="{Binding Strings.MenuHelp}">
               <MenuItem Header="{Binding Strings.TutorialStart}" Command="{Binding Tutorial.StartCommand}" />
@@ -164,7 +184,7 @@
             BorderThickness="0,1,0,0"
             Background="{DynamicResource ThemeControlBackgroundSecondary}"
             Padding="8,3">
-      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto">
         <vcb:VcbControl Prompt="{Binding VcbPrompt}"
                         PlaceholderText="{Binding Strings.VcbWatermark}"
                         Kind="{Binding VcbKind}"
@@ -176,8 +196,19 @@
                    VerticalAlignment="Center"
                    Margin="12,0"
                    TextTrimming="CharacterEllipsis" />
+        <!-- Временный показ скрытой геометрии (удержание Ctrl+Shift) -->
+        <Border Grid.Column="2"
+                IsVisible="{Binding SelectedProject.IsHiddenGeometryPreview}"
+                Background="{DynamicResource ThemeAccentSoftBrush}"
+                CornerRadius="3"
+                Padding="4,1"
+                Margin="8,0"
+                VerticalAlignment="Center">
+          <TextBlock Text="{Binding Strings.SnapHiddenGeometryOn}"
+                     FontSize="11" />
+        </Border>
         <!-- Координаты точки привязки под курсором -->
-        <TextBlock Grid.Column="2"
+        <TextBlock Grid.Column="3"
                    Text="{Binding SelectedProject.CursorCoordinates}"
                    IsVisible="{Binding SelectedProject.HasCursorCoordinates}"
                    VerticalAlignment="Center"
@@ -186,7 +217,7 @@
                    FontFamily="Consolas, Menlo, monospace"
                    Opacity="0.8" />
         <!-- Подсказка управления камерой -->
-        <TextBlock Grid.Column="3"
+        <TextBlock Grid.Column="4"
                    Text="{Binding Strings.ViewportCameraHint}"
                    VerticalAlignment="Center"
                    Margin="8,0"
@@ -194,7 +225,7 @@
                    Opacity="0.6"
                    TextTrimming="CharacterEllipsis" />
         <!-- Единицы активной вкладки -->
-        <ComboBox Grid.Column="4"
+        <ComboBox Grid.Column="5"
                   Width="110"
                   Margin="8,0,0,0"
                   VerticalAlignment="Center"
