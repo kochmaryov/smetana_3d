@@ -1,5 +1,6 @@
 using System.Globalization;
 using SmetaNA.Core.Geometry;
+using SmetaNA.Core.Inference;
 using SmetaNA.Core.Model;
 using SmetaNA.EditorUI.Localization;
 using SmetaNA.EditorUI.ViewModels;
@@ -43,6 +44,27 @@ public sealed class ProjectTabViewModelTests
 
         Assert.False(viewModel.HasCursorCoordinates);
         Assert.Equal(string.Empty, viewModel.CursorCoordinates);
+    }
+
+    [Fact]
+    public void SetCursorPoint_FormatsDeltaFromAnchor()
+    {
+        var scene = new Scene { Unit = LengthUnit.Millimeter };
+        ProjectTabViewModel viewModel = CreateViewModel(scene);
+
+        viewModel.SetCursorPoint(new Vector3d(20, 30, 5));
+        Assert.False(viewModel.HasCursorDelta);
+
+        // опорную точку запоминает контекст при построении запроса привязок
+        viewModel.Tools.Context.Viewport = InferenceViewport.CreatePerspective(
+            new Vector3d(0, 0, 100), new Vector3d(0, 0, -1), new Vector3d(0, 1, 0), Math.PI / 3, 800, 600);
+        viewModel.Tools.Context.BuildSnapRequest(new Vector2d(400, 300), new Vector3d(10, 10, 5), default);
+
+        viewModel.SetCursorPoint(new Vector3d(20, 30, 5));
+
+        Assert.True(viewModel.HasCursorDelta);
+        Assert.Contains("10", viewModel.CursorDelta);
+        Assert.Contains("20", viewModel.CursorDelta);
     }
 
     [Fact]

@@ -840,4 +840,7 @@
   <data name="Viewport.CursorCoordinates" xml:space="preserve">
     <value>Координаты: X {0}   Y {1}   Z {2} {3}</value>
   </data>
+  <data name="Viewport.CursorDelta" xml:space="preserve">
+    <value>Δ: {0}; {1}; {2} {3}</value>
+  </data>
 </root>

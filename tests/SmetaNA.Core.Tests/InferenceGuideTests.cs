@@ -79,7 +79,7 @@ public sealed class InferenceGuideTests
         Assert.NotNull(result.Best);
         Assert.Equal(SnapType.Guide, result.Best!.Type);
         InferenceAssert.PointEqual(new Vector3d(15, 10, 0), result.Best.Point);
-        Assert.Equal(SnapMarkerKind.Dot, result.Best.Marker);
+        Assert.Equal(SnapMarkerKind.Diamond, result.Best.Marker);
     }
 
     [Fact]

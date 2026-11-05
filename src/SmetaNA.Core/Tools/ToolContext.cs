@@ -332,8 +332,15 @@ public sealed class ToolContext
             PreviousBestAgeMs = previousBestAgeMs,
         };
 
+        LastSnapAnchor = anchor;
         return locked is { } candidate ? request with { LockedCandidate = candidate } : request;
     }
+
+    /// <summary>
+    /// Опорная точка последнего запроса привязок: от неё считается Δ в
+    /// координатной строке (R-15/R-30).
+    /// </summary>
+    public Vector3d? LastSnapAnchor { get; private set; }
 
     /// <summary>Выбрать грань под курсором (пиксели вьюпорта).</summary>
     public bool TryPickFace(Vector2d cursorPx, out ToolFaceHit hit)

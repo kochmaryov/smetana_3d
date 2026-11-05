@@ -33,7 +33,7 @@ public sealed class InferenceEngineEntitySnapTests
         Assert.InRange(result.Best.Point.X, 14.9, 15.1);
         InferenceAssert.DirectionEqual(new Vector3d(1, 0, 0), result.Best.Direction!.Value);
         Assert.Equal(1, result.Best.DegreesOfFreedom);
-        Assert.Equal(SnapMarkerKind.Dot, result.Best.Marker);
+        Assert.Equal(SnapMarkerKind.Square, result.Best.Marker);
         Assert.Equal(SnapEntityKind.Edge, result.Best.Entity.Kind);
     }
 

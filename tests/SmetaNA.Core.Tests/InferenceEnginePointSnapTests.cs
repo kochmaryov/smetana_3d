@@ -27,7 +27,7 @@ public sealed class InferenceEnginePointSnapTests
         Assert.NotNull(result.Best);
         Assert.Equal(SnapType.Endpoint, result.Best!.Type);
         InferenceAssert.PointEqual(corner, result.Best.Point);
-        Assert.Equal(SnapMarkerKind.Cube, result.Best.Marker);
+        Assert.Equal(SnapMarkerKind.Circle, result.Best.Marker);
         Assert.Equal(1.0, result.Best.Confidence, 6);
     }
 

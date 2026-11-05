@@ -124,6 +124,9 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
     /// <summary>Шаблон координатной строки: X, Y, Z и единица.</summary>
     public string CursorCoordinatesTemplate => _localization.Get(LocalizationKeys.ViewportCursorCoordinates);
 
+    /// <summary>Шаблон строки приращения от опорной точки: ΔX, ΔY, ΔZ и единица.</summary>
+    public string CursorDeltaTemplate => _localization.Get(LocalizationKeys.ViewportCursorDelta);
+
     public string UnitMillimeter => _localization.Get(LocalizationKeys.UnitMillimeter);
     public string UnitCentimeter => _localization.Get(LocalizationKeys.UnitCentimeter);
     public string UnitMeter => _localization.Get(LocalizationKeys.UnitMeter);

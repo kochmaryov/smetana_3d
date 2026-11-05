@@ -53,6 +53,9 @@ public static class InferenceEngine
         /// <summary>Потолок рёбер-кандидатов «на ребре» и продолжений на один запрос.</summary>
         private const int MaxEdgeCandidates = 8;
 
+        /// <summary>Потолок граней, проверяемых на пересечение с рёбрами рядом с курсором.</summary>
+        private const int MaxIntersectionFaces = 64;
+
         /// <summary>Потолок направлений выравнивания от точки.</summary>
         private const int MaxFromPointDirections = 12;
 
@@ -459,6 +462,72 @@ public static class InferenceEngine
                     }
                 }
             }
+
+            CollectSegmentFaceIntersections(segments);
+        }
+
+        /// <summary>
+        /// Пересечение ребра с гранью (R-6): ребро пересекает плоскость грани внутри её
+        /// контура. Пары отсекаются экранными bbox, поэтому стоимость линейна по числу
+        /// сегментов рядом с курсором и граней вблизи него.
+        /// </summary>
+        private void CollectSegmentFaceIntersections(List<SnapSegment> segments)
+        {
+            if (segments.Count == 0)
+            {
+                return;
+            }
+
+            List<SnapFace> faces = new();
+            foreach (SnapFace face in _request.Scene.Faces)
+            {
+                if (IsProjectedFaceNearCursor(face))
+                {
+                    faces.Add(face);
+                    if (faces.Count >= MaxIntersectionFaces)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            foreach (SnapFace face in faces)
+            {
+                double tolerance = WorldTolerance(face.Centroid);
+                foreach (SnapSegment segment in segments)
+                {
+                    if (!SegmentFaceBoundsOverlap(segment, face, tolerance))
+                    {
+                        continue;
+                    }
+
+                    double denominator = Vector3d.Dot(segment.Direction, face.Normal);
+                    if (Math.Abs(denominator) <= 1e-12)
+                    {
+                        continue;
+                    }
+
+                    double t = Vector3d.Dot(face.Centroid - segment.Start, face.Normal) / denominator;
+                    if (t <= 0 || t >= segment.Length)
+                    {
+                        continue;
+                    }
+
+                    Vector3d point = segment.Start + segment.Direction * t;
+                    Vector3d fromCentroid = point - face.Centroid;
+                    if (fromCentroid.LengthSquared() > face.BoundingRadius * face.BoundingRadius)
+                    {
+                        continue;
+                    }
+
+                    if (!face.Contains(point, tolerance) || !IsWithinSnapRadius(point))
+                    {
+                        continue;
+                    }
+
+                    TryAddPoint(SnapType.Intersection, point, entity: face.Entity);
+                }
+            }
         }
 
         private void CollectLinearCandidates()
@@ -685,7 +754,7 @@ public static class InferenceEngine
                     point,
                     Confidence(screenDistance),
                     SnapDefaults.OnEdgePriority,
-                    SnapMarkerKind.Dot)
+                    SnapMarkerKind.Square)
                 {
                     Direction = withDirection ? segment.Direction : null,
                     Entity = segment.Entity,
@@ -947,7 +1016,7 @@ public static class InferenceEngine
                 point,
                 InferenceMath.Clamp01(1.0 - (screenDistance / grid.TolerancePx)),
                 SnapDefaults.GridPriority,
-                SnapMarkerKind.Dot)
+                SnapMarkerKind.Cross)
             {
                 Entity = new SnapEntityRef(null, SnapEntityKind.Grid, null, null),
                 DegreesOfFreedom = 2,
@@ -1375,7 +1444,31 @@ public static class InferenceEngine
                 && Math.Min(b.Start.Z, b.End.Z) - tolerance <= Math.Max(a.Start.Z, a.End.Z);
         }
 
-        private static bool SharesEndpoint(SnapSegment a, SnapSegment b)        {
+        /// <summary>
+        /// Отсев «ребро × грань» по AABB с запасом допуска: точка пересечения лежит
+        /// внутри проекции грани, поэтому разделённые bbox сразу отбрасываются.
+        /// </summary>
+        private static bool SegmentFaceBoundsOverlap(SnapSegment segment, SnapFace face, double tolerance)
+        {
+            Vector3d min = face.Ring[0];
+            Vector3d max = face.Ring[0];
+            for (int i = 1; i < face.Ring.Count; i++)
+            {
+                Vector3d vertex = face.Ring[i];
+                min = new Vector3d(Math.Min(min.X, vertex.X), Math.Min(min.Y, vertex.Y), Math.Min(min.Z, vertex.Z));
+                max = new Vector3d(Math.Max(max.X, vertex.X), Math.Max(max.Y, vertex.Y), Math.Max(max.Z, vertex.Z));
+            }
+
+            return Math.Min(segment.Start.X, segment.End.X) - tolerance <= max.X
+                && Math.Max(segment.Start.X, segment.End.X) + tolerance >= min.X
+                && Math.Min(segment.Start.Y, segment.End.Y) - tolerance <= max.Y
+                && Math.Max(segment.Start.Y, segment.End.Y) + tolerance >= min.Y
+                && Math.Min(segment.Start.Z, segment.End.Z) - tolerance <= max.Z
+                && Math.Max(segment.Start.Z, segment.End.Z) + tolerance >= min.Z;
+        }
+
+        private static bool SharesEndpoint(SnapSegment a, SnapSegment b)
+        {
             const double epsilonSquared = 1e-18;
             return (a.Start - b.Start).LengthSquared() <= epsilonSquared
                 || (a.Start - b.End).LengthSquared() <= epsilonSquared

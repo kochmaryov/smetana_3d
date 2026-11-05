@@ -190,7 +190,7 @@
             BorderThickness="0,1,0,0"
             Background="{DynamicResource ThemeControlBackgroundSecondary}"
             Padding="8,3">
-      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto,Auto">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
         <vcb:VcbControl Prompt="{Binding VcbPrompt}"
                         PlaceholderText="{Binding Strings.VcbWatermark}"
                         Kind="{Binding VcbKind}"
@@ -233,8 +233,17 @@
                    MinWidth="200"
                    FontFamily="Consolas, Menlo, monospace"
                    Opacity="0.8" />
+        <!-- Приращение от опорной точки (R-15/R-30) -->
+        <TextBlock Grid.Column="5"
+                   Text="{Binding SelectedProject.CursorDelta}"
+                   IsVisible="{Binding SelectedProject.HasCursorDelta}"
+                   VerticalAlignment="Center"
+                   Margin="8,0"
+                   MinWidth="150"
+                   FontFamily="Consolas, Menlo, monospace"
+                   Opacity="0.7" />
         <!-- Пространство координат ввода: мир/локально (R-16, S14) -->
-        <Button Grid.Column="5"
+        <Button Grid.Column="6"
                 Content="{Binding SelectedProject.CoordinateSpaceText}"
                 ToolTip.Tip="{Binding Strings.CoordinateSpaceToggle}"
                 Command="{Binding SelectedProject.ToggleCoordinateSpaceCommand}"
@@ -243,7 +252,7 @@
                 Margin="8,0"
                 VerticalAlignment="Center" />
         <!-- Подсказка управления камерой -->
-        <TextBlock Grid.Column="6"
+        <TextBlock Grid.Column="7"
                    Text="{Binding Strings.ViewportCameraHint}"
                    VerticalAlignment="Center"
                    Margin="8,0"
@@ -251,7 +260,7 @@
                    Opacity="0.6"
                    TextTrimming="CharacterEllipsis" />
         <!-- Единицы активной вкладки -->
-        <ComboBox Grid.Column="7"
+        <ComboBox Grid.Column="8"
                   Width="110"
                   Margin="8,0,0,0"
                   VerticalAlignment="Center"

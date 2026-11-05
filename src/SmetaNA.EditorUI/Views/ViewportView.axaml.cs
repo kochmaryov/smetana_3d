@@ -919,6 +919,7 @@ public partial class ViewportView : UserControl
         switch (candidate.Marker)
         {
             case SnapMarkerKind.Cube:
+            case SnapMarkerKind.Square:
                 var square = new Rectangle
                 {
                     Width = 10,
@@ -930,6 +931,23 @@ public partial class ViewportView : UserControl
                 ToolOverlay.Children.Add(square);
                 Canvas.SetLeft(square, pixel.X - 5);
                 Canvas.SetTop(square, pixel.Y - 5);
+                break;
+
+            case SnapMarkerKind.Diamond:
+                var diamond = new Polygon
+                {
+                    Points = new Points
+                    {
+                        new Point(pixel.X, pixel.Y - 7),
+                        new Point(pixel.X + 7, pixel.Y),
+                        new Point(pixel.X, pixel.Y + 7),
+                        new Point(pixel.X - 7, pixel.Y),
+                    },
+                    Stroke = stroke,
+                    StrokeThickness = 2,
+                    Fill = Brushes.Transparent,
+                };
+                ToolOverlay.Children.Add(diamond);
                 break;
 
             case SnapMarkerKind.Circle:
@@ -1165,7 +1183,9 @@ public partial class ViewportView : UserControl
         SnapType.Intersection => Color.FromRgb(255, 82, 82),
         SnapType.OnFace => Color.FromRgb(66, 165, 245),
         SnapType.OnEdge => Color.FromRgb(239, 83, 80),
-        SnapType.Origin or SnapType.InstanceOrigin or SnapType.SnapPoint => Color.FromRgb(0, 229, 255),
+        SnapType.Origin => Color.FromRgb(120, 144, 156),
+        SnapType.InstanceOrigin => Color.FromRgb(41, 182, 246),
+        SnapType.SnapPoint => Color.FromRgb(0, 229, 255),
         SnapType.AxisX or SnapType.AxisInstanceX => Color.FromRgb(229, 57, 53),
         SnapType.AxisY or SnapType.AxisInstanceY => Color.FromRgb(67, 160, 71),
         SnapType.AxisZ or SnapType.AxisInstanceZ => Color.FromRgb(30, 136, 229),

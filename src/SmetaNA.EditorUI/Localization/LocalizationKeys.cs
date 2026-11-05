@@ -306,6 +306,9 @@ public static class LocalizationKeys
 
     public const string ViewportCursorCoordinates = "Viewport.CursorCoordinates";
 
+    /// <summary>Шаблон строки Δ от опорной точки (R-15/R-30).</summary>
+    public const string ViewportCursorDelta = "Viewport.CursorDelta";
+
     public const string UnitMillimeter = "Unit.Millimeter";
     public const string UnitCentimeter = "Unit.Centimeter";
     public const string UnitMeter = "Unit.Meter";

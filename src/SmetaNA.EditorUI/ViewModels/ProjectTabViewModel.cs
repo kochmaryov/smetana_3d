@@ -31,6 +31,7 @@ public sealed class ProjectTabViewModel : ViewModelBase
     private bool _isHiddenGeometryPreview;
     private bool _isOrthographic;
     private string _cursorCoordinates = string.Empty;
+    private string _cursorDelta = string.Empty;
 
     public ProjectTabViewModel(
         ILocalizationService localization,
@@ -383,26 +384,50 @@ public sealed class ProjectTabViewModel : ViewModelBase
 
     public bool HasCursorCoordinates => _cursorCoordinates.Length > 0;
 
+    /// <summary>
+    /// ΔX/ΔY/ΔZ от опорной точки построения (R-15/R-30); пусто — опорной точки нет.
+    /// </summary>
+    public string CursorDelta
+    {
+        get => _cursorDelta;
+        private set => SetField(ref _cursorDelta, value);
+    }
+
+    public bool HasCursorDelta => _cursorDelta.Length > 0;
+
     /// <summary>Обновить координатную строку по точке привязки (мировые координаты, мм).</summary>
     public void SetCursorPoint(Vector3d? point)
     {
         if (point is Vector3d world)
         {
             double scale = Scene.Unit.ToMillimeters();
+            string unit = _localization.Get(LocalizationKeys.ForUnit(Scene.Unit));
             CursorCoordinates = string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.CursorCoordinatesTemplate,
                 FormatCoordinate(world.X / scale),
                 FormatCoordinate(world.Y / scale),
                 FormatCoordinate(world.Z / scale),
-                _localization.Get(LocalizationKeys.ForUnit(Scene.Unit)));
+                unit);
+
+            CursorDelta = Tools.Context.LastSnapAnchor is { } anchor
+                ? string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.CursorDeltaTemplate,
+                    FormatCoordinate((world.X - anchor.X) / scale),
+                    FormatCoordinate((world.Y - anchor.Y) / scale),
+                    FormatCoordinate((world.Z - anchor.Z) / scale),
+                    unit)
+                : string.Empty;
         }
         else
         {
             CursorCoordinates = string.Empty;
+            CursorDelta = string.Empty;
         }
 
         OnPropertyChanged(nameof(HasCursorCoordinates));
+        OnPropertyChanged(nameof(HasCursorDelta));
     }
 
     private static string FormatCoordinate(double value) => value.ToString("0.##", CultureInfo.CurrentCulture);

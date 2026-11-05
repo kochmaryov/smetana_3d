@@ -167,8 +167,14 @@ public enum SnapMarkerKind
     /// <summary>Окружность — середина, центр, касательная.</summary>
     Circle,
 
-    /// <summary>Крест — пересечение.</summary>
+    /// <summary>Крест — пересечение, узел сетки.</summary>
     Cross,
+
+    /// <summary>Ромб — точка на грани и на направляющей.</summary>
+    Diamond,
+
+    /// <summary>Квадрат — точка на ребре.</summary>
+    Square,
 
     /// <summary>Точка — точка на грани/направляющей.</summary>
     Dot,
@@ -293,12 +299,13 @@ public static class SnapDefaults
     public static SnapMarkerKind MarkerOf(SnapType type) => type switch
     {
         SnapType.Origin or SnapType.InstanceOrigin or SnapType.SnapPoint => SnapMarkerKind.Ring,
-        SnapType.Endpoint => SnapMarkerKind.Cube,
+        SnapType.Endpoint => SnapMarkerKind.Circle,
         SnapType.Midpoint or SnapType.ArcMidpoint or SnapType.Center
             or SnapType.Tangent or SnapType.TangentAtVertex => SnapMarkerKind.Circle,
-        SnapType.Intersection => SnapMarkerKind.Cross,
-        SnapType.OnFace or SnapType.Guide or SnapType.GuidePoint
-            or SnapType.OnEdge or SnapType.Grid => SnapMarkerKind.Dot,
+        SnapType.Intersection or SnapType.Grid => SnapMarkerKind.Cross,
+        SnapType.OnFace or SnapType.GuidePoint => SnapMarkerKind.Diamond,
+        SnapType.Guide => SnapMarkerKind.Diamond,
+        SnapType.OnEdge => SnapMarkerKind.Square,
         _ => SnapMarkerKind.Line,
     };
 }
