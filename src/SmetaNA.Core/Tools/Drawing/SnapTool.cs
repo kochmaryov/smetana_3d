@@ -29,6 +29,7 @@ public sealed class SnapTool : DrawingToolBase
     private Vector3d? _position;
     private SceneNode? _parent;
     private Vector3d? _cursor;
+    private SnapNode? _editing;
 
     public override string Id => ToolId;
 
@@ -81,12 +82,15 @@ public sealed class SnapTool : DrawingToolBase
             case ToolKey.Enter:
                 if (_position is { } center)
                 {
-                    AddSnap(center, DefaultDirection);
+                    FinishStep(center, DefaultDirection);
                     ResetStep();
                     return true;
                 }
 
                 return false;
+
+            case ToolKey.Delete:
+                return DeleteHoveredSnap();
 
             default:
                 return false;
@@ -100,11 +104,19 @@ public sealed class SnapTool : DrawingToolBase
     /// <summary>Нормаль диска по умолчанию — синяя ось мира.</summary>
     public static Vector3d DefaultDirection => Vector3d.UnitZ;
 
+    /// <summary>Snap, ориентация которого правится (<c>null</c> — создаётся новый).</summary>
+    public SnapNode? EditingSnap => _editing;
+
     private bool OnLeftPress(Vector2d positionPx, ToolModifiers modifiers)
     {
         Vector3d point = ResolvePoint(positionPx, _position, modifiers);
         if (_position is not { } center)
         {
+            if (TryBeginEdit())
+            {
+                return true;
+            }
+
             _position = point;
             _parent = ResolveParent(positionPx);
             _cursor = point;
@@ -112,8 +124,14 @@ public sealed class SnapTool : DrawingToolBase
             return true;
         }
 
+        // Alt при выборе ориентации переворачивает диск (как в режиме правки Snap'ов).
         Vector3d direction = point - center;
-        AddSnap(
+        if ((modifiers & ToolModifiers.Alt) != 0)
+        {
+            direction = -direction;
+        }
+
+        FinishStep(
             center,
             direction.LengthSquared() > MinSegmentLengthMm * MinSegmentLengthMm
                 ? direction
@@ -121,6 +139,75 @@ public sealed class SnapTool : DrawingToolBase
         ResetStep();
         return true;
     }
+
+    /// <summary>
+    /// Клик по существующему snap'у не создаёт новый диск, а начинает правку его
+    /// ориентации: позиция берётся из узла, второй клик применяет кадр с undo.
+    /// </summary>
+    private bool TryBeginEdit()
+    {
+        if (CurrentSnap.Best?.Entity is not { Kind: SnapEntityKind.UserSnap, NodeId: { } nodeId })
+        {
+            return false;
+        }
+
+        if (FindSnap(nodeId) is not { } snap)
+        {
+            return false;
+        }
+
+        _editing = snap;
+        _position = snap.WorldFrame(snap.WorldTransform()).Position;
+        _parent = snap.Parent;
+        _cursor = _position;
+        UpdatePreview();
+        return true;
+    }
+
+    private void FinishStep(Vector3d center, Vector3d direction)
+    {
+        if (_editing is { } snap)
+        {
+            ApplyEditedFrame(snap, center, direction);
+            return;
+        }
+
+        AddSnap(center, direction);
+    }
+
+    private void ApplyEditedFrame(SnapNode snap, Vector3d center, Vector3d direction)
+    {
+        Vector3d up = Math.Abs(Vector3d.Dot(direction.Normalized(), Vector3d.UnitZ)) > 0.999
+            ? Vector3d.UnitY
+            : Vector3d.UnitZ;
+
+        if (!SnapFrame.TryCreate(center, direction, up, out SnapFrame worldFrame)
+            || !TransformInverter.TryInvert(snap.WorldTransform(), out Transform3d worldToLocal))
+        {
+            return;
+        }
+
+        Context.Execute(new SetSnapFrameCommand(snap, worldFrame.Transformed(worldToLocal)));
+    }
+
+    /// <summary>Удалить snap под курсором (одна запись истории); <c>false</c> — под курсором не snap.</summary>
+    private bool DeleteHoveredSnap()
+    {
+        if (_position is not null
+            || CurrentSnap.Best?.Entity is not { Kind: SnapEntityKind.UserSnap, NodeId: { } nodeId }
+            || FindSnap(nodeId) is not { } snap)
+        {
+            return false;
+        }
+
+        Context.Execute(new RemoveNodeCommand(snap));
+        SetSnap(SnapResult.Empty);
+        return true;
+    }
+
+    private SnapNode? FindSnap(Guid nodeId)
+        => SnapQuery.FindInScene(Context.Scene, includeHidden: true)
+            .FirstOrDefault(snap => snap.Id == nodeId);
 
     /// <summary>Контейнер нового snap'а: родитель узла грани под курсором или корень сцены.</summary>
     private SceneNode ResolveParent(Vector2d positionPx)
@@ -148,6 +235,7 @@ public sealed class SnapTool : DrawingToolBase
         _position = null;
         _parent = null;
         _cursor = null;
+        _editing = null;
         SetPreview(ToolPreview.Empty);
     }
 

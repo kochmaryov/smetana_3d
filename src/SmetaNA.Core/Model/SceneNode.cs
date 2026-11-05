@@ -21,6 +21,18 @@ public abstract class SceneNode
     public SceneNode? Parent { get; private set; }
     public IReadOnlyList<SceneNode> Children => _children;
 
+    /// <summary>Мировая трансформация узла: локальные трансформации предков сверху вниз.</summary>
+    public Transform3d WorldTransform()
+    {
+        Transform3d world = LocalTransform;
+        for (SceneNode? parent = Parent; parent is not null; parent = parent.Parent)
+        {
+            world = Transform3d.Multiply(world, parent.LocalTransform);
+        }
+
+        return world;
+    }
+
     public void AddChild(SceneNode child) => InsertChild(_children.Count, child);
 
     /// <summary>Вставка потомка в указанную позицию списка детей (нужно командам undo).</summary>

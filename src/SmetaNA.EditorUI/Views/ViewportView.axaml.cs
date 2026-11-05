@@ -43,6 +43,13 @@ public partial class ViewportView : UserControl
     private Point? _toolRightPress;
     private bool _ctrlHeld;
     private bool _shiftHeld;
+    private bool _altHeld;
+
+    /// <summary>Радиус «tractor beam»: насколько близко к курсору snap подсвечивается, пикселей.</summary>
+    private const double TractorBeamRadiusPx = 80.0;
+
+    /// <summary>Длина осей кадра в предпросмотре ориентации, мировых единиц.</summary>
+    private const double BeamAxisLength = 5.0;
 
     /// <summary>Вьюпорт в визуальном дереве (иначе подписки модели не нужны).</summary>
     private bool _isAttached;
@@ -553,6 +560,11 @@ public partial class ViewportView : UserControl
         // Модификаторы отслеживаются и без активного инструмента: Ctrl+Shift —
         // временный показ скрытой геометрии (R-10).
         TrackModifierKey(e.Key, down: true);
+        if (e.Key is Key.LeftAlt or Key.RightAlt)
+        {
+            RedrawToolOverlay();
+        }
+
         ApplyTemporaryHiddenGeometry(_tools);
 
         if (_tools is not { IsActive: true } tools)
@@ -601,12 +613,17 @@ public partial class ViewportView : UserControl
         _heldToolKeys.Remove(e.Key);
         TrackModifierKey(e.Key, down: false);
         ApplyTemporaryHiddenGeometry(_tools);
+        if (e.Key is Key.LeftAlt or Key.RightAlt)
+        {
+            RedrawToolOverlay();
+        }
     }
 
     private void SyncHeldModifiers(KeyModifiers modifiers)
     {
         _ctrlHeld = modifiers.HasFlag(KeyModifiers.Control);
         _shiftHeld = modifiers.HasFlag(KeyModifiers.Shift);
+        _altHeld = modifiers.HasFlag(KeyModifiers.Alt);
     }
 
     private void TrackModifierKey(Key key, bool down)
@@ -618,6 +635,9 @@ public partial class ViewportView : UserControl
                 break;
             case Key.LeftCtrl or Key.RightCtrl:
                 _ctrlHeld = down;
+                break;
+            case Key.LeftAlt or Key.RightAlt:
+                _altHeld = down;
                 break;
         }
     }
@@ -991,14 +1011,33 @@ public partial class ViewportView : UserControl
         }
 
         const double radiusPx = 11.0;
+        SnapNode? beam = null;
+        double beamDistance = TractorBeamRadiusPx;
+        Point beamCenter = default;
+        SnapFrame beamFrame = default;
+
         foreach (SnapNode snap in SnapQuery.FindInScene(_viewModel.Scene, _viewModel.IsHiddenGeometryPreview))
         {
-            SnapFrame frame = snap.WorldFrame(WorldTransformOf(snap));
+            SnapFrame frame = snap.WorldFrame(snap.WorldTransform());
             if (!TryProject(frame.Position, out Point center)
                 || !TryProject(frame.Position + frame.Right, out Point rightPx)
                 || !TryProject(frame.Position + frame.Up, out Point upPx))
             {
                 continue;
+            }
+
+            // Tractor beam (W5d): удержание Alt подсвечивает ближайший диск и его оси.
+            if (_altHeld && _lastPointerPx is { } pointer)
+            {
+                double dx = center.X - pointer.X, dy = center.Y - pointer.Y;
+                double distance = Math.Sqrt(dx * dx + dy * dy);
+                if (distance < beamDistance)
+                {
+                    beam = snap;
+                    beamDistance = distance;
+                    beamCenter = center;
+                    beamFrame = frame;
+                }
             }
 
             double rx = rightPx.X - center.X, ry = rightPx.Y - center.Y;
@@ -1048,18 +1087,65 @@ public partial class ViewportView : UserControl
             Canvas.SetLeft(dot, center.X - 2);
             Canvas.SetTop(dot, center.Y - 2);
         }
+
+        if (beam is not null)
+        {
+            DrawTractorBeam(beam, beamFrame, beamCenter);
+        }
     }
 
-    /// <summary>Мировая трансформация узла: произведение локальных трансформаций предков.</summary>
-    private static Transform3d WorldTransformOf(SceneNode node)
+    /// <summary>
+    /// Подсветка «tractor beam»: кольцо вокруг диска и оси кадра (направление
+    /// нормали, up и третья ось) — предпросмотр ориентации до привязки.
+    /// </summary>
+    private void DrawTractorBeam(SnapNode snap, SnapFrame frame, Point center)
     {
-        Transform3d world = node.LocalTransform;
-        for (SceneNode? parent = node.Parent; parent is not null; parent = parent.Parent)
+        var ring = new Ellipse
         {
-            world = Transform3d.Multiply(world, parent.LocalTransform);
+            Width = 30,
+            Height = 30,
+            Stroke = new SolidColorBrush(Color.FromArgb(230, 255, 196, 0)),
+            StrokeThickness = 2,
+        };
+        ToolOverlay.Children.Add(ring);
+        Canvas.SetLeft(ring, center.X - 15);
+        Canvas.SetTop(ring, center.Y - 15);
+
+        DrawBeamAxis(frame, frame.Direction, Color.FromArgb(230, 30, 136, 229));
+        DrawBeamAxis(frame, frame.Up, Color.FromArgb(230, 67, 160, 71));
+        DrawBeamAxis(frame, frame.Right, Color.FromArgb(230, 229, 57, 53));
+
+        if ((_viewModel?.ShowSnapLabels ?? true) && !string.IsNullOrWhiteSpace(snap.Name))
+        {
+            var label = new TextBlock
+            {
+                Text = snap.Name,
+                Foreground = Brushes.White,
+                Background = new SolidColorBrush(Color.FromArgb(170, 20, 30, 40)),
+                Padding = new Thickness(4, 2),
+                FontSize = 11,
+            };
+            ToolOverlay.Children.Add(label);
+            Canvas.SetLeft(label, center.X + 18);
+            Canvas.SetTop(label, center.Y - 26);
+        }
+    }
+
+    private void DrawBeamAxis(SnapFrame frame, Vector3d axis, Color color)
+    {
+        if (!TryProject(frame.Position, out Point start)
+            || !TryProject(frame.Position + axis.Normalized() * BeamAxisLength, out Point end))
+        {
+            return;
         }
 
-        return world;
+        ToolOverlay.Children.Add(new Line
+        {
+            StartPoint = start,
+            EndPoint = end,
+            Stroke = new SolidColorBrush(color),
+            StrokeThickness = 2,
+        });
     }
 
     private static bool IsAxis(SnapType type)
