@@ -45,7 +45,9 @@ if ($IsccPath -eq "") {
     $candidates = @(
         "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
         "$env:ProgramFiles\Inno Setup 6\ISCC.exe",
-        "${env:ProgramFiles(x86)}\Inno Setup 6.3\ISCC.exe"
+        "${env:ProgramFiles(x86)}\Inno Setup 6.3\ISCC.exe",
+        # пер-пользовательская установка Inno Setup 6 (без прав администратора)
+        "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
     )
     foreach ($c in $candidates) { if (Test-Path $c) { $IsccPath = $c; break } }
 }
