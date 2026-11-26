@@ -63,10 +63,10 @@ public sealed class ReferenceModelExportTests
         MeshData mesh = ReferenceModelFixtures.Build(modelName);
         double actual = MeshAssert.SignedVolume(mesh);
 
-        // Аналитический объём: полигональная аппроксимация круга (48 сегментов).
+        // Аналитический объём: полигональная аппроксимация круга (192 сегмента).
         double expected = modelName switch
         {
-            "cup" => (PolygonArea(48, 30) * 80) - (PolygonArea(48, 25) * 75),
+            "cup" => (PolygonArea(192, 30) * 80) - (PolygonArea(192, 25) * 75),
             "stand" => (100 * 60 * 20) + (60 * 60 * 30),
             "enclosure" => (100 * 80 * 40) - (92 * 72 * 36) - (24 * 4 * 12),
             _ => throw new ArgumentOutOfRangeException(nameof(modelName), modelName, null),

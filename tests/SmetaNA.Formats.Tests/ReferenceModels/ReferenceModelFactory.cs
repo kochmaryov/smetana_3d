@@ -14,12 +14,19 @@ internal static class ReferenceModelFactory
     /// «Стакан»: полый цилиндр с открытым верхом (D60×H80 мм, стенка 5 мм,
     /// дно 5 мм по умолчанию).
     /// </summary>
+    /// <remarks>
+    /// 192 сегмента (решение владельца по находке I1 аудит-цикла 2 задачи SMET-1):
+    /// радиальная стрелка вписанного 192-угольника R·(1 − cos(π/192)) ≈ 0,0040 мм,
+    /// диаметральное отклонение по плоскостям ≈ 0,0080 мм — обе метрики ≤ 0,01 мм
+    /// (DoD §5.4). 192 кратно 4, поэтому экстремумы по X/Y попадают точно на
+    /// вершины (θ = 0, π/2, π, 3π/2) и габаритная коробка остаётся 60×60×80 мм.
+    /// </remarks>
     public static MeshData Cup(
         double outerDiameterMm = 60,
         double heightMm = 80,
         double wallMm = 5,
         double bottomMm = 5,
-        int segments = 48)
+        int segments = 192)
     {
         if (outerDiameterMm <= 0 || heightMm <= 0 || wallMm <= 0 || bottomMm <= 0)
         {
